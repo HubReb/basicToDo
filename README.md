@@ -12,7 +12,7 @@ Enter an item into the editline and hit 'enter'.
 
 ### Update an item
 Hit 'Update' an item and enter a new description.
-![image](basicAppUpdateToDo.png)
+![image](basicAppAddUpdateToDo.png)
 
 ### Delete an item
 Hit 'Delete' an item to remove it from the list.
