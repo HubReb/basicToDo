@@ -43,14 +43,14 @@ async def add_todo(todo: dict) -> dict:
 
 
 @app.put("/todo/{id}", tags=["todos"])
-async def update_todo(id: int, body: dict) -> dict:
+async def update_todo(itemn_id: int, body: dict) -> dict:
     """Update a todo item description."""
     for todo in todos:
-        if not int(todo["id"]) == id:
+        if not int(todo["id"]) == itemn_id:
             continue
         todo["item"] = body["item"]
-        return {"data": f"Todo with id {id} has been updated."}
-    return {"data": f"Todo with id {id} not found."}
+        return {"data": f"Todo with id {itemn_id} has been updated."}
+    return {"data": f"Todo with id {itemn_id} not found."}
 
 
 @app.delete("/todo/{id}", tags=["todos"])
