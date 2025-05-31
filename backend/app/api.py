@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+"""
+The API calls definitions.
+"""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +20,7 @@ app.add_middleware(
 
 @app.get("/", tags=["root"])
 async def read_root() -> dict:
+    """Return a dummy message if the root is read."""
     return {"message": "Welcome to your todo list."}
 
 
@@ -26,11 +29,13 @@ todos = [{"id": "1", "item": "Read a book."}, {"id": "2", "item": "Cycle around 
 
 @app.get("/todo", tags=["todos"])
 async def get_todos() -> dict:
+    """Return the todo data."""
     return {"data": todos}
 
 
 @app.post("/todo", tags=["todos"])
 async def add_todo(todo: dict) -> dict:
+    """Add a todo item to the list."""
     if todo in todos:
         return {"data": {"Todo already exists."}}
     todos.append(todo)
@@ -39,6 +44,7 @@ async def add_todo(todo: dict) -> dict:
 
 @app.put("/todo/{id}", tags=["todos"])
 async def update_todo(id: int, body: dict) -> dict:
+    """Update a todo item description."""
     for todo in todos:
         if not int(todo["id"]) == id:
             continue
@@ -48,9 +54,13 @@ async def update_todo(id: int, body: dict) -> dict:
 
 
 @app.delete("/todo/{id}", tags=["todos"])
-async def delete_todos(id: int) -> dict:
-    for todo in todos:
-        if int(todo["id"]) == id:
-            todos.remove(todo)
-            return {"data": f"Todo with id {id} has been removed."}
+async def delete_todos(item_id: int) -> dict:
+    """Delete a todo item."""
+    todo_copy = todos[:]
+    for todo in todo_copy:
+        if int(todo["id"]) != item_id:
+            continue
+        todos.remove(todo)
+        return {"data": f"Todo with id {id} has been removed."}
+
     return {"data": f"Todo with id {id} not found."}

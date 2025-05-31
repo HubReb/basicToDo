@@ -1,4 +1,7 @@
-#! /usr/bin/env python3
+"""
+Backend for the ToDo app.
+"""
+
 import uvicorn
 
 if __name__ == "__main__":
