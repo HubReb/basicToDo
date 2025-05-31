@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, useContext } from 'react';
+import React, { useEffect, useState, createContext, } from 'react';
 import {
 	Box,
 	Button,
@@ -27,9 +27,9 @@ interface UpdateToDoProps {
 	fetchTodos: () => void;
 }
 interface TodoHelperProps {
-  item: string;
-  id: string;
-  fetchTodos: () => void;
+	item: string;
+	id: string;
+	fetchTodos: () => void;
 }
 
 interface DeleteTodoProps {
@@ -38,12 +38,12 @@ interface DeleteTodoProps {
 }
 
 const TodosContext = createContext({
-	todos: [], fetchTodos: () => {}
+	todos: [], fetchTodos: () => { }
 })
 
-const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDo) => {
+const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 	const [todo, setTodo] = useState(item);
-		const updateToDo = async () => {
+	const updateToDo = async () => {
 		await fetch(`http://localhost:8000/todo/${id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -52,63 +52,63 @@ const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDo) => {
 		await fetchTodos();
 	};
 	return (
-	  <DialogRoot>
-	    <DialogTrigger asChild>
-	      <Button h="1.5rem" size="sm">
-		Update Todo
-	      </Button>
-	    </DialogTrigger>
-	    <DialogContent
-	      position="fixed"
-	      top="50%"
-	      left="50%"
-	      transform="translate(-50%, -50%)"
-	      bg="white"
-	      p={6}
-	      rounded="md"
-	      shadow="xl"
-	      maxW="md"
-	      w="90%"
-	      zIndex={1000}
-	    >
-	      <DialogHeader>
-		<DialogTitle>Update Todo</DialogTitle>
-	      </DialogHeader>
-	      <DialogBody>
-		<Input
-		  pr="4.5rem"
-		  type="text"
-		  placeholder="Add a todo item"
-		  aria-label="Add a todo item"
-		  value={todo}
-		  onChange={event => setTodo(event.target.value)}
-		/>
-	      </DialogBody>
-	      <DialogFooter>
-		<DialogActionTrigger asChild>
-		  <Button variant="outline" size="sm">Cancel</Button>
-		</DialogActionTrigger>
-		<Button size="sm" onClick={updateToDo}>Save</Button>
-	      </DialogFooter>
-	    </DialogContent>
-	  </DialogRoot>
+		<DialogRoot>
+			<DialogTrigger asChild>
+				<Button h="1.5rem" size="sm">
+					Update Todo
+				</Button>
+			</DialogTrigger>
+			<DialogContent
+				position="fixed"
+				top="50%"
+				left="50%"
+				transform="translate(-50%, -50%)"
+				bg="white"
+				p={6}
+				rounded="md"
+				shadow="xl"
+				maxW="md"
+				w="90%"
+				zIndex={1000}
+			>
+				<DialogHeader>
+					<DialogTitle>Update Todo</DialogTitle>
+				</DialogHeader>
+				<DialogBody>
+					<Input
+						pr="4.5rem"
+						type="text"
+						placeholder="Add a todo item"
+						aria-label="Add a todo item"
+						value={todo}
+						onChange={event => setTodo(event.target.value)}
+					/>
+				</DialogBody>
+				<DialogFooter>
+					<DialogActionTrigger asChild>
+						<Button variant="outline" size="sm">Cancel</Button>
+					</DialogActionTrigger>
+					<Button size="sm" onClick={updateToDo}>Save</Button>
+				</DialogFooter>
+			</DialogContent>
+		</DialogRoot>
 	)
 }
 
-function TodoHelper ({item, id, fetchTodos}: TodoHelperProps) {
+function TodoHelper({ item, id, fetchTodos }: TodoHelperProps) {
 	return (
-    <Box p={1} shadow="sm">
-      <Flex justify="space-between">
-        <Text mt={4} as="div">
-          {item}
-          <Flex align="end">
-            <UpdateToDo item={item} id={id} fetchTodos={fetchTodos}/>
-	    <DeleteTodo item={item} id={id} fetchTodos={fetchTodos}/>
-          </Flex>
-        </Text>
-      </Flex>
-    </Box>
-)
+		<Box p={1} shadow="sm">
+			<Flex justify="space-between">
+				<Text mt={4} as="div">
+					{item}
+					<Flex align="end">
+						<UpdateToDo item={item} id={id} fetchTodos={fetchTodos} />
+						<DeleteTodo id={id} fetchTodos={fetchTodos} />
+					</Flex>
+				</Text>
+			</Flex>
+		</Box>
+	)
 }
 
 
@@ -125,62 +125,62 @@ export default function Todos() {
 	}, [])
 
 	return (
-		<TodosContext.Provider value={{todos, fetchTodos}}>
+		<TodosContext.Provider value={{ todos, fetchTodos }}>
 			<Container maxW="container.xl" pt="100px">
 				<AddToDo />
 				<Stack gap={5}>
 					{
-					todos.map((todo) => (
-					<TodoHelper key={todo.id} item={todo.item} id={todo.id} fetchTodos={fetchTodos}/>
-					))
-				}
+						todos.map((todo: Todo) => (
+							<TodoHelper key={todo.id} item={todo.item} id={todo.id} fetchTodos={fetchTodos} />
+						))
+					}
 				</Stack>
 			</Container>
-	</TodosContext.Provider>
-)
+		</TodosContext.Provider>
+	)
 }
 
 function AddToDo() {
 	const [item, setItem] = React.useState("")
-	const {todos, fetchTodos} = React.useContext(TodosContext)
+	const { todos, fetchTodos } = React.useContext(TodosContext)
 
-const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-	setItem(event.target.value)
-}
-
-const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-	event.preventDefault()
-	const newTodo = {
-		"id": todos.length + 1,
-		"item": item
+	const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setItem(event.target.value)
 	}
 
-	fetch("http://localhost:8000/todo", {
-		method: "POST",
-		headers : { "Content-Type": "application/json" },
-		body: JSON.stringify(newTodo)
-	}).then(fetchTodos)
+	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault()
+		const newTodo = {
+			"id": todos.length + 1,
+			"item": item
+		}
+
+		fetch("http://localhost:8000/todo", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(newTodo)
+		}).then(fetchTodos)
+	}
+
+	return (
+		<form onSubmit={handleSubmit}>
+			<Input
+				pr="4.5rem"
+				type="text"
+				placeholder="Add a todo item"
+				aria-label="Add a todo item"
+				onChange={handleInput}
+			/>
+		</form>
+	)
 }
 
-return (
-	<form onSubmit={handleSubmit}>
-		<Input
-			pr="4.5rem"
-			type="text"
-			placeholder="Add a todo item"
-			aria-label="Add a todo item"
-			onChange={handleInput}
-		/>
-	</form>
-)
-}
-
-const DeleteTodo = ({id, fetchTodos }: DeleteTodoProps) => {
+const DeleteTodo = ({ id, fetchTodos }: DeleteTodoProps) => {
 	const DeleteTodo = async () => {
 		await fetch(`http://localhost:8000/todo/${id}`, {
 			method: "DELETE",
-			headers: {"Content-Type": "application/json" },
-			body: JSON.stringify({ id: id})
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ id: id })
 		})
 		await fetchTodos()
 	}
