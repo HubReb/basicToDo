@@ -44,9 +44,9 @@ const TodosContext = createContext({
 const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 	const [todo, setTodo] = useState(item);
 	const updateToDo = async () => {
-		await fetch(`http://localhost:8000/todo/${id}`, {
+		await fetch(`http://localhost:8000/todo/id?item=${id}`, {
 			method: "PUT",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", "accept": "application/json" },
 			body: JSON.stringify({ item: todo }),
 		});
 		await fetchTodos();
@@ -151,13 +151,13 @@ function AddToDo() {
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const newTodo = {
-			"id": todos.length + 1,
+			"id": String(todos.length + 1),
 			"item": item
 		}
 
 		fetch("http://localhost:8000/todo", {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", "accept": "application/json" },
 			body: JSON.stringify(newTodo)
 		}).then(fetchTodos)
 	}
@@ -177,7 +177,7 @@ function AddToDo() {
 
 const DeleteTodo = ({ id, fetchTodos }: DeleteTodoProps) => {
 	const DeleteTodo = async () => {
-		await fetch(`http://localhost:8000/todo/${id}`, {
+		await fetch(`http://localhost:8000/todo/id?item=${id}`, {
 			method: "DELETE",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ id: id })
