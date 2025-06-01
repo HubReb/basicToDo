@@ -16,6 +16,8 @@ import {
 	Text,
 	DialogActionTrigger
 } from '@chakra-ui/react';
+import * as uuid from "uuid";
+
 
 interface Todo {
 	id: string;
@@ -151,7 +153,7 @@ function AddToDo() {
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const newTodo = {
-			"id": String(todos.length + 1),
+			"id": uuid.v4(),
 			"item": item
 		}
 
