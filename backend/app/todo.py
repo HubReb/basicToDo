@@ -108,7 +108,7 @@ class ToDoRepository:
 
     def get_to_do_entry(self, to_do_entry_id: str):
         """Get an ToDo entry."""
-        to_do_query = self.database_connection.query(schemas.ToDo).filter_by(
+        to_do_query = self.database_connection.query(models.ToDo).filter_by(
             id=to_do_entry_id
         )
         to_do_entry = to_do_query.first()
