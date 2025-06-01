@@ -11,5 +11,8 @@ requires-python = ">=3.13"
 dependencies = [
     "black>=25.1.0",
     "fastapi[standard]>=0.115.12",
+    "pytest>=8.3.5",
+    "sqlalchemy>=2.0.41",
+    "sqlalchemy-utils>=0.41.2",
     "uvicorn>=0.34.2",
 ]
