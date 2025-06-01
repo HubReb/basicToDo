@@ -1,0 +1,126 @@
+@@startuml backend
+
+package app {
+package models {
+class ToDo {
+    + id: UUID
+    + title: str
+    + description: str
+    + created_at: datetime 
+    + updated_at: datetime
+    + deleted: bool
+    + done: bool
+    ---------------------
+    update(values: dict): None
+}
+
+ToDo -|> dataclass
+}
+
+package schemas {
+
+    class Status {
+        SUCCESS: str
+        FAILURE: str
+    }
+
+    class ToDo {
+        + id: UUID
+        + title: str 
+        + description: str
+        + reated_at: datetime
+        + updated_at: datetime
+        + deleted: bool
+        + done: bool
+    }
+
+    class Config {
+        + from_attributes: bool
+        + populate_by_name: bool
+        + arbitrary_types_allowed: bool
+
+    }
+
+    class ToDoResponse {
+
+    status: Status
+    todo_entry: ToDo
+    }
+
+   
+    class GetToDoResponse(BaseModel) {
+    status: Status
+    todo_entry: ToDo
+    }
+
+    class ListToDoResponse{
+    status: Status
+    results: int
+    todo_entries: List[ToDo]
+    }
+
+
+    class DeleteToDoResponse {
+    status: Status
+    message: str
+    }
+
+    Status -|> Enum
+    ToDo -|> pydantic.BaseModel
+    ToDoResponse -|> pydantic.BaseModel
+    GetToDoResponse -|> pydantic.BaseModel
+    ListToDoResponse -|> pydantic.BaseModel
+    DeleteToDoResponse -|> pydantic.BaseModel
+    ToDo *- Config
+    ToDoResponse *- Status
+    GetToDoResponse *- Status
+    ListToDoResponse *- Status
+    DeleteToDoResponse *- Status
+}
+
+package database {
+note right: Handles interaction with database. Currently under reconstruction.
+
+}
+package todo {
+    class ToDoRepository {
+        + database_connection: Session
+        ------------------------------
+        + add_to_do(payload: models.ToDo): None
+        + delete_to_do(to_do_id: str): None
+        + update_to_do(to_do_id: str, payload: schemas.ToDo): None
+        + get_to_do_entry(to_do_entry_id: str): None
+        + get_all_to_do_entries(limit: int, page: int): None
+    }
+}
+package logger {
+    class Logger {
+        -------------------------------
+        + log_missing_parameter(parameter_name: str)
+        + log_not_initialized(self, reference_name: str)
+    }
+    Logger -|> logging.Logger
+}
+
+package api {
+    class App
+    {
+        + origins: list[str]
+        + logger: CustomLogger
+        + debug: bool
+        + title: str
+        + version: str 
+        + openapi_url: str
+        -----------------
+        + get_to_dos()
+        + add_to_dos(new_to_do: ToDo)
+        + delete_to_do(item_id: UUID)
+        + update_to_do(item_id: UUID, body: dict)
+    }
+
+    App -|> FastAPI.App
+    App *- ToDoRepository
+}
+}
+
+@@enduml
