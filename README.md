@@ -74,6 +74,7 @@ These further improvements define the next milestone.
 - Reminder: Set a date to have the task finished and be reminded of the upcoming deadline.
 
 ### Code base
+  - Refactoring of the repository
   -  Refactoring of the frontend for better modularity
   -  Refactoring of the backend to improve software design
 
