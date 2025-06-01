@@ -1,5 +1,5 @@
 # basicToDo
-A simple ToDo application to be enhanced over time.
+A simple ToDo application to be enhanced over time. *This is in an early beta state with rapid development and breaking changes. This serves as a playground to extend my knowledge and experience of the used tech stage. As such, it it _as is_ and not intended for production usage.*
 
 ## Basic functionality
 ![image](images/basicApp.png)
@@ -44,3 +44,15 @@ Run the python backend
 and run the frontend
 
 ```npm run dev```
+
+## Stack
+### Frontend
+The frontend is currently written in _Typescript_ and _React_ with _vite_ and uses vite's default. The look of the app will undergo severe changes in the future to improve both UI and UX.
+
+### Backend
+The backend is written in _python_ with a SQLite database. The stack is as follows:
+- SQLite database
+- SQLAlchemy
+- FastAPI
+
+  The backend will also undergo further restructuring and changes to improve stability and quality.
