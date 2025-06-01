@@ -8,7 +8,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.logger import CustomLogger
 from app.models import ToDo
-from app.schemas import ToDo as SchemaToDo
+from app.schemas import (
+    ToDo as SchemaToDo,
+    ToDoResponse,
+    DeleteToDoResponse,
+)
 from app.todo import ToDoRepository
 
 
@@ -49,35 +53,31 @@ class App(FastAPI):
             data.append({"id": to_do.id, "item": to_do.description})
         return {"data": data}
 
-    def add_to_dos(self, new_todo: ToDo) -> dict:
+    def add_to_dos(self, new_todo: ToDo) -> ToDoResponse:
         """Add a toDo."""
-        if new_todo in self.todos:
-            return {"data": "{ToDo already exists.}"}
-        self.repository.add_to_do(new_todo)
+        response = self.repository.add_to_do(new_todo)
         self.todos.append(new_todo)
-        return {"data": {f"ToDo {new_todo.id} added."}}
+        return response
 
-    def update_todo(self, item_id: uuid.UUID, body: dict) -> dict:
+    def update_todo(self, item_id: uuid.UUID, body: dict) -> ToDoResponse | dict:
         """Update a ToDo."""
         for to_do_object in self.todos:
             if not to_do_object.id == item_id:
                 continue
             to_do_object.description = body["item"]
-            self.repository.update_to_do(
+            return self.repository.update_to_do(
                 str(item_id), SchemaToDo.model_validate(to_do_object)
             )
-            return {"data": f"Todo with id {item_id} has been updated."}
         return {"data": f"Todo with id {item_id} not found."}
 
-    def delete_todos(self, item_id: uuid.UUID) -> dict:
+    def delete_todos(self, item_id: uuid.UUID) -> DeleteToDoResponse | dict:
         """Delete a todo item."""
         todo_copy = self.todos[:]
         for to_do_object in todo_copy:
             if to_do_object.id != item_id:
                 continue
             self.todos.remove(to_do_object)
-            self.repository.delete_to_do(str(item_id))
-            return {"data": f"Todo with id {id} has been removed."}
+            return self.repository.delete_to_do(str(item_id))
 
         return {"data": f"Todo with id {id} not found."}
 
@@ -100,7 +100,7 @@ async def get_todos() -> dict:
 
 
 @app.post("/todo", tags=["todos"])
-async def add_todo(todo_entry: dict[str, str]) -> dict:
+async def add_todo(todo_entry: dict[str, str]) -> ToDoResponse | dict:
     """Add a todo item to the list."""
     new_todo = ToDo(
         id=uuid.UUID(todo_entry["id"]),
@@ -113,12 +113,12 @@ async def add_todo(todo_entry: dict[str, str]) -> dict:
 
 
 @app.put("/todo/{id}", tags=["todos"])
-async def update_todo(item: uuid.UUID, body: dict) -> dict:
+async def update_todo(item: uuid.UUID, body: dict) -> ToDoResponse | dict:
     """Update a todo item description."""
     return app.update_todo(item_id=item, body=body)
 
 
 @app.delete("/todo/{id}", tags=["todos"])
-async def delete_todos(item: uuid.UUID) -> dict:
+async def delete_todos(item: uuid.UUID) -> DeleteToDoResponse | dict:
     """Delete a todo."""
     return app.delete_todos(item)
