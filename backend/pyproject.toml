@@ -11,8 +11,34 @@ requires-python = ">=3.13"
 dependencies = [
     "black>=25.1.0",
     "fastapi[standard]>=0.115.12",
+    "mypy>=1.16.0",
     "pytest>=8.3.5",
     "sqlalchemy>=2.0.41",
+    "sqlalchemy-stubs>=0.4",
     "sqlalchemy-utils>=0.41.2",
+    "sqlalchemy2-stubs>=0.0.2a38",
+    "types-greenlet>=3.2.0.20250417",
+    "types-pygments>=2.19.0.20250516",
+    "types-pyyaml>=6.0.12.20250516",
+    "types-ujson>=5.10.0.20250326",
     "uvicorn>=0.34.2",
 ]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+incremental = false
+ignore_errors = false
+pretty = true
+show_error_context = true
+show_traceback = true
+strict_optional = true
+warn_incomplete_stub = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+[tool.mypy-untyped_package.*]
+follow_untyped_imports = True
