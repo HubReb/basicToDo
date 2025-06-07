@@ -65,17 +65,17 @@ package schemas {
     message: str
     }
 
-    Status -|> Enum
-    ToDo -|> pydantic.BaseModel
-    ToDoResponse -|> pydantic.BaseModel
-    GetToDoResponse -|> pydantic.BaseModel
-    ListToDoResponse -|> pydantic.BaseModel
-    DeleteToDoResponse -|> pydantic.BaseModel
+    Status -r-|> Enum
+    ToDo -u-|> pydantic.BaseModel
+    ToDoResponse -u-|> pydantic.BaseModel
+    GetToDoResponse -u-|> pydantic.BaseModel
+    ListToDoResponse -u-|> pydantic.BaseModel
+    DeleteToDoResponse -u-|> pydantic.BaseModel
     ToDo *- Config
-    ToDoResponse *- Status
-    GetToDoResponse *- Status
-    ListToDoResponse *- Status
-    DeleteToDoResponse *- Status
+    ToDoResponse *-d- Status
+    GetToDoResponse *-d- Status
+    ListToDoResponse *-d- Status
+    DeleteToDoResponse *-d- Status
 }
 
 package database {
@@ -86,11 +86,11 @@ package todo {
     class ToDoRepository {
         + database_connection: Session
         ------------------------------
-        + add_to_do(payload: models.ToDo): None
-        + delete_to_do(to_do_id: str): None
-        + update_to_do(to_do_id: str, payload: schemas.ToDo): None
-        + get_to_do_entry(to_do_entry_id: str): None
-        + get_all_to_do_entries(limit: int, page: int): None
+        + add_entry(new_to_do: models.ToDo)
+        + delete_entry(to_do_id: str)
+        + update_to_do(to_do_id: str, update_data: models.ToDo)
+        + get_entry(to_do_entry_id: str)
+        + get_all_entries(limit: int, page: int)
     }
 }
 package logger {
@@ -99,7 +99,7 @@ package logger {
         + log_missing_parameter(parameter_name: str)
         + log_not_initialized(self, reference_name: str)
     }
-    Logger -|> logging.Logger
+    Logger -d-|> logging.Logger
 }
 
 package api {
@@ -118,8 +118,18 @@ package api {
         + update_to_do(item_id: UUID, body: dict)
     }
 
-    App -|> FastAPI.App
-    App *- ToDoRepository
+    App -u-|> FastAPI.App
+    App *-r- webservice.Webservice
+}
+package webservice {
+    class Webservice {
+        update_entry(to_do_id: uuid.UUID, payload: dict[str, Any])
+        get_entry(to_do_id: uuid.UUID)
+        add_entry(payload: models.ToDo)
+        delete_entry(to_do_id: uuid.UUID)
+        get_all_to_do_entries()
+    }
+    Webservice *-d- todo.ToDoRepository
 }
 }
 
