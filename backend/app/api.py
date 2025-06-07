@@ -6,6 +6,8 @@ import uuid
 from logging import INFO
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
+
 from app.logger import CustomLogger
 from app.models import ToDo
 from app.schemas import (
@@ -13,7 +15,7 @@ from app.schemas import (
     ToDoResponse,
     DeleteToDoResponse,
 )
-from app.todo import ToDoRepository
+from app.webservice import Webservice
 
 
 class App(FastAPI):
@@ -43,8 +45,8 @@ class App(FastAPI):
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        self.repository = ToDoRepository()
-        self.todos = self.repository.get_all_to_do_entries()
+        self.webservice = Webservice()
+        self.todos = self.webservice.get_all_to_do_entries()
 
     def get_to_dos(self) -> dict:
         """Get all todos."""
@@ -53,31 +55,31 @@ class App(FastAPI):
             data.append({"id": to_do.id, "item": to_do.description})
         return {"data": data}
 
-    def add_to_dos(self, new_todo: ToDo) -> ToDoResponse:
+    def add_to_dos(self, new_todo: ToDo) -> ToDoResponse | HTTPException:
         """Add a toDo."""
-        response = self.repository.add_to_do(new_todo)
+        response = self.webservice.add_entry(new_todo)
         self.todos.append(new_todo)
         return response
 
-    def update_todo(self, item_id: uuid.UUID, body: dict) -> ToDoResponse | dict:
+    def update_todo(self, item_id: uuid.UUID, body: dict) -> dict | HTTPException | ToDoResponse:
         """Update a ToDo."""
         for to_do_object in self.todos:
             if not to_do_object.id == item_id:
                 continue
             to_do_object.description = body["item"]
-            return self.repository.update_to_do(
-                str(item_id), SchemaToDo.model_validate(to_do_object)
+            return self.webservice.update_entry(
+                item_id, SchemaToDo.model_validate(to_do_object)
             )
         return {"data": f"Todo with id {item_id} not found."}
 
-    def delete_todos(self, item_id: uuid.UUID) -> DeleteToDoResponse | dict:
+    def delete_todos(self, item_id: uuid.UUID) -> DeleteToDoResponse | dict | HTTPException:
         """Delete a todo item."""
         todo_copy = self.todos[:]
         for to_do_object in todo_copy:
             if to_do_object.id != item_id:
                 continue
             self.todos.remove(to_do_object)
-            return self.repository.delete_to_do(str(item_id))
+            return self.webservice.delete_entry(item_id)
 
         return {"data": f"Todo with id {id} not found."}
 
@@ -100,7 +102,7 @@ async def get_todos() -> dict:
 
 
 @app.post("/todo", tags=["todos"])
-async def add_todo(todo_entry: dict[str, str]) -> ToDoResponse | dict:
+async def add_todo(todo_entry: dict[str, str]):
     """Add a todo item to the list."""
     new_todo = ToDo(
         id=uuid.UUID(todo_entry["id"]),
@@ -112,13 +114,14 @@ async def add_todo(todo_entry: dict[str, str]) -> ToDoResponse | dict:
     return app.add_to_dos(new_todo)
 
 
+
 @app.put("/todo/{id}", tags=["todos"])
-async def update_todo(item: uuid.UUID, body: dict) -> ToDoResponse | dict:
+async def update_todo(item: uuid.UUID, body: dict):
     """Update a todo item description."""
     return app.update_todo(item_id=item, body=body)
 
 
 @app.delete("/todo/{id}", tags=["todos"])
-async def delete_todos(item: uuid.UUID) -> DeleteToDoResponse | dict:
+async def delete_todos(item: uuid.UUID):
     """Delete a todo."""
     return app.delete_todos(item)
