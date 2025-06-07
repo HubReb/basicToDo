@@ -1,3 +1,5 @@
+"""The access and tables for the database"""
+
 import uuid
 import json
 from sqlalchemy import (
@@ -14,7 +16,7 @@ from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
 from app.models import ToDo
 
-with open("config.json") as f:
+with open("config.json", encoding="utf-8") as f:
     config = json.load(f)
 
 path = config["db_path"]

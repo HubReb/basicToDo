@@ -16,7 +16,9 @@ class ToDoRepository:
         for val in db:
             self.database_connection: Session = val
 
-    def add_to_do(self, new_to_do_entry: models.ToDo) -> None | IntegrityError | Exception:
+    def add_to_do(
+        self, new_to_do_entry: models.ToDo
+    ) -> None | IntegrityError | Exception:
         """Add a new ToDo entry."""
         try:
             self.database_connection.add(new_to_do_entry)
@@ -29,7 +31,7 @@ class ToDoRepository:
         except Exception as e:
             self.database_connection.rollback()
             raise e
-        return
+        return None
 
     def delete_to_do(self, to_do_id: str) -> None | ValueError | Exception:
         """Delete a ToDo."""
@@ -41,12 +43,14 @@ class ToDoRepository:
                 raise ValueError(f"No ToDo entry with id {to_do_id} found.")
             to_do_query.delete(synchronize_session=False)
             self.database_connection.commit()
-            return
+            return None
         except Exception as e:
             self.database_connection.rollback()
             raise e
 
-    def update_to_do(self, to_do_id: str, update_data: dict[str, Any]) -> models.ToDo | IntegrityError | Exception:
+    def update_to_do(
+        self, to_do_id: str, update_data: dict[str, Any]
+    ) -> models.ToDo | IntegrityError | Exception:
         """Update an existing ToDo entry."""
         try:
             to_do_query = self.database_connection.query(models.ToDo).filter_by(
@@ -76,7 +80,9 @@ class ToDoRepository:
             raise ValueError(f"No entry with id {to_do_entry_id}.")
         return to_do_entry
 
-    def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[models.ToDo]:
+    def get_all_to_do_entries(
+        self, limit: int = 10, page: int = 1
+    ) -> List[models.ToDo]:
         """Search all ToDo entries for the search string."""
         skip = (page - 1) * limit
         to_do_entries = (

@@ -61,7 +61,9 @@ class App(FastAPI):
         self.todos.append(new_todo)
         return response
 
-    def update_todo(self, item_id: uuid.UUID, body: dict) -> dict | HTTPException | ToDoResponse:
+    def update_todo(
+        self, item_id: uuid.UUID, body: dict
+    ) -> dict | HTTPException | ToDoResponse:
         """Update a ToDo."""
         for to_do_object in self.todos:
             if not to_do_object.id == item_id:
@@ -72,7 +74,9 @@ class App(FastAPI):
             )
         return {"data": f"Todo with id {item_id} not found."}
 
-    def delete_todos(self, item_id: uuid.UUID) -> DeleteToDoResponse | dict | HTTPException:
+    def delete_todos(
+        self, item_id: uuid.UUID
+    ) -> DeleteToDoResponse | dict | HTTPException:
         """Delete a todo item."""
         todo_copy = self.todos[:]
         for to_do_object in todo_copy:
@@ -112,7 +116,6 @@ async def add_todo(todo_entry: dict[str, str]):
         updated_at=None,
     )
     return app.add_to_dos(new_todo)
-
 
 
 @app.put("/todo/{id}", tags=["todos"])
