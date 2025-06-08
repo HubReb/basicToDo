@@ -61,8 +61,7 @@ The backend is written in _python_ with a SQLite database. The stack is as follo
 These further improvements define the next milestone.
 
 ### UX improvements
-- Closing of the *Update*-dialog once _Save_ has been selected.
-- Deletion: Marking of ToDos as deleted on the dataabase with a new dialog to delete all ToDos marked as deleted from the database.
+- Deletion: Marking of ToDos as deleted on the database with a new dialog to delete all ToDos marked as deleted from the database.
 - Restore: Restore a ToDo marked as deleted.
 - Mark as done: Mark a ToDo as done.
 - Light model in addition to current dark mode.
