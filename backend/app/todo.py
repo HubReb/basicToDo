@@ -1,78 +1,56 @@
 """A ToDo data class"""
 
-from typing import Any
-from fastapi import Depends, HTTPException, status
+from typing import Any, Generator, List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-import app.schemas as schemas
+
 from app.database import get_db
-import app.models as models
-
-
-def exists(value: Any) -> Any:
-    """Verify value is not null."""
-    if value is not None:
-        return value
-    raise ValueError("value must not be None.")
+from app import models
 
 
 class ToDoRepository:
     """Repository for ToDos"""
 
-    def __init__(self, db: Session = Depends(get_db)):
+    def __init__(self, db: Generator[Session, Any, None] = get_db()):
         """Initialize repository"""
-        for val in get_db():
+        for val in db:
             self.database_connection: Session = val
 
-    def add_to_do(self, payload: models.ToDo):
+    def add_to_do(
+        self, new_to_do_entry: models.ToDo
+    ) -> None | IntegrityError | Exception:
         """Add a new ToDo entry."""
         try:
-            self.database_connection.add(payload)
+            self.database_connection.add(new_to_do_entry)
             self.database_connection.commit()
-            self.database_connection.refresh(payload)
+            self.database_connection.refresh(new_to_do_entry)
 
         except IntegrityError as e:
             self.database_connection.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="A ToDo with the given details already exists.",
-            ) from e
+            raise e
         except Exception as e:
             self.database_connection.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An errror occurred while creating the ToDo entry.",
-            ) from e
+            raise e
+        return None
 
-        to_do_schema = schemas.ToDo.model_validate(payload)
-        return schemas.ToDoResponse(
-            status=schemas.Status.SUCCESS, todo_entry=to_do_schema
-        )
-
-    def delete_to_do(self, to_do_id: str):
+    def delete_to_do(self, to_do_id: str) -> None | ValueError | Exception:
         """Delete a ToDo."""
         try:
             to_do_query = self.database_connection.query(models.ToDo).filter_by(
                 id=to_do_id
             )
             if not to_do_query.first():
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"No ToDo entry with id {to_do_id} found.",
-                )
+                raise ValueError(f"No ToDo entry with id {to_do_id} found.")
             to_do_query.delete(synchronize_session=False)
             self.database_connection.commit()
-            return schemas.DeleteToDoResponse(
-                status=schemas.Status.SUCCESS, message="ToDo deleted successfully."
-            )
+            return None
         except Exception as e:
             self.database_connection.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An error occurred while deleting the ToDo entry.",
-            ) from e
+            raise e
 
-    def update_to_do(self, to_do_id: str, payload: schemas.ToDo):
+    def update_to_do(
+        self, to_do_id: str, update_data: dict[str, Any]
+    ) -> models.ToDo | IntegrityError | Exception:
         """Update an existing ToDo entry."""
         try:
             to_do_query = self.database_connection.query(models.ToDo).filter_by(
@@ -80,55 +58,31 @@ class ToDoRepository:
             )
             to_do_entry = to_do_query.first()
             if not to_do_entry:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"No ToDo entry with id {to_do_id} found.",
-                )
-            update_data = payload.model_dump()
+                raise ValueError(f"No entry with id {to_do_id} found.")
             to_do_entry.update(update_data)
             self.database_connection.commit()
             self.database_connection.refresh(to_do_entry)
-            to_do_schema = schemas.ToDo.model_validate(to_do_entry)
-            return schemas.ToDoResponse(
-                status=schemas.Status.SUCCESS, todo_entry=to_do_schema
-            )
+            return to_do_entry
         except IntegrityError as e:
             self.database_connection.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="A user with the given details already exists.",
-            ) from e
-
+            raise e
         except Exception as e:
             self.database_connection.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An error occurred while updating the ToDo entry.",
-            ) from e
+            raise e
 
-    def get_to_do_entry(self, to_do_entry_id: str):
+    def get_to_do_entry(self, to_do_entry_id: str) -> models.ToDo | ValueError:
         """Get an ToDo entry."""
         to_do_query = self.database_connection.query(models.ToDo).filter_by(
             id=to_do_entry_id
         )
         to_do_entry = to_do_query.first()
         if not to_do_entry:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No entry with this id: {to_do_entry_id} found.",
-            )
-        try:
-            return schemas.GetToDoResponse(
-                status=schemas.Status.SUCCESS,
-                todo_entry=schemas.ToDo.model_validate(to_do_entry),
-            )
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected error occurred while fetching the ToDo entry.",
-            ) from e
+            raise ValueError(f"No entry with id {to_do_entry_id}.")
+        return to_do_entry
 
-    def get_all_to_do_entries(self, limit: int = 10, page: int = 1):
+    def get_all_to_do_entries(
+        self, limit: int = 10, page: int = 1
+    ) -> List[models.ToDo]:
         """Search all ToDo entries for the search string."""
         skip = (page - 1) * limit
         to_do_entries = (

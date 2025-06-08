@@ -1,4 +1,7 @@
+"""The access and tables for the database"""
+
 import uuid
+import json
 from sqlalchemy import (
     create_engine,
     Table,
@@ -13,7 +16,13 @@ from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
 from app.models import ToDo
 
-SQLITE_DATABASE_URL = "sqlite:///./todo.db"
+with open("config.json", encoding="utf-8") as f:
+    config = json.load(f)
+
+path = config["db_path"]
+
+
+SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
 
 engine = create_engine(
     SQLITE_DATABASE_URL, echo=True, connect_args={"check_same_thread": False}

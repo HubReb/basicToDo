@@ -14,7 +14,11 @@ import {
 	DialogTrigger,
 	Stack,
 	Text,
-	DialogActionTrigger
+	DialogActionTrigger,
+	DialogCloseTrigger,
+	CloseButton,
+	useDisclosure
+
 } from '@chakra-ui/react';
 import * as uuid from "uuid";
 
@@ -45,6 +49,7 @@ const TodosContext = createContext({
 
 const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 	const [todo, setTodo] = useState(item);
+	const [open, setOpen] = useState(false)
 	const updateToDo = async () => {
 		await fetch(`http://localhost:8000/todo/id?item=${id}`, {
 			method: "PUT",
@@ -54,7 +59,7 @@ const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 		await fetchTodos();
 	};
 	return (
-		<DialogRoot>
+		<DialogRoot lazyMount open={open} onOpenChange={(e) => setOpen(e.open)}>
 			<DialogTrigger asChild>
 				<Button h="1.5rem" size="sm">
 					Update Todo
@@ -90,12 +95,15 @@ const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 					<DialogActionTrigger asChild>
 						<Button variant="outline" size="sm">Cancel</Button>
 					</DialogActionTrigger>
-					<Button size="sm" onClick={updateToDo}>Save</Button>
+					<DialogActionTrigger asChild>
+						<Button size="sm" onClick={() => { updateToDo() }}>Save</Button>
+					</DialogActionTrigger>
 				</DialogFooter>
 			</DialogContent>
 		</DialogRoot>
 	)
 }
+
 
 function TodoHelper({ item, id, fetchTodos }: TodoHelperProps) {
 	return (
