@@ -16,10 +16,12 @@ from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
 from app.models import ToDo
 
-with open("config.json", encoding="utf-8") as f:
-    config = json.load(f)
-
-path = config["db_path"]
+try:
+    with open("config.json", encoding="utf-8") as f:
+        config = json.load(f)
+        path = config["db_path"]
+except FileNotFoundError:
+    path = ""
 
 
 SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
