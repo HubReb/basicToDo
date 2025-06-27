@@ -45,6 +45,7 @@ jobs:
         uv run pylint app/*py --exit-zero
     - name: Test with pytest
       run: |
+        cd tests
         uv run pytest tests --junitxml=junit/test-results.xml
     - name: Upload pytest test results
       uses: actions/upload-artifact@v4
