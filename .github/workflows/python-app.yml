@@ -41,7 +41,7 @@ jobs:
     - name: Lint
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        pylint *.py
+        pylint app
     - name: Test with pytest
       run: |
         uv run pytest tests --junitxml=junit/test-results.xml
