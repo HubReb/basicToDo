@@ -42,7 +42,8 @@ def get_db():
     finally:
         db.close()
 
-db = get_db()
+for val in get_db():
+    db = val
 mapper_registry = registry()
 to_do_table = Table(
     "toDo",
