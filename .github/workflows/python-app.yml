@@ -36,11 +36,12 @@ jobs:
         python-version: "3.13"
     - name: Install dependencies
       run: |
-        cd backend
+        cd backend 
         uv sync --locked --all-extras --dev
     - name: Lint
       run: |
         # stop the build if there are Python syntax errors or undefined names
+        cd backend 
         uv run pylint app/*py
     - name: Test with pytest
       run: |
