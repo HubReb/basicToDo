@@ -15,14 +15,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
 from app.models import ToDo
+import os
 
 try:
     with open("config.json", encoding="utf-8") as f:
         config = json.load(f)
         path = config["db_path"]
-except FileNotFoundError:
-    path = ""
-
+except FileNotFoundError:    
+    path = os.path.dirname(os.path.abspath(__file__))
 
 SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
 
