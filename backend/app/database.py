@@ -15,12 +15,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
 from app.models import ToDo
+import os
 
-with open("config.json", encoding="utf-8") as f:
-    config = json.load(f)
-
-path = config["db_path"]
-
+try:
+    with open("config.json", encoding="utf-8") as f:
+        config = json.load(f)
+        path = config["db_path"]
+except FileNotFoundError:    
+    path = ""
 
 SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
 
@@ -40,7 +42,8 @@ def get_db():
     finally:
         db.close()
 
-
+for val in get_db():
+    db = val
 mapper_registry = registry()
 to_do_table = Table(
     "toDo",
@@ -55,5 +58,4 @@ to_do_table = Table(
     Column("deleted", Boolean, nullable=False, default=False),
     Column("done", Boolean, nullable=False, default=False),
 )
-
 mapper_registry.map_imperatively(ToDo, to_do_table)
