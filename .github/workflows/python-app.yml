@@ -36,7 +36,7 @@ jobs:
           version: 3.40.1
       - name: setup database table
         run: |
-          sqlite3 todo.db "create table toDo (id uuid PRIMARY KEY, title TEXT, description TEXT, created_at DATETIME NOT NULL, updated_at DATETIME, deleted BIT default 0, done BIT default 0); create index title_index on toDo(title);"
+          sqlite3 backend/todo.db "create table toDo (id uuid PRIMARY KEY, title TEXT, description TEXT, created_at DATETIME NOT NULL, updated_at DATETIME, deleted BIT default 0, done BIT default 0); create index title_index on toDo(title);"
       - name: Set up Python 3.13
         uses: actions/setup-python@v3
         with:
