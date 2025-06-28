@@ -31,7 +31,7 @@ jobs:
           enable-cache: true
       - uses: actions/checkout@v4
       - name: setup sqlite
-        uses: ryohidaka/action-setup-sqlite@v1.2.0
+        uses: actions/setup-sqlite@v1.2.1
         with:
           sqlite-version: 3.40.0
           sqlite-year: 2022
