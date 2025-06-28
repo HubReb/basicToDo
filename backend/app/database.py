@@ -22,7 +22,7 @@ try:
         config = json.load(f)
         path = config["db_path"]
 except FileNotFoundError:    
-    path = os.path.dirname(os.path.abspath(__file__))
+    path = ""
 
 SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
 
