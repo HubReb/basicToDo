@@ -58,7 +58,4 @@ to_do_table = Table(
     Column("deleted", Boolean, nullable=False, default=False),
     Column("done", Boolean, nullable=False, default=False),
 )
-with engine.begin() as conn:
-    Base.metadata.create_all(conn)
-    
 mapper_registry.map_imperatively(ToDo, to_do_table)
