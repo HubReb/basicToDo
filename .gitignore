@@ -289,3 +289,5 @@ dist/
 *.js.map
 
 *.code-workspace
+
+config.json
