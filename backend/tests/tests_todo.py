@@ -4,9 +4,9 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from app.todo import ToDoRepository
-from app.database import get_db
-from app.models import ToDo
+from backend.app.todo import ToDoRepository
+from backend.app.database import get_db
+from backend.app.models import ToDo
 
 
 @pytest.fixture
