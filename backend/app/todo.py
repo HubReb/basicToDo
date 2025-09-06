@@ -4,8 +4,8 @@ from typing import Any, Generator, List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from app.database import get_db
-from app import models
+from backend.app.database import get_db
+from backend.app import models
 
 
 class ToDoRepository:

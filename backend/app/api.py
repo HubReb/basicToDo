@@ -8,14 +8,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 
-from app.logger import CustomLogger
-from app.models import ToDo
-from app.schemas import (
+from backend.app.logger import CustomLogger
+from backend.app.models import ToDo
+from backend.app.schemas import (
     ToDo as SchemaToDo,
     ToDoResponse,
     DeleteToDoResponse,
 )
-from app.webservice import Webservice
+from backend.app.webservice import Webservice
 
 
 class App(FastAPI):
