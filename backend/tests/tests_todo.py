@@ -68,7 +68,7 @@ def test_existing_data_added_fails(test_setup):
     todo = ToDo(
         test_data["id"], test_data["item"], test_data["item"], None, None, False, False
     )
-    with pytest.raises(IntegrityError) as exp:
+    with pytest.raises(IntegrityError) as _:
         repo.add_to_do(todo)
 
 
@@ -102,7 +102,7 @@ def test_get_entry_fails(test_setup_without_addition_and_deletion):
     """Test get a non-existent entry."""
     test_data = test_setup_without_addition_and_deletion[0]
     repo = test_setup_without_addition_and_deletion[1]
-    with pytest.raises(ValueError) as exp:
+    with pytest.raises(ValueError) as _:
         repo.get_to_do_entry(test_data["id"])
 
 
@@ -110,7 +110,7 @@ def test_update_entry_fails(test_setup_without_addition_and_deletion):
     """Test update a non-existing entry."""
     test_data = test_setup_without_addition_and_deletion[0]
     repo = test_setup_without_addition_and_deletion[1]
-    with pytest.raises(ValueError) as exp:
+    with pytest.raises(ValueError) as _:
         repo.update_to_do(test_data["id"], test_data)
 
 
