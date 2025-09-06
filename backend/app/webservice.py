@@ -18,8 +18,9 @@ class Webservice:
     def __init__(self):
         self.repository = ToDoRepository()
 
+    @staticmethod
     def raise_http_exception(
-        self, status_code: int, id_code: uuid.UUID
+            status_code: int, id_code: uuid.UUID
     ) -> HTTPException:
         """Raise an exception error"""
         match status_code:
@@ -31,7 +32,7 @@ class Webservice:
             case status.HTTP_500_INTERNAL_SERVER_ERROR:
                 raise HTTPException(
                     status_code=status_code,
-                    detail="An errror occurred while creating the ToDo entry.",
+                    detail="An error occurred while creating the ToDo entry.",
                 )
             case status.HTTP_404_NOT_FOUND:
                 raise HTTPException(
