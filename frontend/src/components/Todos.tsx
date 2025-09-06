@@ -15,9 +15,6 @@ import {
 	Stack,
 	Text,
 	DialogActionTrigger,
-	DialogCloseTrigger,
-	CloseButton,
-	useDisclosure
 
 } from '@chakra-ui/react';
 import * as uuid from "uuid";
@@ -59,7 +56,7 @@ const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 		await fetchTodos();
 	};
 	return (
-		<DialogRoot lazyMount open={open} onOpenChange={(e) => setOpen(e.open)}>
+		<DialogRoot lazyMount open={open} onOpenChange={(e) => setOpen(e.open)} size={{ base: "lg", md: "md" }}>
 			<DialogTrigger asChild>
 				<Button h="1.5rem" size="sm">
 					Update Todo
@@ -74,7 +71,7 @@ const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 				p={6}
 				rounded="md"
 				shadow="xl"
-				maxW="md"
+				maxW="full"
 				w="90%"
 				zIndex={1000}
 			>
@@ -85,8 +82,8 @@ const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 					<Input
 						pr="4.5rem"
 						type="text"
-						placeholder="Add a todo item"
-						aria-label="Add a todo item"
+						placeholder="New name of the todo item"
+						aria-label="New name of the todo item"
 						value={todo}
 						onChange={event => setTodo(event.target.value)}
 					/>
@@ -108,10 +105,10 @@ const UpdateToDo = ({ item, id, fetchTodos }: UpdateToDoProps) => {
 function TodoHelper({ item, id, fetchTodos }: TodoHelperProps) {
 	return (
 		<Box p={1} shadow="sm">
-			<Flex justify="space-between">
+			<Flex justify="space-between" gap="2rem" row-gap="2rem">
 				<Text mt={4} as="div">
 					{item}
-					<Flex align="end">
+					<Flex align="end" gap="1rem">
 						<UpdateToDo item={item} id={id} fetchTodos={fetchTodos} />
 						<DeleteTodo id={id} fetchTodos={fetchTodos} />
 					</Flex>
@@ -136,7 +133,7 @@ export default function Todos() {
 
 	return (
 		<TodosContext.Provider value={{ todos, fetchTodos }}>
-			<Container maxW="container.xl" pt="100px">
+			<Container maxW={{base:  "bcontainer.xl", md : "bcontainer.xl"}} pt="100px">
 				<AddToDo />
 				<Stack gap={5}>
 					{
@@ -170,11 +167,13 @@ function AddToDo() {
 			headers: { "Content-Type": "application/json", "accept": "application/json" },
 			body: JSON.stringify(newTodo)
 		}).then(fetchTodos)
+                setItem("")
 	}
 
 	return (
 		<form onSubmit={handleSubmit}>
 			<Input
+                                value={item}
 				pr="4.5rem"
 				type="text"
 				placeholder="Add a todo item"
