@@ -15,7 +15,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
 from backend.app.models import ToDo
-import os
 
 try:
     with open("config.json", encoding="utf-8") as f:
@@ -36,11 +35,11 @@ Base = declarative_base()
 
 def get_db():
     """Get session."""
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        yield db
+        yield db_session
     finally:
-        db.close()
+        db_session.close()
 
 for val in get_db():
     db = val
