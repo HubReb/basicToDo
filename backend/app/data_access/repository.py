@@ -1,5 +1,6 @@
 """A ToDo data class"""
 import datetime
+import uuid
 from typing import Any, Generator, List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -36,7 +37,7 @@ class ToDoRepository:
             raise e
         return None
 
-    def delete_to_do(self, to_do_id: str) -> None | ValueError | Exception:
+    def delete_to_do(self, to_do_id: uuid.UUID) -> None | ValueError | Exception:
         """Delete a ToDo."""
         try:
             to_do_query = self.database_connection.query(models.todo.ToDoEntryData).filter_by(
@@ -52,7 +53,7 @@ class ToDoRepository:
             raise e
 
     def update_to_do(
-        self, to_do_id: str, update_data: dict[str, Any]
+        self, to_do_id: uuid.UUID, update_data: dict[str, Any]
     ) -> models.todo.ToDoEntryData | IntegrityError | Exception:
         """Update an existing ToDo entry."""
         try:
@@ -73,7 +74,7 @@ class ToDoRepository:
             self.database_connection.rollback()
             raise e
 
-    def get_to_do_entry(self, to_do_entry_id: str) -> models.todo.ToDoEntryData | ValueError:
+    def get_to_do_entry(self, to_do_entry_id: uuid.UUID) -> models.todo.ToDoEntryData | ValueError:
         """Get an ToDo entry."""
         to_do_query = self.database_connection.query(models.todo.ToDoEntryData).filter_by(
             id=to_do_entry_id

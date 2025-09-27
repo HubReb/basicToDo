@@ -5,11 +5,12 @@ The API call definitions.
 import uuid
 from http import HTTPStatus
 from logging import INFO
-from typing import List
+from typing import List, Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
+from starlette.responses import JSONResponse
 
 from backend.app.logger import CustomLogger
 from backend.app.schemas.todo import (
@@ -19,7 +20,7 @@ from backend.app.schemas.todo import (
     ToDoSchema, TodoUpdateEntry
 
 )
-from backend.app.business_logic.webservice import Webservice
+from backend.app.business_logic.todo_service import ToDoService
 
 
 class App(FastAPI):
@@ -44,38 +45,39 @@ class App(FastAPI):
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
+            allow_origin_regex=".*",
         )
-        self.webservice = Webservice()
+        self.webservice = ToDoService()
 
-    def get_to_dos(self) -> List[ToDoSchema]:
+    async def get_to_dos(self) -> List[ToDoSchema]:
         """Get all todos."""
-        return self.webservice.get_all_to_do_entries()
+        return await self.webservice.get_all_todos()
 
 
-    def add_to_dos(self, new_todo: ToDoCreateEntry) -> ToDoResponse | HTTPException:
+    async def add_to_dos(self, new_todo: ToDoCreateEntry) -> ToDoResponse | HTTPException:
         """Add a toDo."""
-        response = self.webservice.add_entry(new_todo)
+        response = await self.webservice.create_todo(new_todo)
         return response
 
-    def update_todo(
+    async def update_todo(
             self, item_id: uuid.UUID, todo_update: TodoUpdateEntry
     ) -> HTTPException | ToDoResponse:
         """Update a ToDo."""
         try:
-            entry_data = self.webservice.get_entry(item_id)
+            entry_data = self.webservice.get_todo(item_id)
             entry_data.description = todo_update.item
-            return self.webservice.update_entry(
+            return await self.webservice.update_todo(
                 item_id, ToDoSchema.model_validate(entry_data)
             )
         except HTTPException as e:
             raise HTTPException(HTTPStatus.NOT_FOUND,  f"Todo with id {item_id} not found.") from e
 
-    def delete_todo(
+    async def delete_todo(
             self, item_id: uuid.UUID
     ) -> DeleteToDoResponse | HTTPException:
         """Delete a todo item."""
         try:
-            return self.webservice.delete_entry(item_id)
+            return await self.webservice.delete_todo(item_id)
         except HTTPException as e:
             raise HTTPException(HTTPStatus.NOT_FOUND) from e
 
@@ -85,39 +87,43 @@ app = App(["http://localhost:5173", "localhost:5173"], appLogger)
 
 
 @app.get("/", tags=["root"])
-async def read_root() -> dict:
+async def read_root() -> JSONResponse:
     """Return a dummy message if the root is read."""
-    return {"message": "Welcome to your todo list."}
+    return JSONResponse(status_code=HTTPStatus.OK, content={"message": "Welcome to your todo list."})
 
 
 @app.get("/todo", tags=["todos"], response_model=List[ToDoSchema])
 async def get_todos() -> List[ToDoSchema]:
     """Return the todos."""
-    return app.get_to_dos()
+    return await app.get_to_dos()
 
 
 # Get a specific todo
 @app.get("/todo/{todo_id}", tags=["todos"], response_model=GetToDoResponse)
-def get_todo(todo_id: str):
-    for todo in app.webservice.get_entry(uuid.UUID(todo_id)):
-        if todo.id == todo_id:
-            return todo
-    raise HTTPException(status_code=404, detail="Todo not found")
+async def get_todo(todo_id: uuid.UUID) -> Optional[ToDoSchema]:
+    try:
+        todo = await app.webservice.get_todo(todo_id)
+        return todo
+    except HTTPException as e:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Todo not found") from e
 
 
 @app.post("/todo", tags=["todos"])
 async def create_todo(todo_entry: ToDoCreateEntry, response_model=ToDoResponse):
     """Add a todo item to the list."""
-    return app.add_to_dos(todo_entry)
+    todo_entry = await app.add_to_dos(todo_entry)
+    return todo_entry
 
 
 @app.put("/todo/{id}", tags=["todos"], response_model=ToDoResponse)
 async def update_todo(item: uuid.UUID, todo_update: TodoUpdateEntry):
     """Update a todo item description."""
-    return app.update_todo(item_id=item, todo_update=todo_update)
+    todo = await app.update_todo(item_id=item, todo_update=todo_update)
+    return todo
 
 
 @app.delete("/todo/{id}", tags=["todos"])
 async def delete_todos(item: uuid.UUID):
     """Delete a todo."""
-    return app.delete_todo(item)
+    todo = await app.delete_todo(item_id=item)
+    return todo
