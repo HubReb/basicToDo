@@ -6,8 +6,6 @@ from uuid import UUID
 from typing import Any, List
 from pydantic import BaseModel, Field
 
-from backend.app.models import ToDoEntryData
-
 
 def exists(value: Any) -> Any:
     """Verify value is not null."""

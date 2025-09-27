@@ -111,4 +111,5 @@ class Webservice:
 
     def get_all_to_do_entries(self) -> List[ToDoSchema]:
         """Get all to do entries."""
-        return self.repository.get_all_to_do_entries()
+        data_entries =  self.repository.get_all_to_do_entries()
+        return [ToDoSchema.model_validate(data_entry) for data_entry in data_entries]

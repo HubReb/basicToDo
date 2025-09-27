@@ -1,5 +1,4 @@
 """Unit tests for repository"""
-import datetime
 from uuid import uuid4
 import pytest
 from sqlalchemy.exc import IntegrityError

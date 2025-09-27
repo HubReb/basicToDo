@@ -3,7 +3,6 @@ The API call definitions.
 """
 
 import uuid
-from datetime import datetime
 from logging import INFO
 from typing import List
 
@@ -12,11 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 
 from backend.app.logger import CustomLogger
-from backend.app.models import ToDoEntryData
 from backend.app.schemas import (
     ToDoResponse,
     DeleteToDoResponse,
-    TodoUpdateEntry,
     ToDoCreateEntry,
     ToDoSchema
 
