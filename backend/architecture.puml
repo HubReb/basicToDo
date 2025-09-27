@@ -1,0 +1,56 @@
+plantuml
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+package "Backend App" {
+    [FastAPI Application] as App
+    [Webservice Layer] as Webservice
+    [Repository Layer] as Repository
+    [Database Layer] as Database
+    [Models] as Models
+    [Schemas] as Schemas
+    [Logger] as Logger
+}
+
+App --> Webservice : calls
+Webservice --> Repository : uses
+Repository --> Database : interacts
+Repository --> Models : uses
+Webservice --> Schemas : uses
+Webservice --> Logger : logs
+
+note right of App
+  Main entry point
+  Handles API routes
+end note
+
+note right of Webservice
+  Business logic layer
+  Orchestrates data flow
+end note
+
+note right of Repository
+  Data access layer
+  Handles database operations
+end note
+
+note right of Database
+  SQLite database
+  Stores todo items
+end note
+
+note right of Models
+  Data models
+  Represent database entities
+end note
+
+note right of Schemas
+  Pydantic schemas
+  Data validation and serialization
+end note
+
+note right of Logger
+  Custom logging system
+  Error tracking and debugging
+end note
+@enduml

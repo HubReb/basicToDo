@@ -14,7 +14,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
-from backend.app.models import ToDoEntryData
+from backend.app.models.todo import ToDoEntryData
 
 try:
     with open("/home/rebekka/projects/basicToDo/backend/app/config.json", encoding="utf-8") as f:

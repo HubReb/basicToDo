@@ -4,9 +4,9 @@ from typing import Any, Generator, List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from backend.app.database import get_db
+from backend.app.data_access.database import get_db
 from backend.app import models
-from backend.app.models import ToDoEntryData
+from backend.app.models.todo import ToDoEntryData
 
 
 class ToDoRepository:
@@ -18,7 +18,7 @@ class ToDoRepository:
             self.database_connection: Session = val
 
     def add_to_do(
-        self, new_to_do_entry: models.ToDoEntryData
+        self, new_to_do_entry: models.todo.ToDoEntryData
     ) -> None | IntegrityError | Exception:
         """Add a new ToDo entry."""
         try:
@@ -39,7 +39,7 @@ class ToDoRepository:
     def delete_to_do(self, to_do_id: str) -> None | ValueError | Exception:
         """Delete a ToDo."""
         try:
-            to_do_query = self.database_connection.query(models.ToDoEntryData).filter_by(
+            to_do_query = self.database_connection.query(models.todo.ToDoEntryData).filter_by(
                 id=to_do_id
             )
             if not to_do_query.first():
@@ -53,10 +53,10 @@ class ToDoRepository:
 
     def update_to_do(
         self, to_do_id: str, update_data: dict[str, Any]
-    ) -> models.ToDoEntryData | IntegrityError | Exception:
+    ) -> models.todo.ToDoEntryData | IntegrityError | Exception:
         """Update an existing ToDo entry."""
         try:
-            to_do_query = self.database_connection.query(models.ToDoEntryData).filter_by(
+            to_do_query = self.database_connection.query(models.todo.ToDoEntryData).filter_by(
                 id=to_do_id
             )
             to_do_entry = to_do_query.first()
@@ -73,9 +73,9 @@ class ToDoRepository:
             self.database_connection.rollback()
             raise e
 
-    def get_to_do_entry(self, to_do_entry_id: str) -> models.ToDoEntryData | ValueError:
+    def get_to_do_entry(self, to_do_entry_id: str) -> models.todo.ToDoEntryData | ValueError:
         """Get an ToDo entry."""
-        to_do_query = self.database_connection.query(models.ToDoEntryData).filter_by(
+        to_do_query = self.database_connection.query(models.todo.ToDoEntryData).filter_by(
             id=to_do_entry_id
         )
         to_do_entry = to_do_query.first()
@@ -85,10 +85,10 @@ class ToDoRepository:
 
     def get_all_to_do_entries(
         self, limit: int = 10, page: int = 1
-    ) -> List[models.ToDoEntryData]:
+    ) -> List[models.todo.ToDoEntryData]:
         """Search all ToDo entries for the search string."""
         skip = (page - 1) * limit
         to_do_entries = (
-            self.database_connection.query(models.ToDoEntryData).limit(limit).offset(skip).all()
+            self.database_connection.query(models.todo.ToDoEntryData).limit(limit).offset(skip).all()
         )
         return to_do_entries
