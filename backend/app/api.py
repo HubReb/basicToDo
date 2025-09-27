@@ -3,17 +3,23 @@ The API call definitions.
 """
 
 import uuid
+from datetime import datetime
 from logging import INFO
+from typing import List
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 
 from backend.app.logger import CustomLogger
-from backend.app.models import ToDo
+from backend.app.models import ToDoEntryData
 from backend.app.schemas import (
-    ToDo as SchemaToDo,
     ToDoResponse,
     DeleteToDoResponse,
+    TodoUpdateEntry,
+    ToDoCreateEntry,
+    ToDoSchema
+
 )
 from backend.app.webservice import Webservice
 
@@ -22,17 +28,13 @@ class App(FastAPI):
     """FastAPI app"""
 
     def __init__(
-        self,
-        origins: list[str],
-        logger: CustomLogger,
-        debug: bool = False,
-        title: str = "App",
-        version: str = "0.1",
-        openapi_url: str = "/api/v0.1/openapi.json",
+            self,
+            origins: list[str],
+            logger: CustomLogger,
     ) -> None:
         """Initialize the handler."""
         super().__init__()
-        if origins == []:
+        if not origins:
             raise ValueError(f"origins is {origins}.")
         if not logger:
             raise ValueError("Parameter logger is None.")
@@ -46,43 +48,41 @@ class App(FastAPI):
             allow_headers=["*"],
         )
         self.webservice = Webservice()
-        self.todos = self.webservice.get_all_to_do_entries()
 
     def get_to_dos(self) -> dict:
         """Get all todos."""
         data = []
-        for to_do in self.todos:
+        stored_todos = self.webservice.get_all_to_do_entries()
+        for to_do in stored_todos:
             data.append({"id": to_do.id, "item": to_do.description})
         return {"data": data}
 
-    def add_to_dos(self, new_todo: ToDo) -> ToDoResponse | HTTPException:
+    def add_to_dos(self, new_todo: ToDoCreateEntry) -> ToDoResponse | HTTPException:
         """Add a toDo."""
         response = self.webservice.add_entry(new_todo)
-        self.todos.append(new_todo)
         return response
 
     def update_todo(
-        self, item_id: uuid.UUID, body: dict
+            self, item_id: uuid.UUID, todo_update: ToDoSchema
     ) -> dict | HTTPException | ToDoResponse:
         """Update a ToDo."""
-        for to_do_object in self.todos:
+        for to_do_object in self.webservice.get_all_to_do_entries():
             if not to_do_object.id == item_id:
                 continue
-            to_do_object.description = body["item"]
+            to_do_object.description = todo_update.description
             return self.webservice.update_entry(
-                item_id, SchemaToDo.model_validate(to_do_object)
+                item_id, ToDoSchema.model_validate(to_do_object)
             )
         return {"data": f"Todo with id {item_id} not found."}
 
     def delete_todos(
-        self, item_id: uuid.UUID
+            self, item_id: uuid.UUID
     ) -> DeleteToDoResponse | dict | HTTPException:
         """Delete a todo item."""
-        todo_copy = self.todos[:]
+        todo_copy = self.webservice.get_all_to_do_entries()
         for to_do_object in todo_copy:
             if to_do_object.id != item_id:
                 continue
-            self.todos.remove(to_do_object)
             return self.webservice.delete_entry(item_id)
 
         return {"data": f"Todo with id {id} not found."}
@@ -99,29 +99,32 @@ async def read_root() -> dict:
     return {"message": "Welcome to your todo list."}
 
 
-@app.get("/todo", tags=["todos"])
+@app.get("/todo", tags=["todos"], response_model=List[ToDoSchema])
 async def get_todos() -> dict:
     """Return the todos."""
     return app.get_to_dos()
 
 
+# Get a specific todo
+@app.get("/todo/{todo_id}", response_model=ToDoSchema)
+def get_todo(todo_id: str):
+    for todo in app.webservice.get_entry(uuid.UUID(todo_id)):
+        if todo.id == todo_id:
+            return todo
+    raise HTTPException(status_code=404, detail="Todo not found")
+
+
 @app.post("/todo", tags=["todos"])
-async def add_todo(todo_entry: dict[str, str]):
+async def create_todo(todo_entry: ToDoCreateEntry):
     """Add a todo item to the list."""
-    new_todo = ToDo(
-        id=uuid.UUID(todo_entry["id"]),
-        title=todo_entry["item"],
-        description=todo_entry["item"],
-        created_at=None,
-        updated_at=None,
-    )
-    return app.add_to_dos(new_todo)
+
+    return app.add_to_dos(todo_entry)
 
 
 @app.put("/todo/{id}", tags=["todos"])
-async def update_todo(item: uuid.UUID, body: dict):
+async def update_todo(item: uuid.UUID, todo_update: ToDoSchema):
     """Update a todo item description."""
-    return app.update_todo(item_id=item, body=body)
+    return app.update_todo(item_id=item, todo_update=todo_update)
 
 
 @app.delete("/todo/{id}", tags=["todos"])

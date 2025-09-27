@@ -6,6 +6,8 @@ from uuid import UUID
 from typing import Any, List
 from pydantic import BaseModel, Field
 
+from backend.app.models import ToDoEntryData
+
 
 def exists(value: Any) -> Any:
     """Verify value is not null."""
@@ -14,15 +16,10 @@ def exists(value: Any) -> Any:
     raise ValueError("value must not be None.")
 
 
-class Status(Enum):
-    """Response status"""
-
-    SUCCESS = "Success"
-    FAILED = "Failed"
 
 
-class ToDo(BaseModel):
-    """The todo data class."""
+class ToDoSchema(BaseModel):
+    """The todo schema class."""
 
     id: UUID
     title: str = Field(
@@ -45,19 +42,25 @@ class ToDo(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
 
+class Status(Enum):
+    """Response status"""
+
+    SUCCESS = "Success"
+    FAILED = "Failed"
+
 
 class ToDoResponse(BaseModel):
     """Response for ToDo"""
 
     status: Status
-    todo_entry: ToDo
+    todo_entry: ToDoSchema
 
 
 class GetToDoResponse(BaseModel):
     """Response to get ToDo request."""
 
     status: Status
-    todo_entry: ToDo
+    todo_entry: ToDoSchema
 
 
 class ListToDoResponse(BaseModel):
@@ -65,7 +68,7 @@ class ListToDoResponse(BaseModel):
 
     status: Status
     results: int
-    todo_entries: List[ToDo]
+    todo_entries: List[ToDoSchema]
 
 
 class DeleteToDoResponse(BaseModel):
@@ -73,3 +76,12 @@ class DeleteToDoResponse(BaseModel):
 
     status: Status
     message: str
+
+    # Data models
+class ToDoCreateEntry(BaseModel):
+    id: UUID
+    item: str
+    created_at: datetime | None
+
+class TodoUpdateEntry(BaseModel):
+    item: str

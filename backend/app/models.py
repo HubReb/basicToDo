@@ -2,10 +2,9 @@ from dataclasses import dataclass
 from uuid import UUID
 from datetime import datetime
 
-
 @dataclass
-class ToDo:
-    """The todo data class."""
+class ToDoEntryData:
+    """The todo entry data class."""
 
     id: UUID
     title: str
