@@ -1,19 +1,19 @@
 """The webservice base class"""
-
+import datetime
 import uuid
 
 from typing import Any, List
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
-
-from backend.app.todo import ToDoRepository
-from backend.app.models import ToDo
+from backend.app.models.todo import ToDoEntryData
+from backend.app.schemas.todo import ToDoResponse, ToDoSchema
+from backend.app.data_access.repository import ToDoRepository
 from backend.app import schemas
 
 
-class Webservice:
-    """Webservice"""
+class ToDoService:
+    """To Do service"""
 
     def __init__(self):
         self.repository = ToDoRepository()
@@ -42,16 +42,16 @@ class Webservice:
             case _:
                 raise ValueError("{status_code} is unknown.")
 
-    def update_entry(
-        self, to_do_id: uuid.UUID, payload: schemas.ToDo
-    ) -> schemas.ToDoResponse | HTTPException:
+    async def update_todo(
+        self, to_do_id: uuid.UUID, payload: schemas.todo.ToDoSchema
+    ) -> schemas.todo.ToDoResponse | HTTPException:
         """Update an existing entry."""
         update_data: dict[str, Any] = payload.model_dump()
         try:
-            updated_entry = self.repository.update_to_do(str(to_do_id), update_data)
-            to_do_schema = schemas.ToDo.model_validate(updated_entry)
-            return schemas.ToDoResponse(
-                status=schemas.Status.SUCCESS, todo_entry=to_do_schema
+            updated_entry = self.repository.update_to_do(to_do_id, update_data)
+            to_do_schema = schemas.todo.ToDoSchema.model_validate(updated_entry)
+            return schemas.todo.ToDoResponse(
+                status=schemas.todo.Status.SUCCESS, todo_entry=to_do_schema
             )
         except ValueError:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
@@ -62,41 +62,44 @@ class Webservice:
                 status.HTTP_500_INTERNAL_SERVER_ERROR, to_do_id
             )
 
-    def get_entry(self, to_do_id: uuid.UUID) -> schemas.GetToDoResponse | HTTPException:
+    async def get_todo(self, to_do_id: uuid.UUID) -> schemas.todo.GetToDoResponse | HTTPException:
         """Get an entry."""
         try:
-            entry = self.repository.get_to_do_entry(str(to_do_id))
+            entry = self.repository.get_to_do_entry(to_do_id)
         except ValueError:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
         try:
-            return schemas.GetToDoResponse(
-                status=schemas.Status.SUCCESS,
-                todo_entry=schemas.ToDo.model_validate(entry),
+            return schemas.todo.GetToDoResponse(
+                status=schemas.todo.Status.SUCCESS,
+                todo_entry=schemas.todo.ToDoSchema.model_validate(entry),
             )
         except Exception:
             return self.raise_http_exception(
                 status.HTTP_500_INTERNAL_SERVER_ERROR, to_do_id
             )
 
-    def add_entry(self, payload: ToDo) -> schemas.ToDoResponse | HTTPException:
+    async def create_todo(self, payload: schemas.todo.ToDoCreateEntry) -> ToDoResponse | None:
         """Add a new entry."""
         try:
-            self.repository.add_to_do(payload)
+            to_do_schema = payload.model_dump()
+            to_do_orm_data_schema = ToDoEntryData(to_do_schema.get("id"), to_do_schema.get("item"), to_do_schema.get("item"), created_at=datetime.datetime.now(), updated_at=None, deleted=False, done=False)
+            self.repository.add_to_do(to_do_orm_data_schema)
+            to_do_schema = schemas.todo.ToDoSchema.model_validate(to_do_orm_data_schema)
+            return schemas.todo.ToDoResponse(
+                status=schemas.todo.Status.SUCCESS, todo_entry=to_do_schema
+            )
         except IntegrityError:
             self.raise_http_exception(status.HTTP_409_CONFLICT, payload.id)
-        to_do_schema = schemas.ToDo.model_validate(payload)
-        return schemas.ToDoResponse(
-            status=schemas.Status.SUCCESS, todo_entry=to_do_schema
-        )
 
-    def delete_entry(
+
+    async def delete_todo(
         self, to_do_id: uuid.UUID
-    ) -> schemas.DeleteToDoResponse | HTTPException:
+    ) -> schemas.todo.DeleteToDoResponse | HTTPException:
         """Delete a todo entry."""
         try:
-            self.repository.delete_to_do(str(to_do_id))
-            return schemas.DeleteToDoResponse(
-                status=schemas.Status.SUCCESS, message="ToDo deleted successfully."
+            self.repository.delete_to_do(to_do_id)
+            return schemas.todo.DeleteToDoResponse(
+                status=schemas.todo.Status.SUCCESS, message="ToDo deleted successfully."
             )
         except ValueError:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
@@ -106,6 +109,7 @@ class Webservice:
                 status.HTTP_500_INTERNAL_SERVER_ERROR, to_do_id
             )
 
-    def get_all_to_do_entries(self) -> List[ToDo]:
+    async def get_all_todos(self) -> List[ToDoSchema]:
         """Get all to do entries."""
-        return self.repository.get_all_to_do_entries()
+        data_entries =  self.repository.get_all_to_do_entries()
+        return [ToDoSchema.model_validate(data_entry) for data_entry in data_entries]

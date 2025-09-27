@@ -14,10 +14,10 @@ from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
-from backend.app.models import ToDo
+from backend.app.models.todo import ToDoEntryData
 
 try:
-    with open("config.json", encoding="utf-8") as f:
+    with open("/home/rebekka/projects/basicToDo/backend/app/config.json", encoding="utf-8") as f:
         config = json.load(f)
         path = config["db_path"]
 except FileNotFoundError:    
@@ -57,4 +57,4 @@ to_do_table = Table(
     Column("deleted", Boolean, nullable=False, default=False),
     Column("done", Boolean, nullable=False, default=False),
 )
-mapper_registry.map_imperatively(ToDo, to_do_table)
+mapper_registry.map_imperatively(ToDoEntryData, to_do_table)
