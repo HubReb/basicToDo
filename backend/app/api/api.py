@@ -6,20 +6,15 @@ import uuid
 from http import HTTPStatus
 from typing import List, Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import HTTPException
 from starlette.responses import JSONResponse
 
-from backend.app.logger import CustomLogger
-from backend.app.schemas.todo import (
-    GetToDoResponse, ToDoResponse,
-    DeleteToDoResponse,
-    ToDoCreateEntry,
-    ToDoSchema, TodoUpdateEntry
-
-)
 from backend.app.business_logic.todo_service import ToDoService
+from backend.app.factory import create_todo_service
+from backend.app.logger import CustomLogger
+from backend.app.schemas.todo import (DeleteToDoResponse, GetToDoResponse, ToDoCreateEntry, ToDoResponse, ToDoSchema,
+                                      TodoUpdateEntry)
 
 
 class App(FastAPI):
@@ -29,6 +24,7 @@ class App(FastAPI):
             self,
             origins: list[str],
             logger: CustomLogger,
+            service: ToDoService,
     ) -> None:
         """Initialize the handler."""
         super().__init__()
@@ -46,7 +42,7 @@ class App(FastAPI):
             allow_headers=["*"],
             allow_origin_regex=".*",
         )
-        self.webservice = ToDoService()
+        self.webservice = service
 
     async def get_to_dos(self) -> List[ToDoSchema]:
         """Get all todos."""
@@ -83,7 +79,8 @@ class App(FastAPI):
 
 appLogger = CustomLogger("ApiCallHandler")
 # TODO: Get this from config
-app = App(["http://localhost:5173", "localhost:5173"], appLogger)
+todo_service = create_todo_service()
+app = App(["http://localhost:5173", "localhost:5173"], appLogger, todo_service)
 
 
 @app.get("/", tags=["root"])

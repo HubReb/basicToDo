@@ -1,22 +1,22 @@
 """The webservice base class"""
 import datetime
 import uuid
-
 from typing import Any, List
+
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
+from backend.app import schemas
+from backend.app.data_access.repository import ToDoRepository
 from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.todo import ToDoResponse, ToDoSchema
-from backend.app.data_access.repository import ToDoRepository
-from backend.app import schemas
 
 
 class ToDoService:
     """To Do service"""
 
-    def __init__(self):
-        self.repository = ToDoRepository()
+    def __init__(self, repository: ToDoRepository):
+        self.repository = repository
 
     @staticmethod
     def raise_http_exception(

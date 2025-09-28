@@ -1,22 +1,33 @@
 """The access and tables for the database"""
 
-import uuid
+import datetime
 import json
+import uuid
 from contextlib import contextmanager
-from sqlalchemy import (
-    create_engine,
-    Table,
-    Column,
-    String,
-    TIMESTAMP,
-    Boolean,
-)
+
+from sqlalchemy import Boolean, Column, String, TIMESTAMP, Table, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import registry, sessionmaker
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.sql import func
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, registry
 from sqlalchemy_utils import UUIDType
+
 from backend.app.models.todo import ToDoEntryData
+
+Base = declarative_base()
+
+
+class ToDoORM(Base):
+    __tablename__ = "toDo"
+
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
+    title = Column(String(255), nullable=False, index=True)
+    description = Column(String(255), nullable=True, index=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.datetime.now())
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    deleted = Column(Boolean, nullable=False, default=False)
+    done = Column(Boolean, nullable=False, default=False)
+
 
 try:
     with open("/home/rebekka/projects/basicToDo/backend/app/config.json", encoding="utf-8") as f:

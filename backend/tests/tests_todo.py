@@ -1,13 +1,15 @@
 """Unit tests for repository"""
 from uuid import uuid4
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from backend.app.data_access.repository import ToDoRepository
 from backend.app.data_access.database import get_db_session
+from backend.app.data_access.repository import ToDoRepository
+from backend.app.factory import create_todo_service
 from backend.app.models.todo import ToDoEntryData
-from backend.app.business_logic.todo_service import ToDoService
 from backend.app.schemas.todo import ToDoCreateEntry
+
 
 # Better test structure
 @pytest.fixture
@@ -38,7 +40,7 @@ def sample_todo_data_entry_for_service(sample_todo_data):
 async def test_create_todo_success(sample_todo_data_entry_for_service):
     # Arrange
     todo_data = sample_todo_data_entry_for_service
-    service = ToDoService()
+    service = create_todo_service()
 
     # Act
     todo_schema = ToDoCreateEntry.model_validate(todo_data)
