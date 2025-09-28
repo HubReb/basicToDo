@@ -4,10 +4,12 @@ import uuid
 from typing import Any, List
 
 from fastapi import HTTPException, status
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from backend.app import schemas
 from backend.app.data_access.repository import ToDoRepository
+from backend.app.logger import CustomLogger
 from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.todo import ToDoResponse, ToDoSchema
 
@@ -15,8 +17,9 @@ from backend.app.schemas.todo import ToDoResponse, ToDoSchema
 class ToDoService:
     """To Do service"""
 
-    def __init__(self, repository: ToDoRepository):
+    def __init__(self, repository: ToDoRepository, logger: CustomLogger):
         self.repository = repository
+        self.logger = logger
 
     @staticmethod
     def raise_http_exception(
@@ -37,7 +40,7 @@ class ToDoService:
             case status.HTTP_404_NOT_FOUND:
                 raise HTTPException(
                     status_code=status_code,
-                    detail=f"No ToDo entry with id {id_code} found.",
+                    detail=f"No ToDo entry.",
                 )
             case _:
                 raise ValueError("{status_code} is unknown.")
@@ -82,6 +85,7 @@ class ToDoService:
         """Add a new entry."""
         try:
             to_do_schema = payload.model_dump()
+            # populate two fields with 'item' - a future feature will implement the title addition
             to_do_orm_data_schema = ToDoEntryData(to_do_schema.get("id"), to_do_schema.get("item"), to_do_schema.get("item"), created_at=datetime.datetime.now(), updated_at=None, deleted=False, done=False)
             self.repository.add_to_do(to_do_orm_data_schema)
             to_do_schema = schemas.todo.ToDoSchema.model_validate(to_do_orm_data_schema)
@@ -111,5 +115,12 @@ class ToDoService:
 
     async def get_all_todos(self) -> List[ToDoSchema]:
         """Get all to do entries."""
-        data_entries =  self.repository.get_all_to_do_entries()
-        return [ToDoSchema.model_validate(data_entry) for data_entry in data_entries]
+        data_entries = self.repository.get_all_to_do_entries()
+        entries_schemata = []
+        for entry in data_entries:
+            try:
+                entries_schemata.append(ToDoSchema.model_validate(entry))
+            except ValidationError as e:
+                # do not stop with 500 because of invalid database entries
+                self.logger.error("Validation error: %s entry %s", e, entry.id)
+        return entries_schemata

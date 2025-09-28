@@ -3,6 +3,7 @@ import datetime
 import uuid
 from contextlib import _GeneratorContextManager
 from typing import Any, List
+
 from sqlalchemy.exc import IntegrityError
 
 from backend.app.data_access.database import get_db_session
@@ -40,7 +41,7 @@ class ToDoRepository:
             try:
                 to_do_query = session.query(ToDoEntryData).filter_by(id=entry_id)
                 if not to_do_query.first():
-                    raise ValueError(f"No ToDo entry with id {entry_id} found.")
+                    raise ValueError(f"No ToDo entry found.")
                 to_do_query.delete(synchronize_session=False)
                 session.commit()
             except Exception as e:
@@ -59,7 +60,7 @@ class ToDoRepository:
                 )
                 to_do_entry = to_do_query.first()
                 if not to_do_entry:
-                    raise ValueError(f"No entry with id {entry_id} found.")
+                    raise ValueError(f"No entry found.")
                 to_do_entry.update(data)
                 session.commit()
 
@@ -79,7 +80,7 @@ class ToDoRepository:
             )
             to_do_entry = to_do_query.first()
             if not to_do_entry:
-                raise ValueError(f"No entry with id {entry_id}.")
+                raise ValueError(f"No entry found.")
         return to_do_entry
 
     def get_all_to_do_entries(

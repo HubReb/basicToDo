@@ -2,13 +2,15 @@
 The API call definitions.
 """
 
+import time
 import uuid
 from http import HTTPStatus
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse, Response
 
 from backend.app.business_logic.todo_service import ToDoService
 from backend.app.factory import create_todo_service
@@ -16,6 +18,28 @@ from backend.app.logger import CustomLogger
 from backend.app.schemas.todo import (DeleteToDoResponse, GetToDoResponse, ToDoCreateEntry, ToDoResponse, ToDoSchema,
                                       TodoUpdateEntry)
 
+request_counter: int = 0
+last_request_time: float = time.time()
+rate_limit_window: int = 60
+max_requests_per_window: int = 100
+
+
+class RateLimiterMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        global last_request_time, request_counter
+
+        current_time = time.time()
+        if current_time - last_request_time > rate_limit_window:
+            request_counter = 0
+            last_request_time = current_time
+
+        request_counter += 1
+
+        if request_counter > max_requests_per_window:
+            return Response("Rate limit exceeded", status_code=429)
+
+        response = await call_next(request)
+        return response
 
 class App(FastAPI):
     """FastAPI app"""
@@ -39,7 +63,11 @@ class App(FastAPI):
             allow_origins=origins,
             allow_credentials=True,
             allow_methods=["*"],
-            allow_headers=["*"],
+            allow_headers=[
+                "Content-Security-Policy",
+                "X-Content-Type-Options",
+                "X-Frame-Options"
+            ],
             allow_origin_regex=".*",
         )
         self.webservice = service
@@ -65,7 +93,7 @@ class App(FastAPI):
                 item_id, ToDoSchema.model_validate(entry_data.todo_entry)
             )
         except HTTPException as e:
-            raise HTTPException(HTTPStatus.NOT_FOUND,  f"Todo with id {item_id} not found.") from e
+            raise HTTPException(HTTPStatus.NOT_FOUND, f"Todo not found.") from e
 
     async def delete_todo(
             self, item_id: uuid.UUID
@@ -81,7 +109,7 @@ appLogger = CustomLogger("ApiCallHandler")
 # TODO: Get this from config
 todo_service = create_todo_service()
 app = App(["http://localhost:5173", "localhost:5173"], appLogger, todo_service)
-
+app.add_middleware(RateLimiterMiddleware)
 
 @app.get("/", tags=["root"])
 async def read_root() -> JSONResponse:

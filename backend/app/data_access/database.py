@@ -1,7 +1,7 @@
 """The access and tables for the database"""
 
 import datetime
-import json
+import os
 import uuid
 from contextlib import contextmanager
 
@@ -30,13 +30,10 @@ class ToDoORM(Base):
 
 
 try:
-    with open("/home/rebekka/projects/basicToDo/backend/app/config.json", encoding="utf-8") as f:
-        config = json.load(f)
-        path = config["db_path"]
-except FileNotFoundError:    
-    path = ""
-
-SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
+    DATABASE_URL = os.environ["DATABASE_URL"]
+except KeyError as err:
+    DATABASE_URL = "/home/rebekka/projects/basicToDo/backend/todo.db"
+SQLITE_DATABASE_URL = f"sqlite:///{DATABASE_URL}"
 
 engine = create_engine(
     SQLITE_DATABASE_URL, echo=True, connect_args={"check_same_thread": False}, poolclass=QueuePool, pool_size=10, max_overflow=20, pool_pre_ping=True

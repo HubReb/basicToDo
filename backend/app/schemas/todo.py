@@ -1,9 +1,10 @@
 """ToDo and response schemas"""
 
 from datetime import datetime
-from uuid import UUID
 from typing import Any, List, Optional
-from pydantic import BaseModel, Field
+from uuid import UUID
+
+from pydantic import BaseModel, Field, field_validator
 
 
 def exists(value: Any) -> Any:
@@ -39,6 +40,33 @@ class ToDoSchema(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
 
+    @field_validator("title")
+    def verify_title_is_not_empty(cls, value):
+        """Verify title is not empty."""
+        if not value or not value.strip():
+            raise ValueError("title must not be empty.")
+        return value.strip()
+
+    @field_validator("description")
+    def verify_description_is_not_empty(cls, value):
+        """Verify description is not empty."""
+        if not value or not value.strip():
+            raise ValueError("description must not be empty.")
+        return value.strip()
+
+    @field_validator("id")
+    def validate_id_is_not_null(cls, value):
+        """Verify id is not null."""
+        if not value:
+            raise ValueError("id must not be null.")
+        return value
+
+    @field_validator("created_at")
+    def validate_created_at_is_not_null(cls, value):
+        """Verify created_at is not null."""
+        if not value:
+            raise ValueError("created_at must not be null.")
+        return value
 
 
 class ApiResponse(BaseModel):
@@ -48,10 +76,18 @@ class ApiResponse(BaseModel):
     error: Optional[str] = None
 
 
+
 class ToDoResponse(ApiResponse):
     """Response for ToDo"""
 
     todo_entry: ToDoSchema
+
+    @field_validator("todo_entry")
+    def validate_todo_entry_is_not_null(cls, value):
+        """Verify todo_entry is not null."""
+        if not value:
+            raise ValueError("todo_entry must not be null.")
+        return value
 
 
 class GetToDoResponse(ApiResponse):
@@ -59,12 +95,26 @@ class GetToDoResponse(ApiResponse):
 
     todo_entry: ToDoSchema
 
+    @field_validator("todo_entry")
+    def validate_todo_entry_is_not_null(cls, value):
+        """Verify todo_entry is not null."""
+        if not value:
+            raise ValueError("todo_entry must not be null.")
+        return value
+
 
 class ListToDoResponse(ApiResponse):
     """List of ToDos"""
 
     results: Optional[int] = 0
     todo_entries: List[ToDoSchema]
+
+    @field_validator("todo_entries")
+    def validate_todo_entry_is_not_null(cls, value):
+        """Verify todo_entry is not null."""
+        if not value:
+            raise ValueError("todo_entry must not be null.")
+        return value
 
 
 class DeleteToDoResponse(ApiResponse):
@@ -78,5 +128,26 @@ class ToDoCreateEntry(BaseModel):
     item: str
     created_at: datetime | None
 
+    @field_validator("id")
+    def validate_id_is_not_null(cls, value):
+        """Verify id is not null."""
+        if not value:
+            raise ValueError("id must not be null.")
+        return value
+
+    @field_validator("item")
+    def validate_item_is_not_null(cls, value):
+        """Verify item is not null."""
+        if not value or not value.strip():
+            raise ValueError("item must not be null.")
+        return value.strip()
+
 class TodoUpdateEntry(BaseModel):
     item: str
+
+    @field_validator("item")
+    def validate_item_is_not_null(cls, value):
+        """Verify item is not null."""
+        if not value or not value.strip():
+            raise ValueError("item must not be null.")
+        return value.strip()
