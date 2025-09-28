@@ -10,6 +10,7 @@ from sqlalchemy import (
     TIMESTAMP,
     Boolean,
 )
+from sqlalchemy.pool import QueuePool
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, registry
@@ -26,7 +27,7 @@ except FileNotFoundError:
 SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
 
 engine = create_engine(
-    SQLITE_DATABASE_URL, echo=True, connect_args={"check_same_thread": False}
+    SQLITE_DATABASE_URL, echo=True, connect_args={"check_same_thread": False}, poolclass=QueuePool, pool_size=10, max_overflow=20, pool_pre_ping=True
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
