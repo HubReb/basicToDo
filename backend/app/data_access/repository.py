@@ -41,6 +41,7 @@ class ToDoRepository:
         with self.database() as session:
             try:
                 entry.deleted = True
+                session.add(entry)
                 session.commit()
                 return True
             except Exception as e:
@@ -71,6 +72,7 @@ class ToDoRepository:
             for key, value in update_data.items():
                 setattr(entry, key, value)
             try:
+                session.add(entry)
                 session.commit()
             except IntegrityError as e:
                 session.rollback()
@@ -98,6 +100,6 @@ class ToDoRepository:
         skip = (page - 1) * limit
         with self.database() as session:
             to_do_entries = (
-                session.query(ToDoEntryData).filter(ToDoEntryData.deleted == False).limit(limit).offset(skip).all()
+                session.query(ToDoEntryData).filter_by(deleted=False).limit(limit).offset(skip).all()
             )
         return to_do_entries

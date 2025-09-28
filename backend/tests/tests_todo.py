@@ -77,6 +77,8 @@ def test_add(test_setup):
     test_data = test_setup[0]
     repo = test_setup[1]
     assert repo.create_to_do(test_data) is None
+    new_result = repo.get_to_do_entry(test_data.id)
+    assert new_result.title == "Test Todo"
     repo.delete_to_do(test_data.id)
 
 
@@ -136,4 +138,6 @@ def test_update_entry_success(test_setup_with_addition):
                                        done=test_data.done)
     result = repo.update_to_do(test_data.id, test_update_data)
     assert result.title == "new title"
+    new_result = repo.get_to_do_entry(test_data.id)
+    assert new_result.title == "new title"
     repo.delete_to_do(test_data.id)
