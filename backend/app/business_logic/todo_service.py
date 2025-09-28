@@ -57,7 +57,7 @@ class ToDoService:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
         except IntegrityError:
             return self.raise_http_exception(status.HTTP_409_CONFLICT, to_do_id)
-        except Exception:
+        except HTTPException:
             return self.raise_http_exception(
                 status.HTTP_500_INTERNAL_SERVER_ERROR, to_do_id
             )
@@ -73,7 +73,7 @@ class ToDoService:
                 success=True,
                 todo_entry=schemas.todo.ToDoSchema.model_validate(entry),
             )
-        except Exception:
+        except HTTPException:
             return self.raise_http_exception(
                 status.HTTP_500_INTERNAL_SERVER_ERROR, to_do_id
             )
@@ -104,7 +104,7 @@ class ToDoService:
         except ValueError:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
 
-        except Exception:
+        except HTTPException:
             return self.raise_http_exception(
                 status.HTTP_500_INTERNAL_SERVER_ERROR, to_do_id
             )
