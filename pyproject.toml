@@ -15,6 +15,7 @@ dependencies = [
     "pylint>=3.3.7",
     "pytest>=8.3.5",
     "pytest-asyncio>=1.2.0",
+    "slowapi>=0.1.9",
     "sqlalchemy>=2.0.41",
     "sqlalchemy-stubs>=0.4",
     "sqlalchemy-utils>=0.41.2",

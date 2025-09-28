@@ -1,10 +1,10 @@
 """ToDo and response schemas"""
 
-from enum import Enum
 from datetime import datetime
+from typing import Any, List, Optional
 from uuid import UUID
-from typing import Any, List
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel, Field, field_validator
 
 
 def exists(value: Any) -> Any:
@@ -23,13 +23,13 @@ class ToDoSchema(BaseModel):
     title: str = Field(
         ..., description="The title of the ToDo to be shown.", examples=["Wash dishes"]
     )
-    description: str = Field(
+    description: Optional[str] = Field(
         ...,
         description="The full description of the ToDo",
         examples=["Read the book until page 223."],
     )
-    created_at: datetime | None
-    updated_at: datetime | None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
     deleted: bool = False
     done: bool = False
 
@@ -40,46 +40,117 @@ class ToDoSchema(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
 
-class Status(Enum):
-    """Response status"""
+    @field_validator("title")
+    def verify_title_is_not_empty(cls, value):
+        """Verify title is not empty."""
+        if not value or not value.strip():
+            raise ValueError("title must not be empty.")
+        return value.strip()
 
-    SUCCESS = "Success"
-    FAILED = "Failed"
+    @field_validator("description")
+    def verify_description_is_not_empty(cls, value):
+        """Verify description is not empty."""
+        if not value or not value.strip():
+            raise ValueError("description must not be empty.")
+        return value.strip()
+
+    @field_validator("id")
+    def validate_id_is_not_null(cls, value):
+        """Verify id is not null."""
+        if not value:
+            raise ValueError("id must not be null.")
+        return value
+
+    @field_validator("created_at")
+    def validate_created_at_is_not_null(cls, value):
+        """Verify created_at is not null."""
+        if not value:
+            raise ValueError("created_at must not be null.")
+        return value
 
 
-class ToDoResponse(BaseModel):
+class ApiResponse(BaseModel):
+    success: bool
+    data: Optional[dict] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
+
+
+
+class ToDoResponse(ApiResponse):
     """Response for ToDo"""
 
-    status: Status
     todo_entry: ToDoSchema
 
+    @field_validator("todo_entry")
+    def validate_todo_entry_is_not_null(cls, value):
+        """Verify todo_entry is not null."""
+        if not value:
+            raise ValueError("todo_entry must not be null.")
+        return value
 
-class GetToDoResponse(BaseModel):
+
+class GetToDoResponse(ApiResponse):
     """Response to get ToDo request."""
 
-    status: Status
     todo_entry: ToDoSchema
 
+    @field_validator("todo_entry")
+    def validate_todo_entry_is_not_null(cls, value):
+        """Verify todo_entry is not null."""
+        if not value:
+            raise ValueError("todo_entry must not be null.")
+        return value
 
-class ListToDoResponse(BaseModel):
+
+class ListToDoResponse(ApiResponse):
     """List of ToDos"""
 
-    status: Status
-    results: int
+    results: Optional[int] = 0
     todo_entries: List[ToDoSchema]
 
+    @field_validator("todo_entries")
+    def validate_todo_entry_is_not_null(cls, value):
+        """Verify todo_entry is not null."""
+        if not value:
+            raise ValueError("todo_entry must not be null.")
+        return value
 
-class DeleteToDoResponse(BaseModel):
+
+class DeleteToDoResponse(ApiResponse):
     """Response to delete user request"""
 
-    status: Status
-    message: str
+    message: Optional[str] = None
 
     # Data models
 class ToDoCreateEntry(BaseModel):
     id: UUID
-    item: str
-    created_at: datetime | None
+    title: str
+    description: str = None
+
+    @field_validator("id")
+    def validate_id_is_not_null(cls, value):
+        """Verify id is not null."""
+        if not value:
+            raise ValueError("id must not be null.")
+        return value
+
+    @field_validator("title")
+    def validate_item_is_not_null(cls, value):
+        """Verify item is not null."""
+        if not value or not value.strip():
+            raise ValueError("item must not be null.")
+        return value.strip()
 
 class TodoUpdateEntry(BaseModel):
-    item: str
+    id: UUID
+    title: Optional[str] = None
+    description: Optional[str] = None
+    done: Optional[bool] = None
+
+    @field_validator("id")
+    def validate_id_is_not_null(cls, value):
+        """Verify id is not null."""
+        if not value:
+            raise ValueError("item must not be null.")
+        return value
