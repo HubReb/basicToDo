@@ -89,6 +89,7 @@ class App(FastAPI):
         try:
             entry_data = await self.webservice.get_todo(item_id)
             entry_data.todo_entry.description = todo_update.description
+            entry_data.todo_entry.title = todo_update.title
             updated_entry_data = TodoUpdateEntry(**entry_data.todo_entry.model_dump())
             return await self.webservice.update_todo(
                 item_id, TodoUpdateEntry.model_validate(updated_entry_data)
@@ -125,7 +126,7 @@ async def get_todos(limit: int = 10, page: int = 1) -> List[ToDoSchema]:
 
 
 # Get a specific todo
-@app.get("/todo/{todo_id}", tags=["todos"], response_model=GetToDoResponse)
+@app.get("/todo/entry", tags=["todos"], response_model=GetToDoResponse)
 async def get_todo(todo_id: uuid.UUID) -> Optional[GetToDoResponse]:
     """Get a specific todo entry."""
     try:
@@ -142,14 +143,14 @@ async def create_todo(todo_entry: ToDoCreateEntry, response_model=ToDoResponse):
     return todo_entry
 
 
-@app.put("/todo/{id}", tags=["todos"], response_model=ToDoResponse)
+@app.put("/todo/entry", tags=["todos"], response_model=ToDoResponse)
 async def update_todo(item: uuid.UUID, todo_update: TodoUpdateEntry):
     """Update a todo item description."""
     todo = await app.update_todo(item_id=item, todo_update=todo_update)
     return todo
 
 
-@app.delete("/todo/{id}", tags=["todos"])
+@app.delete("/todo/entry", tags=["todos"])
 async def delete_todo(item: uuid.UUID):
     """Delete a todo."""
     todo = await app.delete_todo(item_id=item)
