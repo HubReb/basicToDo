@@ -1,13 +1,13 @@
 """A ToDo data class"""
-import datetime
 import uuid
 from contextlib import _GeneratorContextManager
-from typing import Any, List
+from typing import Any, List, Optional
 
 from sqlalchemy.exc import IntegrityError
 
 from backend.app.data_access.database import get_db_session
 from backend.app.models.todo import ToDoEntryData
+from backend.app.schemas.todo import TodoUpdateEntry
 
 
 class ToDoRepository:
@@ -17,15 +17,13 @@ class ToDoRepository:
         """Initialize repository"""
         self.database = get_db_session
 
-    def add_to_do(
+    def create_to_do(
         self, entry: ToDoEntryData
     ) -> None:
-        """Add a new ToDo entry."""
-        todo_entry = ToDoEntryData(id=entry.id, title=entry.title, description=entry.description,
-                                   created_at=datetime.datetime.now(), updated_at=None, done=False, deleted=False)
+        """Create a new ToDo entry."""
         with self.database() as session:
             try:
-                session.add(todo_entry)
+                session.add(entry)
                 session.commit()
             except IntegrityError as e:
                 session.rollback()
@@ -35,52 +33,62 @@ class ToDoRepository:
                 raise e
         return None
 
-    def delete_to_do(self, entry_id: uuid.UUID) -> None:
-        """Delete a ToDo."""
+    def delete_to_do(self, entry_id: uuid.UUID) -> bool:
+        """Soft delete a ToDo entry."""
+        entry = self.get_to_do_entry(entry_id)
+        if not entry:
+            return False
         with self.database() as session:
             try:
-                to_do_query = session.query(ToDoEntryData).filter_by(id=entry_id)
-                if not to_do_query.first():
-                    raise ValueError(f"No ToDo entry found.")
-                to_do_query.delete(synchronize_session=False)
+                entry.deleted = True
                 session.commit()
+                return True
             except Exception as e:
                 session.rollback()
                 raise e
-        return None
+
+    def hard_delete_to_do(self, to_do_id: uuid.UUID) -> bool:
+        """Hard delete a ToDo entry."""
+        to_do = self.get_to_do_entry(to_do_id)
+        if not to_do:
+            return False
+        with self.database() as session:
+            session.delete(to_do)
+            session.commit()
+        return True
+
+
 
     def update_to_do(
-        self, entry_id: uuid.UUID, data: dict[str, Any]
-    ) -> ToDoEntryData:
+            self, entry_id: uuid.UUID, data: TodoUpdateEntry
+    ) -> Optional[ToDoEntryData]:
         """Update an existing ToDo entry."""
         with self.database() as session:
+            entry = self.get_to_do_entry(entry_id)
+            if not entry:
+                return None
+            update_data = data.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(entry, key, value)
             try:
-                to_do_query = session.query(ToDoEntryData).filter_by(
-                    id=entry_id
-                )
-                to_do_entry = to_do_query.first()
-                if not to_do_entry:
-                    raise ValueError(f"No entry found.")
-                to_do_entry.update(data)
                 session.commit()
-
             except IntegrityError as e:
                 session.rollback()
                 raise e
             except Exception as e:
                 session.rollback()
                 raise e
-        return to_do_entry
+        return entry
 
-    def get_to_do_entry(self, entry_id: uuid.UUID) -> ToDoEntryData:
+    def get_to_do_entry(self, entry_id: uuid.UUID) -> Optional[ToDoEntryData]:
         """Get an ToDo entry."""
         with self.database() as session:
             to_do_query = session.query(ToDoEntryData).filter_by(
                 id=entry_id
-            )
+            ).filter_by(deleted=False)
             to_do_entry = to_do_query.first()
             if not to_do_entry:
-                raise ValueError(f"No entry found.")
+                return None
         return to_do_entry
 
     def get_all_to_do_entries(
@@ -90,6 +98,6 @@ class ToDoRepository:
         skip = (page - 1) * limit
         with self.database() as session:
             to_do_entries = (
-                session.query(ToDoEntryData).limit(limit).offset(skip).all()
+                session.query(ToDoEntryData).filter(ToDoEntryData.deleted == False).limit(limit).offset(skip).all()
             )
         return to_do_entries

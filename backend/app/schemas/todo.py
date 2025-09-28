@@ -23,13 +23,13 @@ class ToDoSchema(BaseModel):
     title: str = Field(
         ..., description="The title of the ToDo to be shown.", examples=["Wash dishes"]
     )
-    description: str = Field(
+    description: Optional[str] = Field(
         ...,
         description="The full description of the ToDo",
         examples=["Read the book until page 223."],
     )
-    created_at: datetime | None
-    updated_at: datetime | None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
     deleted: bool = False
     done: bool = False
 
@@ -125,8 +125,8 @@ class DeleteToDoResponse(ApiResponse):
     # Data models
 class ToDoCreateEntry(BaseModel):
     id: UUID
-    item: str
-    created_at: datetime | None
+    title: str
+    description: str = None
 
     @field_validator("id")
     def validate_id_is_not_null(cls, value):
@@ -135,7 +135,7 @@ class ToDoCreateEntry(BaseModel):
             raise ValueError("id must not be null.")
         return value
 
-    @field_validator("item")
+    @field_validator("title")
     def validate_item_is_not_null(cls, value):
         """Verify item is not null."""
         if not value or not value.strip():
@@ -143,11 +143,14 @@ class ToDoCreateEntry(BaseModel):
         return value.strip()
 
 class TodoUpdateEntry(BaseModel):
-    item: str
+    id: UUID
+    title: Optional[str] = None
+    description: Optional[str] = None
+    done: Optional[bool] = None
 
-    @field_validator("item")
-    def validate_item_is_not_null(cls, value):
-        """Verify item is not null."""
-        if not value or not value.strip():
+    @field_validator("id")
+    def validate_id_is_not_null(cls, value):
+        """Verify id is not null."""
+        if not value:
             raise ValueError("item must not be null.")
-        return value.strip()
+        return value

@@ -13,10 +13,14 @@ class Config:
 
     def _get_db_path(self) -> str:
         try:
+            DATABASE_URL = os.environ["DATABASE_URL"]
+            return DATABASE_URL
+        except KeyError as err:
+            pass
             with open(self.config_file, encoding="utf-8") as f:
                 config = json.load(f)
                 self.port: int = int(config.get("PORT"))
                 self.host: str = config.get("HOST")
                 return config.get("db_path", "")
         except FileNotFoundError:
-            raise ValueError("Specify the config file!")
+            raise ValueError("Specify the config file or set the environment variable 'DATABASE_URL'!")

@@ -28,6 +28,8 @@ class ToDoORM(Base):
     deleted = Column(Boolean, nullable=False, default=False)
     done = Column(Boolean, nullable=False, default=False)
 
+    def __repr__(self):
+        return f"<ToDo(id={self.id}, title='{self.title}')>"
 
 try:
     DATABASE_URL = os.environ["DATABASE_URL"]
