@@ -7,6 +7,7 @@ class CustomLogger(Logger):
     """A custom logger to simplify logging"""
 
     def __init__(self, name: str) -> None:
+        super().__init__(name)
         self.logger = getLogger(name)
 
     def log_missing_parameter(self, parameter_name: str) -> None:

@@ -63,14 +63,14 @@ class GetToDoResponse(ApiResponse):
 class ListToDoResponse(ApiResponse):
     """List of ToDos"""
 
-    results: int
+    results: Optional[int] = 0
     todo_entries: List[ToDoSchema]
 
 
 class DeleteToDoResponse(ApiResponse):
     """Response to delete user request"""
 
-    message: str
+    message: Optional[str] = None
 
     # Data models
 class ToDoCreateEntry(BaseModel):
