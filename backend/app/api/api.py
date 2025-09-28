@@ -4,7 +4,6 @@ The API call definitions.
 
 import uuid
 from http import HTTPStatus
-from logging import INFO
 from typing import List, Optional
 
 from fastapi import FastAPI
@@ -54,27 +53,27 @@ class App(FastAPI):
         return await self.webservice.get_all_todos()
 
 
-    async def add_to_dos(self, new_todo: ToDoCreateEntry) -> ToDoResponse | HTTPException:
+    async def add_to_dos(self, new_todo: ToDoCreateEntry) -> ToDoResponse:
         """Add a toDo."""
         response = await self.webservice.create_todo(new_todo)
         return response
 
     async def update_todo(
             self, item_id: uuid.UUID, todo_update: TodoUpdateEntry
-    ) -> HTTPException | ToDoResponse:
+    ) -> ToDoResponse:
         """Update a ToDo."""
         try:
-            entry_data = self.webservice.get_todo(item_id)
-            entry_data.description = todo_update.item
+            entry_data = await self.webservice.get_todo(item_id)
+            entry_data.todo_entry.description = todo_update.item
             return await self.webservice.update_todo(
-                item_id, ToDoSchema.model_validate(entry_data)
+                item_id, ToDoSchema.model_validate(entry_data.todo_entry)
             )
         except HTTPException as e:
             raise HTTPException(HTTPStatus.NOT_FOUND,  f"Todo with id {item_id} not found.") from e
 
     async def delete_todo(
             self, item_id: uuid.UUID
-    ) -> DeleteToDoResponse | HTTPException:
+    ) -> DeleteToDoResponse:
         """Delete a todo item."""
         try:
             return await self.webservice.delete_todo(item_id)
@@ -82,7 +81,8 @@ class App(FastAPI):
             raise HTTPException(HTTPStatus.NOT_FOUND) from e
 
 
-appLogger = CustomLogger("ApiCallHandler", INFO)
+appLogger = CustomLogger("ApiCallHandler")
+# TODO: Get this from config
 app = App(["http://localhost:5173", "localhost:5173"], appLogger)
 
 

@@ -1,9 +1,8 @@
 """ToDo and response schemas"""
 
-from enum import Enum
 from datetime import datetime
 from uuid import UUID
-from typing import Any, List
+from typing import Any, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -40,39 +39,37 @@ class ToDoSchema(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
 
-class Status(Enum):
-    """Response status"""
-
-    SUCCESS = "Success"
-    FAILED = "Failed"
 
 
-class ToDoResponse(BaseModel):
+class ApiResponse(BaseModel):
+    success: bool
+    data: Optional[dict] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
+
+
+class ToDoResponse(ApiResponse):
     """Response for ToDo"""
 
-    status: Status
     todo_entry: ToDoSchema
 
 
-class GetToDoResponse(BaseModel):
+class GetToDoResponse(ApiResponse):
     """Response to get ToDo request."""
 
-    status: Status
     todo_entry: ToDoSchema
 
 
-class ListToDoResponse(BaseModel):
+class ListToDoResponse(ApiResponse):
     """List of ToDos"""
 
-    status: Status
     results: int
     todo_entries: List[ToDoSchema]
 
 
-class DeleteToDoResponse(BaseModel):
+class DeleteToDoResponse(ApiResponse):
     """Response to delete user request"""
 
-    status: Status
     message: str
 
     # Data models

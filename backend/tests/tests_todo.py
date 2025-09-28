@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from backend.app.data_access.repository import ToDoRepository
-from backend.app.data_access.database import get_db
+from backend.app.data_access.database import get_db_session
 from backend.app.models.todo import ToDoEntryData
 from backend.app.business_logic.todo_service import ToDoService
 from backend.app.schemas.todo import ToDoCreateEntry
@@ -53,102 +53,81 @@ async def test_create_todo_success(sample_todo_data_entry_for_service):
 def test_setup(sample_todo_data_entry):
     """Create test data."""
     test_item = sample_todo_data_entry
-    repo = ToDoRepository(get_db())
-    assert repo.add_to_do(test_item) is None
+    repo = ToDoRepository(get_db_session)
     yield test_item, repo
-    repo.delete_to_do(test_item.id)
+
 
 
 @pytest.fixture
-def test_setup_for_deletion():
+def test_setup_with_addition(test_setup):
     """Create test data."""
-    test_item = {"id": uuid4(), "item": "This is test data."}
-    repo = ToDoRepository(get_db())
-    todo = ToDoEntryData(
-        id=test_item["id"], title=test_item["item"], created_at=None, updated_at=None, done=False, deleted=False,
-        description=test_item["item"]
-    )
-    repo.add_to_do(todo)
+    test_item, repo = test_setup
+    repo.add_to_do(test_item)
     yield test_item, repo
 
 
 @pytest.fixture
-def test_setup_without_addition():
-    """Create test data."""
-    test_item = {"id": uuid4(), "item": "This is test data."}
-    repo = ToDoRepository(get_db())
-    yield test_item, repo
-    repo.delete_to_do(test_item["id"])
 
-
-@pytest.fixture
-def test_setup_without_addition_and_deletion():
-    """Create test data."""
-    test_item = {"id": uuid4(), "item": "This is test data."}
-    repo = ToDoRepository(get_db())
-    yield test_item, repo
-
-
-def test_add(test_setup_without_addition):
+def test_add(test_setup):
     """Test addition"""
-    test_data = test_setup_without_addition[0]
-    repo = test_setup_without_addition[1]
-    todo = ToDoEntryData(
-        id=test_data["id"], title=test_data["item"], created_at=None, updated_at=None, done=False, deleted=False,
-        description=test_data["item"]
-    )
-    assert repo.add_to_do(todo) is None
-
-
-def test_create_todo_failure_duplicate(test_setup):
-    """Test addition of already existing data point."""
     test_data = test_setup[0]
     repo = test_setup[1]
+    assert repo.add_to_do(test_data) is None
+    repo.delete_to_do(test_data.id)
+
+
+def test_create_todo_failure_duplicate(test_setup_with_addition):
+    """Test addition of already existing data point."""
+    test_data = test_setup_with_addition[0]
+    repo = test_setup_with_addition[1]
     with pytest.raises(IntegrityError) as _:
         repo.add_to_do(test_data)
+    repo.delete_to_do(test_data.id)
 
 
-def test_delete_success(test_setup_for_deletion):
+def test_delete_success(test_setup_with_addition):
     """Test deletion."""
-    test_data = test_setup_for_deletion[0]
-    repo = test_setup_for_deletion[1]
-    assert repo.delete_to_do(test_data["id"]) is None
+    test_data = test_setup_with_addition[0]
+    repo = test_setup_with_addition[1]
+    assert repo.delete_to_do(test_data.id) is None
 
 
-def test_delete_fails_not_found(test_setup_for_deletion):
+def test_delete_fails_not_found(test_setup):
     """Test deletion."""
-    test_data = test_setup_for_deletion[0]
-    repo = test_setup_for_deletion[1]
-    assert repo.delete_to_do(test_data["id"]) is None
+    test_data = test_setup[0]
+    repo = test_setup[1]
     with pytest.raises(ValueError):
-        repo.delete_to_do(test_data["id"])
+        repo.delete_to_do(test_data.id)
 
 
-def test_get_entry_success(test_setup):
+def test_get_entry_success(test_setup_with_addition):
     """Test get an entry."""
-    test_data = test_setup[0]
-    repo = test_setup[1]
+    test_data = test_setup_with_addition[0]
+    repo = test_setup_with_addition[1]
     assert test_data.id == repo.get_to_do_entry(test_data.id).id
+    repo.delete_to_do(test_data.id)
 
 
-def test_get_entry_fails_not_found(test_setup_without_addition_and_deletion):
+def test_get_entry_fails_not_found(test_setup):
     """Test get a non-existent entry."""
-    test_data = test_setup_without_addition_and_deletion[0]
-    repo = test_setup_without_addition_and_deletion[1]
-    with pytest.raises(ValueError) as _:
-        repo.get_to_do_entry(test_data["id"])
-
-
-def test_update_entry_fails_not_found(test_setup_without_addition_and_deletion):
-    """Test update a non-existing entry."""
-    test_data = test_setup_without_addition_and_deletion[0]
-    repo = test_setup_without_addition_and_deletion[1]
-    with pytest.raises(ValueError) as _:
-        repo.update_to_do(test_data["id"], test_data)
-
-
-def test_update_entry_success(test_setup):
-    """Test update an entry."""
     test_data = test_setup[0]
     repo = test_setup[1]
-    repo.update_to_do(test_data.id, {"title": "new title"})
+    with pytest.raises(ValueError) as _:
+        repo.get_to_do_entry(test_data.id)
+
+
+def test_update_entry_fails_not_found(test_setup):
+    """Test update a non-existing entry."""
+    test_data = test_setup[0]
+    repo = test_setup[1]
+    with pytest.raises(ValueError) as _:
+        repo.update_to_do(test_data.id, test_data.__dict__)
+
+def test_update_entry_success(test_setup_with_addition):
+    """Test update an entry."""
+    test_data = test_setup_with_addition[0]
+    repo = test_setup_with_addition[1]
+
+    result = repo.update_to_do(test_data.id, {"title": "new title"})
+    assert result.title == "new title"
+    repo.delete_to_do(test_data.id)

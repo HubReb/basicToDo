@@ -2,6 +2,7 @@
 
 import uuid
 import json
+from contextlib import contextmanager
 from sqlalchemy import (
     create_engine,
     Table,
@@ -29,21 +30,24 @@ SQLITE_DATABASE_URL = f"sqlite:///{path}todo.db"
 engine = create_engine(
     SQLITE_DATABASE_URL, echo=True, connect_args={"check_same_thread": False}, poolclass=QueuePool, pool_size=10, max_overflow=20, pool_pre_ping=True
 )
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, expire_on_commit=False)
 
 Base = declarative_base()
 
 
-def get_db():
-    """Get session."""
-    db_session = SessionLocal()
+@contextmanager
+def get_db_session():
+    session = SessionLocal()
     try:
-        yield db_session
+        yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
     finally:
-        db_session.close()
+        session.close()
 
-for val in get_db():
-    db = val
+db = get_db_session()
 mapper_registry = registry()
 to_do_table = Table(
     "toDo",

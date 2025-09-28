@@ -51,7 +51,7 @@ class ToDoService:
             updated_entry = self.repository.update_to_do(to_do_id, update_data)
             to_do_schema = schemas.todo.ToDoSchema.model_validate(updated_entry)
             return schemas.todo.ToDoResponse(
-                status=schemas.todo.Status.SUCCESS, todo_entry=to_do_schema
+                success=True, todo_entry=to_do_schema
             )
         except ValueError:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
@@ -70,7 +70,7 @@ class ToDoService:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
         try:
             return schemas.todo.GetToDoResponse(
-                status=schemas.todo.Status.SUCCESS,
+                success=True,
                 todo_entry=schemas.todo.ToDoSchema.model_validate(entry),
             )
         except Exception:
@@ -86,7 +86,7 @@ class ToDoService:
             self.repository.add_to_do(to_do_orm_data_schema)
             to_do_schema = schemas.todo.ToDoSchema.model_validate(to_do_orm_data_schema)
             return schemas.todo.ToDoResponse(
-                status=schemas.todo.Status.SUCCESS, todo_entry=to_do_schema
+                success=True, todo_entry=to_do_schema
             )
         except IntegrityError:
             self.raise_http_exception(status.HTTP_409_CONFLICT, payload.id)
@@ -99,7 +99,7 @@ class ToDoService:
         try:
             self.repository.delete_to_do(to_do_id)
             return schemas.todo.DeleteToDoResponse(
-                status=schemas.todo.Status.SUCCESS, message="ToDo deleted successfully."
+                success=True, message="ToDo deleted successfully."
             )
         except ValueError:
             return self.raise_http_exception(status.HTTP_404_NOT_FOUND, to_do_id)
