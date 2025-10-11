@@ -7,14 +7,6 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 
 
-def exists(value: Any) -> Any:
-    """Verify value is not null."""
-    if value is not None:
-        return value
-    raise ValueError("value must not be None.")
-
-
-
 
 class ToDoSchema(BaseModel):
     """The todo schema class."""
@@ -23,7 +15,7 @@ class ToDoSchema(BaseModel):
     title: str = Field(
         ..., description="The title of the ToDo to be shown.", examples=["Wash dishes"]
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         ...,
         description="The full description of the ToDo",
         examples=["Read the book until page 223."],
@@ -43,22 +35,28 @@ class ToDoSchema(BaseModel):
     @field_validator("title")
     def verify_title_is_not_empty(cls, value):
         """Verify title is not empty."""
-        if not value or not value.strip():
+        value = value.strip()
+        if not value:
             raise ValueError("title must not be empty.")
-        return value.strip()
+        return value
 
     @field_validator("description")
     def verify_description_is_not_empty(cls, value):
         """Verify description is not empty."""
-        if not value or not value.strip():
+        value = value.strip()
+        if not value:
             raise ValueError("description must not be empty.")
-        return value.strip()
+        return value
 
     @field_validator("id")
-    def validate_id_is_not_null(cls, value):
+    def verify_id(cls, value):
         """Verify id is not null."""
         if not value:
             raise ValueError("id must not be null.")
+        try:
+            UUID(str(value))
+        except ValueError as exc:
+            raise ValueError(f"id is not a valid UUID: {value}") from exc
         return value
 
     @field_validator("created_at")
@@ -126,20 +124,24 @@ class DeleteToDoResponse(ApiResponse):
 class ToDoCreateEntry(BaseModel):
     id: UUID
     title: str
-    description: str = None
+    description: Optional[str] = None
 
     @field_validator("id")
-    def validate_id_is_not_null(cls, value):
+    def verify_id(cls, value: int) -> int:
         """Verify id is not null."""
         if not value:
             raise ValueError("id must not be null.")
+        try:
+            UUID(str(value))
+        except ValueError as exc:
+            raise ValueError(f"id is not a valid UUID: {value}") from exc
         return value
 
     @field_validator("title")
-    def validate_item_is_not_null(cls, value):
-        """Verify item is not null."""
+    def validate_title_is_not_null(cls, value):
+        """Verify title is not null."""
         if not value or not value.strip():
-            raise ValueError("item must not be null.")
+            raise ValueError("title must not be null.")
         return value.strip()
 
 class TodoUpdateEntry(BaseModel):
@@ -149,8 +151,12 @@ class TodoUpdateEntry(BaseModel):
     done: Optional[bool] = None
 
     @field_validator("id")
-    def validate_id_is_not_null(cls, value):
+    def verify_id(cls, value):
         """Verify id is not null."""
         if not value:
             raise ValueError("item must not be null.")
+        try:
+            UUID(str(value))
+        except ValueError as exc:
+            raise ValueError(f"id is not a valid UUID: {value}") from exc
         return value
