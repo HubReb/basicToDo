@@ -18,24 +18,24 @@ from backend.app.logger import CustomLogger
 from backend.app.schemas.todo import (DeleteToDoResponse, GetToDoResponse, ToDoCreateEntry, ToDoResponse, ToDoSchema,
                                       TodoUpdateEntry)
 
-request_counter: int = 0
-last_request_time: float = time.time()
-rate_limit_window: int = 60
-max_requests_per_window: int = 100
-
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
+
+    def __init__(self):
+        self.request_counter = 0
+        self.last_request_time: float = time.time()
+        self.rate_limit_window: int = 60
+        self.max_requests_per_window: int = 100
+
     async def dispatch(self, request: Request, call_next):
-        global last_request_time, request_counter
-
         current_time = time.time()
-        if current_time - last_request_time > rate_limit_window:
-            request_counter = 0
-            last_request_time = current_time
+        if current_time - self.last_request_time > self.rate_limit_window:
+            self.request_counter = 0
+            self.last_request_time = current_time
 
-        request_counter += 1
+        self.request_counter += 1
 
-        if request_counter > max_requests_per_window:
+        if self.request_counter > self.max_requests_per_window:
             return Response("Rate limit exceeded", status_code=429)
 
         response = await call_next(request)
@@ -68,7 +68,7 @@ class App(FastAPI):
                 "X-Content-Type-Options",
                 "X-Frame-Options"
             ],
-            allow_origin_regex=".*",
+            allow_origin_regex="*localhost.*",
         )
         self.webservice = service
 
@@ -92,10 +92,10 @@ class App(FastAPI):
             entry_data.todo_entry.title = todo_update.title
             updated_entry_data = TodoUpdateEntry(**entry_data.todo_entry.model_dump())
             return await self.webservice.update_todo(
-                item_id, TodoUpdateEntry.model_validate(updated_entry_data)
+                item_id, updated_entry_data
             )
         except HTTPException as e:
-            raise HTTPException(HTTPStatus.NOT_FOUND, f"Todo not found.") from e
+            raise HTTPException(HTTPStatus.NOT_FOUND, "Todo not found.") from e
 
     async def delete_todo(
             self, item_id: uuid.UUID
@@ -144,14 +144,14 @@ async def create_todo(todo_entry: ToDoCreateEntry, response_model=ToDoResponse):
 
 
 @app.put("/todo/entry", tags=["todos"], response_model=ToDoResponse)
-async def update_todo(item: uuid.UUID, todo_update: TodoUpdateEntry):
+async def update_todo(item_id: uuid.UUID, todo_update: TodoUpdateEntry):
     """Update a todo item description."""
-    todo = await app.update_todo(item_id=item, todo_update=todo_update)
+    todo = await app.update_todo(item_id=item_id, todo_update=todo_update)
     return todo
 
 
 @app.delete("/todo/entry", tags=["todos"])
-async def delete_todo(item: uuid.UUID):
+async def delete_todo(item_id: uuid.UUID):
     """Delete a todo."""
-    todo = await app.delete_todo(item_id=item)
+    todo = await app.delete_todo(item_id=item_id)
     return todo
