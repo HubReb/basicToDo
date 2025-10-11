@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
-from backend.app.data_access.repository import ToDoRepository
+from backend.app.data_access.repository import ToDoRepository, ToDoRepositoryInterface
 from backend.app.logger import CustomLogger
 from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.todo import DeleteToDoResponse, GetToDoResponse, ToDoCreateEntry, ToDoResponse, ToDoSchema, \
@@ -26,7 +26,7 @@ async def create_entry_data_from_create_entry(payload: ToDoCreateEntry) -> ToDoE
 class ToDoService:
     """To Do service"""
 
-    def __init__(self, repository: ToDoRepository, logger: CustomLogger):
+    def __init__(self, repository: ToDoRepositoryInterface, logger: CustomLogger):
         self.repository = repository
         self.logger = logger
 
@@ -49,10 +49,10 @@ class ToDoService:
             case status.HTTP_404_NOT_FOUND:
                 raise HTTPException(
                     status_code=status_code,
-                    detail=f"No ToDo entry.",
+                    detail="No ToDo entry.",
                 )
             case _:
-                raise ValueError("{status_code} is unknown.")
+                raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     async def update_todo(
             self, to_do_id: uuid.UUID, payload: TodoUpdateEntry
@@ -88,7 +88,7 @@ class ToDoService:
                 status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    async def create_todo(self, payload: ToDoCreateEntry) -> ToDoResponse | None:
+    async def create_todo(self, payload: ToDoCreateEntry) -> ToDoResponse | HTTPException:
         """Add a new entry."""
         to_do_data_schema = await create_entry_data_from_create_entry(payload)
         try:
@@ -98,7 +98,7 @@ class ToDoService:
                 success=True, todo_entry=to_do_schema
             )
         except IntegrityError:
-            self.raise_http_exception(status.HTTP_409_CONFLICT)
+            return self.raise_http_exception(status.HTTP_409_CONFLICT)
 
     async def delete_todo(
         self, to_do_id: uuid.UUID

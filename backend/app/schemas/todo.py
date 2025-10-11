@@ -127,10 +127,10 @@ class ToDoCreateEntry(BaseModel):
     description: Optional[str] = None
 
     @field_validator("id")
-    def verify_id(cls, value: int) -> int:
+    def verify_id(cls, value: UUID) -> UUID:
         """Verify id is not null."""
         if not value:
-            raise ValueError("id must not be null.")
+            raise ValueError("id must be a valid UUID.")
         try:
             UUID(str(value))
         except ValueError as exc:
@@ -154,7 +154,7 @@ class TodoUpdateEntry(BaseModel):
     def verify_id(cls, value):
         """Verify id is not null."""
         if not value:
-            raise ValueError("item must not be null.")
+            raise ValueError("id must not be null.")
         try:
             UUID(str(value))
         except ValueError as exc:
