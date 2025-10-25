@@ -1,124 +1,84 @@
-"""The webservice base class"""
+"""Business logic layer for ToDo management."""
 import datetime
 import uuid
 from typing import List
 
-from fastapi import HTTPException, status
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
-from backend.app.data_access.repository import ToDoRepository, ToDoRepositoryInterface
+from backend.app.business_logic.exceptions import (
+    ToDoAlreadyExistsError,
+    ToDoNotFoundError,
+    ToDoRepositoryError,
+)
+from backend.app.data_access.repository import ToDoRepositoryInterface
 from backend.app.logger import CustomLogger
 from backend.app.models.todo import ToDoEntryData
-from backend.app.schemas.todo import DeleteToDoResponse, GetToDoResponse, ToDoCreateEntry, ToDoResponse, ToDoSchema, \
-    TodoUpdateEntry
+from backend.app.schemas.todo import (ToDoCreateEntry, ToDoSchema, TodoUpdateEntry)
 
 
 async def create_entry_data_from_create_entry(payload: ToDoCreateEntry) -> ToDoEntryData:
     """Create a ToDoEntryData object from a ToDoCreateEntry."""
     to_do_schema = payload.model_dump()
-    to_do_data_schema = ToDoEntryData(to_do_schema.get("id"), to_do_schema.get("title"),
-                                      to_do_schema.get("description"), created_at=datetime.datetime.now(),
-                                      updated_at=None, deleted=False, done=False)
-    return to_do_data_schema
+    return ToDoEntryData(
+        id=to_do_schema.get("id"),
+        title=to_do_schema.get("title"),
+        description=to_do_schema.get("description"),
+        created_at=datetime.datetime.now(),
+        updated_at=None,
+        deleted=False,
+        done=False,
+    )
 
 
 class ToDoService:
-    """To Do service"""
+    """Application service for ToDo operations."""
 
     def __init__(self, repository: ToDoRepositoryInterface, logger: CustomLogger):
         self.repository = repository
         self.logger = logger
 
-    @staticmethod
-    def raise_http_exception(
-            status_code: int
-    ) -> HTTPException:
-        """Raise an exception error"""
-        match status_code:
-            case status.HTTP_409_CONFLICT:
-                raise HTTPException(
-                    status_code=status_code,
-                    detail="A ToDo with the given details does already exists.",
-                )
-            case status.HTTP_500_INTERNAL_SERVER_ERROR:
-                raise HTTPException(
-                    status_code=status_code,
-                    detail="An error occurred while creating the ToDo entry.",
-                )
-            case status.HTTP_404_NOT_FOUND:
-                raise HTTPException(
-                    status_code=status_code,
-                    detail="No ToDo entry.",
-                )
-            case _:
-                raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    async def update_todo(
-            self, to_do_id: uuid.UUID, payload: TodoUpdateEntry
-    ) -> ToDoResponse | HTTPException:
-        """Update an existing entry."""
+    async def create_todo(self, payload: ToDoCreateEntry) -> ToDoSchema:
+        entry_data = await create_entry_data_from_create_entry(payload)
         try:
-            updated_entry = self.repository.update_to_do(to_do_id, payload)
-            to_do_schema = ToDoSchema.model_validate(updated_entry)
-            return ToDoResponse(
-                success=True, todo_entry=to_do_schema
-            )
-        except ValueError:
-            return self.raise_http_exception(status.HTTP_404_NOT_FOUND)
+            self.repository.create_to_do(entry_data)
+            return ToDoSchema.model_validate(entry_data)
         except IntegrityError:
-            return self.raise_http_exception(status.HTTP_409_CONFLICT)
-        except HTTPException:
-            return self.raise_http_exception(
-                status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            raise ToDoAlreadyExistsError
+        except Exception as exc:
+            self.logger.error("Error creating ToDo: %s", exc)
+            raise ToDoRepositoryError from exc
 
-    async def get_todo(self, to_do_id: uuid.UUID) -> GetToDoResponse | HTTPException:
-        """Get a specific entry."""
+    async def get_todo(self, to_do_id: uuid.UUID) -> ToDoSchema:
         entry = self.repository.get_to_do_entry(to_do_id)
         if not entry:
-            return self.raise_http_exception(status.HTTP_404_NOT_FOUND)
-        try:
-            return GetToDoResponse(
-                success=True,
-                todo_entry=ToDoSchema.model_validate(entry),
-            )
-        except HTTPException:
-            return self.raise_http_exception(
-                status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            raise ToDoNotFoundError
+        return ToDoSchema.model_validate(entry)
 
-    async def create_todo(self, payload: ToDoCreateEntry) -> ToDoResponse | HTTPException:
-        """Add a new entry."""
-        to_do_data_schema = await create_entry_data_from_create_entry(payload)
+    async def update_todo(self, to_do_id: uuid.UUID, payload: TodoUpdateEntry) -> ToDoSchema:
         try:
-            self.repository.create_to_do(to_do_data_schema)
-            to_do_schema = ToDoSchema.model_validate(to_do_data_schema)
-            return ToDoResponse(
-                success=True, todo_entry=to_do_schema
-            )
+            updated_entry = self.repository.update_to_do(to_do_id, payload)
+            if not updated_entry:
+                raise ToDoNotFoundError
+            return ToDoSchema.model_validate(updated_entry)
         except IntegrityError:
-            return self.raise_http_exception(status.HTTP_409_CONFLICT)
+            raise ToDoAlreadyExistsError
+        except Exception as exc:
+            self.logger.error("Update error: %s", exc)
+            raise ToDoRepositoryError from exc
 
-    async def delete_todo(
-        self, to_do_id: uuid.UUID
-    ) -> DeleteToDoResponse | HTTPException:
-        """Soft delete a todo entry."""
-        success = self.repository.delete_to_do(to_do_id)
-        if success:
-            return DeleteToDoResponse(
-                success=True, message="ToDo deleted successfully."
-            )
-        return self.raise_http_exception(status.HTTP_404_NOT_FOUND)
+    async def delete_todo(self, to_do_id: uuid.UUID) -> bool:
+        deleted = self.repository.delete_to_do(to_do_id)
+        if not deleted:
+            raise ToDoNotFoundError
+        return True
 
     async def get_all_todos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
-        """Get all to do entries."""
-        data_entries = self.repository.get_all_to_do_entries(limit, page)
-        entries_schemata = []
-        for entry in data_entries:
+        entries = self.repository.get_all_to_do_entries(limit, page)
+        result: list[ToDoSchema] = []
+        for entry in entries:
             try:
-                entries_schemata.append(ToDoSchema.model_validate(entry))
+                result.append(ToDoSchema.model_validate(entry))
             except ValidationError as e:
-                # do not stop with 500 because of invalid database entries
-                self.logger.error("Validation error: %s entry %s", e, entry.id)
-        return entries_schemata
+                self.logger.warning("Invalid DB entry skipped: %s", e)
+        return result

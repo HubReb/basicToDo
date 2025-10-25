@@ -48,9 +48,9 @@ async def test_create_todo_success(sample_todo_data_entry_for_service):
     result = await service.create_todo(todo_data)
 
     # Assert
-    assert result.todo_entry.id == todo_data.id
-    assert result.todo_entry.title == todo_data.title
-    assert result.todo_entry.description == todo_data.description
+    assert result.id == todo_data.id
+    assert result.title == todo_data.title
+    assert result.description == todo_data.description
 
 
 @pytest.fixture

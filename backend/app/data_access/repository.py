@@ -1,5 +1,6 @@
 """A ToDo data class"""
 import uuid
+from abc import ABC, abstractmethod
 from contextlib import _GeneratorContextManager
 from typing import Any, List, Optional
 
@@ -10,7 +11,34 @@ from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.todo import TodoUpdateEntry
 
 
-class ToDoRepository:
+# Add abstract base class:
+class ToDoRepositoryInterface(ABC):
+    @abstractmethod
+    def create_to_do(self, entry: ToDoEntryData) -> None:
+        pass
+
+    @abstractmethod
+    def delete_to_do(self, entry_id: uuid.UUID) -> bool:
+        pass
+
+    @abstractmethod
+    def hard_delete_to_do(self, to_do_id: uuid.UUID) -> bool:
+        pass
+
+    @abstractmethod
+    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateEntry) -> Optional[ToDoEntryData]:
+        pass
+
+    @abstractmethod
+    def get_to_do_entry(self, entry_id: uuid.UUID) -> Optional[ToDoEntryData]:
+        pass
+
+    @abstractmethod
+    def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[ToDoEntryData]:
+        pass
+
+
+class ToDoRepository(ToDoRepositoryInterface):
     """Repository for ToDos"""
 
     def __init__(self, get_db_session: _GeneratorContextManager[Any] = get_db_session):

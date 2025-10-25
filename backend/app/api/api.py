@@ -1,157 +1,60 @@
-"""
-The API call definitions.
-"""
+"""FastAPI routes for ToDo operations."""
+from uuid import UUID
 
-import time
-import uuid
-from http import HTTPStatus
-from typing import List, Optional
+from fastapi import FastAPI, HTTPException, status
 
-from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse, Response
-
-from backend.app.business_logic.todo_service import ToDoService
+from backend.app.business_logic.exceptions import (
+    ToDoAlreadyExistsError,
+    ToDoNotFoundError,
+    ToDoRepositoryError,
+)
 from backend.app.factory import create_todo_service
-from backend.app.logger import CustomLogger
-from backend.app.schemas.todo import (DeleteToDoResponse, GetToDoResponse, ToDoCreateEntry, ToDoResponse, ToDoSchema,
-                                      TodoUpdateEntry)
+from backend.app.schemas.todo import (DeleteToDoResponse, GetToDoResponse, ListToDoResponse, ToDoCreateEntry,
+                                      ToDoResponse, TodoUpdateEntry)
+
+app = FastAPI(title="ToDo API")
+service = create_todo_service()
 
 
-class RateLimiterMiddleware(BaseHTTPMiddleware):
-
-    def __init__(self):
-        self.request_counter = 0
-        self.last_request_time: float = time.time()
-        self.rate_limit_window: int = 60
-        self.max_requests_per_window: int = 100
-
-    async def dispatch(self, request: Request, call_next):
-        current_time = time.time()
-        if current_time - self.last_request_time > self.rate_limit_window:
-            self.request_counter = 0
-            self.last_request_time = current_time
-
-        self.request_counter += 1
-
-        if self.request_counter > self.max_requests_per_window:
-            return Response("Rate limit exceeded", status_code=429)
-
-        response = await call_next(request)
-        return response
-
-class App(FastAPI):
-    """FastAPI app"""
-
-    def __init__(
-            self,
-            origins: list[str],
-            logger: CustomLogger,
-            service: ToDoService = Depends(create_todo_service),
-    ) -> None:
-        """Initialize the handler."""
-        super().__init__()
-        if not origins:
-            raise ValueError(f"origins is {origins}.")
-        if not logger:
-            raise ValueError("Parameter logger is None.")
-
-        self.origins = origins
-        self.add_middleware(
-            CORSMiddleware,
-            allow_origins=origins,
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=[
-                "Content-Security-Policy",
-                "X-Content-Type-Options",
-                "X-Frame-Options"
-            ],
-            allow_origin_regex="*localhost.*",
-        )
-        self.webservice = service
-
-    async def get_to_dos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
-        """Get all todos."""
-        return await self.webservice.get_all_todos(limit, page)
-
-
-    async def add_to_dos(self, new_todo: ToDoCreateEntry) -> ToDoResponse:
-        """Add a toDo."""
-        response = await self.webservice.create_todo(new_todo)
-        return response
-
-    async def update_todo(
-            self, item_id: uuid.UUID, todo_update: TodoUpdateEntry
-    ) -> ToDoResponse:
-        """Update a ToDo."""
-        try:
-            entry_data = await self.webservice.get_todo(item_id)
-            entry_data.todo_entry.description = todo_update.description
-            entry_data.todo_entry.title = todo_update.title
-            updated_entry_data = TodoUpdateEntry(**entry_data.todo_entry.model_dump())
-            return await self.webservice.update_todo(
-                item_id, updated_entry_data
-            )
-        except HTTPException as e:
-            raise HTTPException(HTTPStatus.NOT_FOUND, "Todo not found.") from e
-
-    async def delete_todo(
-            self, item_id: uuid.UUID
-    ) -> DeleteToDoResponse:
-        """Delete a todo item."""
-        try:
-            return await self.webservice.delete_todo(item_id)
-        except HTTPException as e:
-            raise HTTPException(HTTPStatus.NOT_FOUND) from e
-
-
-appLogger = CustomLogger("ApiCallHandler")
-# TODO: Get this from config
-todo_service = create_todo_service()
-app = App(["http://localhost:5173", "localhost:5173"], appLogger, todo_service)
-app.add_middleware(RateLimiterMiddleware)
-
-@app.get("/", tags=["root"])
-async def read_root() -> JSONResponse:
-    """Return a dummy message if the root is read."""
-    return JSONResponse(status_code=HTTPStatus.OK, content={"message": "Welcome to your todo list."})
-
-
-@app.get("/todo", tags=["todos"], response_model=List[ToDoSchema])
-async def get_todos(limit: int = 10, page: int = 1) -> List[ToDoSchema]:
-    """Return the todos."""
-    return await app.get_to_dos(limit, page)
-
-
-# Get a specific todo
-@app.get("/todo/entry", tags=["todos"], response_model=GetToDoResponse)
-async def get_todo(todo_id: uuid.UUID) -> Optional[GetToDoResponse]:
-    """Get a specific todo entry."""
+@app.post("/todo", response_model=ToDoResponse)
+async def create_todo(payload: ToDoCreateEntry):
     try:
-        todo = await app.webservice.get_todo(todo_id)
-        return todo
-    except HTTPException as e:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Todo not found") from e
+        todo = await service.create_todo(payload)
+        return ToDoResponse(success=True, todo_entry=todo)
+    except ToDoAlreadyExistsError:
+        raise HTTPException(status.HTTP_409_CONFLICT, "ToDo already exists")
+    except ToDoRepositoryError:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 
 
-@app.post("/todo", tags=["todos"])
-async def create_todo(todo_entry: ToDoCreateEntry, response_model=ToDoResponse):
-    """Add a todo item to the list."""
-    todo_entry = await app.add_to_dos(todo_entry)
-    return todo_entry
+@app.get("/todo/{todo_id}", response_model=GetToDoResponse)
+async def get_todo(todo_id: UUID):
+    try:
+        todo = await service.get_todo(todo_id)
+        return GetToDoResponse(success=True, todo_entry=todo)
+    except ToDoNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
 
 
-@app.put("/todo/entry", tags=["todos"], response_model=ToDoResponse)
-async def update_todo(item_id: uuid.UUID, todo_update: TodoUpdateEntry):
-    """Update a todo item description."""
-    todo = await app.update_todo(item_id=item_id, todo_update=todo_update)
-    return todo
+@app.put("/todo/{todo_id}", response_model=ToDoResponse)
+async def update_todo(todo_id: UUID, payload: TodoUpdateEntry):
+    try:
+        todo = await service.update_todo(todo_id, payload)
+        return ToDoResponse(success=True, todo_entry=todo)
+    except ToDoNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
 
 
-@app.delete("/todo/entry", tags=["todos"])
-async def delete_todo(item_id: uuid.UUID):
-    """Delete a todo."""
-    todo = await app.delete_todo(item_id=item_id)
-    return todo
+@app.delete("/todo/{todo_id}", response_model=DeleteToDoResponse)
+async def delete_todo(todo_id: UUID):
+    try:
+        await service.delete_todo(todo_id)
+        return DeleteToDoResponse(success=True, message="Deleted successfully")
+    except ToDoNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
+
+
+@app.get("/todo", response_model=ListToDoResponse)
+async def list_todos(limit: int = 10, page: int = 1):
+    todos = await service.get_all_todos(limit, page)
+    return ListToDoResponse(success=True, results=len(todos), todo_entries=todos)
