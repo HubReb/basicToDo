@@ -189,7 +189,6 @@ const AddToDo = ({ fetchTodos }: { fetchTodos: () => void }) => {
         id: uuid(),
         title: item.trim(),
         description: "not implemented yet",
-        done: false  // By default mark as not done
       };
 
       await fetch(`http://localhost:8000/todo/`, {
