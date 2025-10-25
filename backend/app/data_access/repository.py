@@ -1,17 +1,14 @@
-"""A ToDo data class"""
 import uuid
 from abc import ABC, abstractmethod
-from contextlib import _GeneratorContextManager
-from typing import Any, List, Optional
+from typing import Callable, List, Optional
 
 from sqlalchemy.exc import IntegrityError
 
-from backend.app.data_access.database import get_db_session
+from backend.app.logger import CustomLogger
 from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.todo import TodoUpdateEntry
 
 
-# Add abstract base class:
 class ToDoRepositoryInterface(ABC):
     @abstractmethod
     def create_to_do(self, entry: ToDoEntryData) -> None:
@@ -39,95 +36,62 @@ class ToDoRepositoryInterface(ABC):
 
 
 class ToDoRepository(ToDoRepositoryInterface):
-    """Repository for ToDos"""
+    """Repository for ToDos (SQL-injection-safe)"""
 
-    def __init__(self, get_db_session: _GeneratorContextManager[Any] = get_db_session):
-        """Initialize repository"""
-        self.database = get_db_session
+    def __init__(self, session_manager: Callable, logger: CustomLogger):
+        self.session_manager = session_manager
+        self.logger = logger
 
-    def create_to_do(
-        self, entry: ToDoEntryData
-    ) -> None:
-        """Create a new ToDo entry."""
-        with self.database() as session:
+    def create_to_do(self, entry: ToDoEntryData) -> None:
+        with self.session_manager() as session:
             try:
                 session.add(entry)
-                session.commit()
             except IntegrityError as e:
-                session.rollback()
-                raise e
-            except Exception as e:
-                session.rollback()
-                raise e
-        return None
+                self.logger.error("Integrity error during insert: %s", e)
+                raise
 
     def delete_to_do(self, entry_id: uuid.UUID) -> bool:
-        """Soft delete a ToDo entry."""
         entry = self.get_to_do_entry(entry_id)
         if not entry:
             return False
-        with self.database() as session:
-            try:
-                entry.deleted = True
-                session.add(entry)
-                session.commit()
-                return True
-            except Exception as e:
-                session.rollback()
-                raise e
-
-    def hard_delete_to_do(self, to_do_id: uuid.UUID) -> bool:
-        """Hard delete a ToDo entry."""
-        to_do = self.get_to_do_entry(to_do_id)
-        if not to_do:
-            return False
-        with self.database() as session:
-            session.delete(to_do)
-            session.commit()
+        with self.session_manager() as session:
+            entry.deleted = True
+            session.merge(entry)
         return True
 
+    def hard_delete_to_do(self, to_do_id: uuid.UUID) -> bool:
+        entry = self.get_to_do_entry(to_do_id)
+        if not entry:
+            return False
+        with self.session_manager() as session:
+            session.delete(entry)
+        return True
 
-
-    def update_to_do(
-            self, entry_id: uuid.UUID, data: TodoUpdateEntry
-    ) -> Optional[ToDoEntryData]:
-        """Update an existing ToDo entry."""
-        with self.database() as session:
-            entry = self.get_to_do_entry(entry_id)
+    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateEntry) -> Optional[ToDoEntryData]:
+        with self.session_manager() as session:
+            entry = session.query(ToDoEntryData).filter(
+                ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False)
+            ).first()
             if not entry:
                 return None
-            update_data = data.model_dump(exclude_unset=True)
-            for key, value in update_data.items():
+            for key, value in data.model_dump(exclude_unset=True).items():
                 setattr(entry, key, value)
             try:
-                session.add(entry)
-                session.commit()
+                session.merge(entry)
             except IntegrityError as e:
-                session.rollback()
-                raise e
-            except Exception as e:
-                session.rollback()
-                raise e
-        return entry
+                self.logger.error("Integrity error during update: %s", e)
+                raise
+            return entry
 
     def get_to_do_entry(self, entry_id: uuid.UUID) -> Optional[ToDoEntryData]:
-        """Get an ToDo entry."""
-        with self.database() as session:
-            to_do_query = session.query(ToDoEntryData).filter_by(
-                id=entry_id
-            ).filter_by(deleted=False)
-            to_do_entry = to_do_query.first()
-            if not to_do_entry:
-                return None
-        return to_do_entry
+        with self.session_manager() as session:
+            return session.query(ToDoEntryData).filter(
+                ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False)
+            ).first()
 
-    def get_all_to_do_entries(
-        self, limit: int = 10, page: int = 1
-    ) -> List[ToDoEntryData]:
-        """Search all ToDo entries for the search string."""
+    def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[ToDoEntryData]:
         skip = (page - 1) * limit
-        with self.database() as session:
-            to_do_entries = (
-                session.query(ToDoEntryData).filter_by(deleted=False).limit(limit).offset(skip).all()
-            )
-        return to_do_entries
+        with self.session_manager() as session:
+            return session.query(ToDoEntryData).filter(
+                ToDoEntryData.deleted.is_(False)
+            ).offset(skip).limit(limit).all()

@@ -1,11 +1,12 @@
 """Unit tests for repository"""
 import datetime
+from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from backend.app.data_access.database import get_db_session
+from backend.app.data_access.database import safe_session_scope
 from backend.app.data_access.repository import ToDoRepository
 from backend.app.factory import create_todo_service
 from backend.app.models.todo import ToDoEntryData
@@ -20,6 +21,12 @@ def sample_todo_data():
         "title": "Test Todo",
         "description": "This is a test for todo",
     }
+
+
+@pytest.fixture
+def mock_logger():
+    logger = MagicMock()
+    return logger
 
 @pytest.fixture
 def sample_todo_data_entry(sample_todo_data):
@@ -54,10 +61,10 @@ async def test_create_todo_success(sample_todo_data_entry_for_service):
 
 
 @pytest.fixture
-def test_setup(sample_todo_data_entry):
+def test_setup(sample_todo_data_entry, mock_logger):
     """Create test data."""
     test_item = sample_todo_data_entry
-    repo = ToDoRepository(get_db_session)
+    repo = ToDoRepository(safe_session_scope, mock_logger)
     yield test_item, repo
 
 
