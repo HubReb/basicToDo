@@ -1,11 +1,10 @@
 """ToDo and response schemas"""
 
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
-
 
 
 class ToDoSchema(BaseModel):
@@ -15,8 +14,8 @@ class ToDoSchema(BaseModel):
     title: str = Field(
         ..., description="The title of the ToDo to be shown.", examples=["Wash dishes"]
     )
-    description: str = Field(
-        ...,
+    description: Optional[str] = Field(
+        None,
         description="The full description of the ToDo",
         examples=["Read the book until page 223."],
     )
@@ -42,11 +41,10 @@ class ToDoSchema(BaseModel):
 
     @field_validator("description")
     def verify_description_is_not_empty(cls, value):
-        """Verify description is not empty."""
-        value = value.strip()
-        if not value:
-            raise ValueError("description must not be empty.")
-        return value
+        """Verify description is valid (allows None/empty)."""
+        if value is None:
+            return None
+        return value.strip() if isinstance(value, str) else value
 
     @field_validator("id")
     def verify_id(cls, value):

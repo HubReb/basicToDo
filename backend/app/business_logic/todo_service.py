@@ -20,7 +20,7 @@ from backend.app.schemas.todo import ToDoCreateEntry, ToDoSchema, TodoUpdateEntr
 
 # compile once for performance
 _SQL_INJECTION_RE = re.compile(
-    r"(?i)(--|;|/\*|\*/|\bxp_cmdshell\b|\b(?:drop|delete|insert|update|exec(?:ute)?|union|select|shutdown|create|alter|rename|truncate|declare)\b)"
+    r"(?i)(--|;|/\*|\*/|\bxp_cmdshell\b|\b(?:drop|delete|insert|update|exec(?:ute)?|union|select|shutdown|create|alter|rename|truncate|declare|OR)\b)"
 )
 
 
@@ -111,14 +111,19 @@ class ToDoService:
             raise ToDoRepositoryError from exc
 
     async def update_todo(self, to_do_id: uuid.UUID, payload: TodoUpdateEntry) -> ToDoSchema:
+        if payload.done:
+            return self.mark_to_do_as_done(to_do_id)
+        if payload.title == '':
+            self.logger.error("Title can't be empty")
+            raise ToDoValidationError(f"Title cannot be empty")
         try:
             # Sanitize the input fields to protect against SQL injection
-            sanitized_title = sanitize_text(payload.title)
-            sanitized_description = sanitize_text(payload.description)
-
-            # Apply sanitized values to the payload before passing to the repository
-            payload.title = sanitized_title
-            payload.description = sanitized_description
+            if payload.title:
+                sanitized_title = sanitize_text(payload.title)
+                payload.title = sanitized_title
+            if payload.description:
+                sanitized_description = sanitize_text(payload.description)
+                payload.description = sanitized_description
 
             updated_entry = self.repository.update_to_do(to_do_id, payload)
             if not updated_entry:
@@ -162,3 +167,24 @@ class ToDoService:
         except Exception as exc:
             self.logger.error("Error listing ToDos: %s", exc)
             raise ToDoRepositoryError from exc
+
+    def mark_to_do_as_done(self, to_do_id: uuid.UUID) -> ToDoSchema:
+        """ Mark a todo as done.
+        """
+        try:
+            entry = self.repository.get_to_do_entry(to_do_id)
+            done_entry = TodoUpdateEntry(id=entry.id, done=True, description=entry.description, title=entry.title)
+            updated_entry = self.repository.update_to_do(to_do_id, TodoUpdateEntry.model_validate(done_entry))
+            if not updated_entry:
+                raise ToDoNotFoundError
+        except ToDoNotFoundError:
+            self.logger.error("To Do not found: %s", to_do_id)
+            raise ToDoNotFoundError
+        except ToDoValidationError:
+            self.logger.warning("Validation error: %s", to_do_id)
+            raise ToDoValidationError
+        except Exception as exc:
+            self.logger.error("Error marking as done: %s", exc)
+            raise ToDoRepositoryError from exc
+
+        return ToDoSchema.model_validate(updated_entry)

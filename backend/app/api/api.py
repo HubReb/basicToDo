@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException, status
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
     ToDoNotFoundError,
-    ToDoRepositoryError,
+    ToDoRepositoryError, ToDoValidationError,
 )
 from backend.app.factory import create_todo_service
 from backend.app.schemas.todo import (DeleteToDoResponse, GetToDoResponse, ListToDoResponse, ToDoCreateEntry,
@@ -23,6 +23,8 @@ async def create_todo(payload: ToDoCreateEntry):
         return ToDoResponse(success=True, todo_entry=todo)
     except ToDoAlreadyExistsError:
         raise HTTPException(status.HTTP_409_CONFLICT, "ToDo already exists")
+    except ToDoValidationError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bad request")
     except ToDoRepositoryError:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 
@@ -43,6 +45,10 @@ async def update_todo(todo_id: UUID, payload: TodoUpdateEntry):
         return ToDoResponse(success=True, todo_entry=todo)
     except ToDoNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
+    except ToDoValidationError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bad request")
+    except ToDoRepositoryError:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 
 
 @app.delete("/todo/{todo_id}", response_model=DeleteToDoResponse)
@@ -52,6 +58,10 @@ async def delete_todo(todo_id: UUID):
         return DeleteToDoResponse(success=True, message="Deleted successfully")
     except ToDoNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
+    except ToDoValidationError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bad request")
+    except ToDoRepositoryError:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 
 
 @app.get("/todo", response_model=ListToDoResponse)
