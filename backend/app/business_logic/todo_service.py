@@ -51,6 +51,7 @@ def validate_uuid(value: str | uuid.UUID) -> uuid.UUID:
         raise ToDoValidationError(f"Invalid UUID: {value}") from exc
 
 
+
 async def create_entry_data_from_create_entry(payload: ToDoCreateEntry) -> ToDoEntryData:
     """Create a sanitized ToDoEntryData object from input."""
     return ToDoEntryData(
@@ -150,6 +151,9 @@ class ToDoService:
         except ToDoNotFoundError:
             self.logger.error("To Do not found: %s", to_do_id)
             raise ToDoNotFoundError
+        except ToDoValidationError:
+            self.logger.error("Invalid id: %s", to_do_id)
+            raise ToDoValidationError
         except Exception as exc:
             self.logger.error("Deletion error: %s", exc)
             raise ToDoRepositoryError from exc
