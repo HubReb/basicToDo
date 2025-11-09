@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app.api.api import app
-from backend.app.schemas.todo import ToDoSchema
+from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 
 
 @pytest.fixture

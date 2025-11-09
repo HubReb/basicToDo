@@ -4,7 +4,7 @@ import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from backend.app.schemas.todo import ToDoSchema
+from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 from backend.tests.test_api.test_setup_for_api_endpoins import (client, mock_service)
 
 

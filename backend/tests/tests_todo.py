@@ -10,7 +10,8 @@ from backend.app.data_access.database import safe_session_scope
 from backend.app.data_access.repository import ToDoRepository
 from backend.app.factory import create_todo_service
 from backend.app.models.todo import ToDoEntryData
-from backend.app.schemas.todo import ToDoCreateEntry, TodoUpdateEntry
+from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
+from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 # Better test structure
@@ -40,7 +41,7 @@ def sample_todo_data_entry(sample_todo_data):
 @pytest.fixture
 def sample_todo_data_entry_for_service(sample_todo_data):
     test_item = sample_todo_data
-    todo = ToDoCreateEntry(
+    todo = ToDoCreateScheme(
         id=test_item["id"], title=test_item["title"], description=test_item["description"]
     )
     yield todo
@@ -133,16 +134,16 @@ def test_update_entry_fails_not_found(test_setup):
     """Test update a non-existing entry."""
     test_data = test_setup[0]
     repo = test_setup[1]
-    test_update_data = TodoUpdateEntry(id=test_data.id, title="new title", description=test_data.description,
-                                       done=test_data.done)
+    test_update_data = TodoUpdateScheme(id=test_data.id, title="new title", description=test_data.description,
+                                        done=test_data.done)
     assert repo.update_to_do(test_data.id, test_update_data) is None
 
 def test_update_entry_success(test_setup_with_addition):
     """Test update an entry."""
     test_data = test_setup_with_addition[0]
     repo = test_setup_with_addition[1]
-    test_update_data = TodoUpdateEntry(id=test_data.id, title="new title", description=test_data.description,
-                                       done=test_data.done)
+    test_update_data = TodoUpdateScheme(id=test_data.id, title="new title", description=test_data.description,
+                                        done=test_data.done)
     result = repo.update_to_do(test_data.id, test_update_data)
     assert result.title == "new title"
     new_result = repo.get_to_do_entry(test_data.id)

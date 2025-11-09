@@ -2,10 +2,11 @@ import datetime
 import os
 import uuid
 from contextlib import contextmanager
+from typing import Generator
 
 from sqlalchemy import Boolean, CheckConstraint, Column, String, TIMESTAMP, Table, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import registry, sessionmaker
+from sqlalchemy.orm import Session, registry, sessionmaker
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.sql import func
 from sqlalchemy_utils import UUIDType
@@ -40,10 +41,10 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
-)
+)  # type: ignore
 
 @contextmanager
-def safe_session_scope():
+def safe_session_scope() -> Generator[Session, None, None]:
     session = SessionLocal()
     try:
         yield session
@@ -56,7 +57,7 @@ def safe_session_scope():
 
 
 # ORM-Table Definition (with constraint)
-class ToDoORM(Base):
+class ToDoORM(Base):  # type: ignore
     __tablename__ = "toDo"
 
     id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
@@ -72,7 +73,7 @@ class ToDoORM(Base):
         CheckConstraint("length(description) <= 255", name="description_length_check"),
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<ToDo(id={self.id}, title='{self.title}')>"
 
 

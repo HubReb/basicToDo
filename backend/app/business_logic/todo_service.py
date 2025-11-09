@@ -1,194 +1,96 @@
 """Business logic layer for ToDo management (secure version)."""
-import datetime
-import re
 import uuid
 from typing import List
 
 from pydantic import ValidationError
-from sqlalchemy.exc import IntegrityError
 
-from backend.app.business_logic.exceptions import (
-    ToDoAlreadyExistsError,
-    ToDoNotFoundError,
-    ToDoRepositoryError,
-    ToDoValidationError,
-)
+from backend.app.business_logic.builders.builder_interface import BuilderInterface
+from backend.app.business_logic.decorators import handle_service_exceptions
+from backend.app.business_logic.exceptions import ToDoNotFoundError
+from backend.app.business_logic.validators import FieldValidator, ValidatorInterface
 from backend.app.data_access.repository import ToDoRepositoryInterface
 from backend.app.logger import CustomLogger
-from backend.app.models.todo import ToDoEntryData
-from backend.app.schemas.todo import ToDoCreateEntry, ToDoSchema, TodoUpdateEntry
-
-# compile once for performance
-_SQL_INJECTION_RE = re.compile(
-    r"(?i)(--|;|/\*|\*/|\bxp_cmdshell\b|\b(?:drop|delete|insert|update|exec(?:ute)?|union|select|shutdown|create|alter|rename|truncate|declare|OR)\b)"
-)
-
-
-def sanitize_text(value: str | None) -> str | None:
-    """Sanitize input to prevent obvious SQL-injection patterns.
-
-    - Rejects operator tokens (e.g. ';', '--', '/*', '*/') anywhere in string.
-    - Rejects SQL keywords as whole words (so 'updated' is allowed).
-    - Returns stripped string if OK.
-    """
-    if value is None:
-        return None
-
-    # Debug: remove or convert to proper logging in production
-    # print(f"Sanitizing value: {value!r}")
-
-    if _SQL_INJECTION_RE.search(value):
-        raise ToDoValidationError(f"Invalid characters or SQL keywords in input: {value!r}")
-
-    return value.strip()
-
-
-def validate_uuid(value: str | uuid.UUID) -> uuid.UUID:
-    """Validate UUID string."""
-    try:
-        return value if isinstance(value, uuid.UUID) else uuid.UUID(str(value))
-    except ValueError as exc:
-        raise ToDoValidationError(f"Invalid UUID: {value}") from exc
-
-
-
-async def create_entry_data_from_create_entry(payload: ToDoCreateEntry) -> ToDoEntryData:
-    """Create a sanitized ToDoEntryData object from input."""
-    return ToDoEntryData(
-        id=validate_uuid(payload.id),
-        title=sanitize_text(payload.title),
-        description=sanitize_text(payload.description),
-        created_at=datetime.datetime.now(),
-        updated_at=None,
-        deleted=False,
-        done=False,
-    )
+from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
+from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
+from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 class ToDoService:
     """Application service for ToDo operations (secure)."""
 
-    def __init__(self, repository: ToDoRepositoryInterface, logger: CustomLogger):
+    def __init__(
+            self,
+            repository: ToDoRepositoryInterface,
+            logger: CustomLogger,
+            input_sanitizer: ValidatorInterface,
+            uuid_validator: ValidatorInterface,
+            field_validator: ValidatorInterface,
+            builder: BuilderInterface,
+    ):
         self.repository = repository
         self.logger = logger
+        self.input_sanitizer = input_sanitizer
+        self.uuid_validator = uuid_validator
+        if not isinstance(field_validator, FieldValidator):
+            raise ValidationError(f"Field validator must be of type {FieldValidator.__name__}")
+        self.field_validator = field_validator
+        self.builder = builder
 
-    async def create_todo(self, payload: ToDoCreateEntry) -> ToDoSchema:
-        try:
-            # Sanitize the title and description fields before proceeding
-            sanitized_title = sanitize_text(payload.title)
-            sanitized_description = sanitize_text(payload.description)
-            entry_data = await create_entry_data_from_create_entry(payload)
-            entry_data.title = sanitized_title
-            entry_data.description = sanitized_description
-            self.repository.create_to_do(entry_data)
-            return ToDoSchema.model_validate(entry_data)
-        except IntegrityError:
-            raise ToDoAlreadyExistsError
-        except ToDoValidationError as ve:
-            self.logger.warning("Validation error: %s", ve)
-            raise ToDoValidationError from ve
-        except Exception as exc:
-            self.logger.error("Error creating ToDo: %s", exc)
-            raise ToDoRepositoryError from exc
+    @handle_service_exceptions
+    async def create_todo(self, payload: ToDoCreateScheme) -> ToDoSchema:
+        entry_data = await self.builder.build_from_create_schema(payload)
+        self.repository.create_to_do(entry_data)
+        return ToDoSchema.model_validate(entry_data)
 
+    @handle_service_exceptions
     async def get_todo(self, to_do_id: str | uuid.UUID) -> ToDoSchema:
-        try:
-            valid_uuid = validate_uuid(to_do_id)
-        except ToDoValidationError as ve:
-            self.logger.warning("Invalid UUID: %s", ve)
-            raise
-        try:
-            entry = self.repository.get_to_do_entry(valid_uuid)
-            if not entry:
-                raise ToDoNotFoundError
-            return ToDoSchema.model_validate(entry)
-        except ToDoNotFoundError:
-            raise
-        except ToDoValidationError as ve:
-            self.logger.warning("Invalid DB entry: %s", ve)
-            raise ToDoValidationError from ve
-        except Exception as exc:
-            self.logger.error("Error retrieving ToDo: %s", exc)
-            raise ToDoRepositoryError from exc
+        valid_uuid = self.uuid_validator.validate(to_do_id)
+        entry = self.repository.get_to_do_entry(valid_uuid)
+        if not entry:
+            raise ToDoNotFoundError
+        return ToDoSchema.model_validate(entry)
 
-    async def update_todo(self, to_do_id: uuid.UUID, payload: TodoUpdateEntry) -> ToDoSchema:
+    @handle_service_exceptions
+    async def update_todo(self, to_do_id: uuid.UUID, payload: TodoUpdateScheme) -> ToDoSchema:
         if payload.done:
-            return self.mark_to_do_as_done(to_do_id)
-        if payload.title == '':
-            self.logger.error("Title can't be empty")
-            raise ToDoValidationError(f"Title cannot be empty")
-        try:
-            # Sanitize the input fields to protect against SQL injection
-            if payload.title:
-                sanitized_title = sanitize_text(payload.title)
-                payload.title = sanitized_title
-            if payload.description:
-                sanitized_description = sanitize_text(payload.description)
-                payload.description = sanitized_description
+            updated_entry = await self.mark_to_do_as_done(to_do_id)
+            return updated_entry
 
-            updated_entry = self.repository.update_to_do(to_do_id, payload)
-            if not updated_entry:
-                raise ToDoNotFoundError
+        if payload.title is not None:
+            payload.title = self.field_validator.validate_required(payload.title, field_name="title")
+        if payload.description is not None:
+            payload.description = self.field_validator.validate_optional(payload.description)
 
-            return ToDoSchema.model_validate(updated_entry)
-        except ToDoNotFoundError:
-            raise
-        except IntegrityError:
-            raise ToDoAlreadyExistsError
-        except ToDoValidationError as ve:
-            self.logger.warning("Validation error on update: %s", ve)
-            raise ToDoValidationError from ve
-        except Exception as exc:
-            self.logger.error("Update error: %s", exc)
-            raise ToDoRepositoryError from exc
+        updated_entry = self.repository.update_to_do(to_do_id, payload)
+        if not updated_entry:
+            raise ToDoNotFoundError
 
+        return ToDoSchema.model_validate(updated_entry)
+
+    @handle_service_exceptions
     async def delete_todo(self, to_do_id: uuid.UUID) -> bool:
-        try:
-            deleted = self.repository.delete_to_do(validate_uuid(to_do_id))
-            if not deleted:
-                raise ToDoNotFoundError
-            return True
-        except ToDoNotFoundError:
-            self.logger.error("To Do not found: %s", to_do_id)
+        deleted = self.repository.delete_to_do(self.uuid_validator.validate(to_do_id))
+        if not deleted:
             raise ToDoNotFoundError
-        except ToDoValidationError:
-            self.logger.error("Invalid id: %s", to_do_id)
-            raise ToDoValidationError
-        except Exception as exc:
-            self.logger.error("Deletion error: %s", exc)
-            raise ToDoRepositoryError from exc
+        return True
 
+    @handle_service_exceptions
     async def get_all_todos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
-        try:
-            entries = self.repository.get_all_to_do_entries(limit, page)
-            result: list[ToDoSchema] = []
-            for entry in entries:
-                try:
-                    result.append(ToDoSchema.model_validate(entry))
-                except ValidationError as e:
-                    self.logger.warning("Invalid DB entry skipped: %s", e)
-            return result
-        except Exception as exc:
-            self.logger.error("Error listing ToDos: %s", exc)
-            raise ToDoRepositoryError from exc
+        entries = self.repository.get_all_to_do_entries(limit, page)
+        result: list[ToDoSchema] = []
+        for entry in entries:
+            try:
+                result.append(ToDoSchema.model_validate(entry))
+            except ValidationError as e:
+                self.logger.warning("Invalid DB entry skipped: %s", e)
+        return result
 
-    def mark_to_do_as_done(self, to_do_id: uuid.UUID) -> ToDoSchema:
-        """ Mark a todo as done.
-        """
-        try:
-            entry = self.repository.get_to_do_entry(to_do_id)
-            done_entry = TodoUpdateEntry(id=entry.id, done=True, description=entry.description, title=entry.title)
-            updated_entry = self.repository.update_to_do(to_do_id, TodoUpdateEntry.model_validate(done_entry))
-            if not updated_entry:
-                raise ToDoNotFoundError
-        except ToDoNotFoundError:
-            self.logger.error("To Do not found: %s", to_do_id)
+    @handle_service_exceptions
+    async def mark_to_do_as_done(self, to_do_id: uuid.UUID) -> ToDoSchema:
+        """Mark a todo as done."""
+        entry = self.repository.get_to_do_entry(to_do_id)
+        if not entry:
             raise ToDoNotFoundError
-        except ToDoValidationError:
-            self.logger.warning("Validation error: %s", to_do_id)
-            raise ToDoValidationError
-        except Exception as exc:
-            self.logger.error("Error marking as done: %s", exc)
-            raise ToDoRepositoryError from exc
-
+        done_entry = TodoUpdateScheme(id=entry.id, done=True, description=entry.description, title=entry.title)
+        updated_entry = self.repository.update_to_do(to_do_id, TodoUpdateScheme.model_validate(done_entry))
         return ToDoSchema.model_validate(updated_entry)

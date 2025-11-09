@@ -11,8 +11,11 @@ from backend.app.business_logic.exceptions import (
     ToDoValidationError,
 )
 from backend.app.business_logic.todo_service import ToDoService
+from backend.app.business_logic.validators import ValidatorFactory
+from backend.app.logger import CustomLogger
 from backend.app.models.todo import ToDoEntryData
-from backend.app.schemas.todo import ToDoCreateEntry, TodoUpdateEntry
+from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
+from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 @pytest.fixture
@@ -28,14 +31,53 @@ def mock_logger():
 
 
 @pytest.fixture
-def todo_service(mock_repository, mock_logger):
-    return ToDoService(repository=mock_repository, logger=mock_logger)
+def real_logger():
+    """Create a real logger for validators that need it."""
+    return CustomLogger("TestService")
+
+
+@pytest.fixture
+def mock_input_sanitizer(real_logger):
+    """Create real InputSanitizer for proper validation."""
+    return ValidatorFactory.create_input_sanitizer(real_logger)
+
+
+@pytest.fixture
+def mock_uuid_validator(real_logger):
+    """Create real UUIDValidator for proper validation."""
+    return ValidatorFactory.create_uuid_validator(real_logger)
+
+
+@pytest.fixture
+def mock_field_validator(real_logger):
+    """Create real FieldValidator for proper validation."""
+    return ValidatorFactory.create_field_validator(real_logger)
+
+
+@pytest.fixture
+def mock_builder(mock_uuid_validator, mock_field_validator):
+    """Create a mock builder."""
+    from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
+    return ToDoEntryBuilder(mock_uuid_validator, mock_field_validator)
+
+
+@pytest.fixture
+def todo_service(mock_repository, mock_logger, mock_input_sanitizer, mock_uuid_validator, mock_field_validator,
+                 mock_builder):
+    return ToDoService(
+        repository=mock_repository,
+        logger=mock_logger,
+        input_sanitizer=mock_input_sanitizer,
+        uuid_validator=mock_uuid_validator,
+        field_validator=mock_field_validator,
+        builder=mock_builder,
+    )
 
 
 @pytest.mark.asyncio
 async def test_create_todo_success(todo_service, mock_repository):
     todo_id = uuid.uuid4()
-    payload = ToDoCreateEntry(id=todo_id, title="Test", description="Desc")
+    payload = ToDoCreateScheme(id=todo_id, title="Test", description="Desc")
     mock_repository.create_to_do.return_value = None
 
     result = await todo_service.create_todo(payload)
@@ -47,7 +89,7 @@ async def test_create_todo_success(todo_service, mock_repository):
 @pytest.mark.asyncio
 async def test_create_todo_already_exists(todo_service, mock_repository):
     todo_id = uuid.uuid4()
-    payload = ToDoCreateEntry(id=todo_id, title="Duplicate", description="Desc")
+    payload = ToDoCreateScheme(id=todo_id, title="Duplicate", description="Desc")
     mock_repository.create_to_do.side_effect = IntegrityError("msg", "params", "orig")
 
     with pytest.raises(ToDoAlreadyExistsError):
@@ -86,7 +128,7 @@ async def test_get_todo_invalid_uuid(todo_service):
 @pytest.mark.asyncio
 async def test_update_todo_success(todo_service, mock_repository):
     todo_id = uuid.uuid4()
-    payload = TodoUpdateEntry(id=todo_id, title="Updated", description="Updated")
+    payload = TodoUpdateScheme(id=todo_id, title="Updated", description="Updated")
     mock_entry = ToDoEntryData(id=todo_id, title="Updated", description="Updated",
                                created_at=datetime.datetime.utcnow(), updated_at=datetime.datetime.utcnow(), done=False,
                                deleted=False)
@@ -102,7 +144,7 @@ async def test_update_todo_success(todo_service, mock_repository):
 async def test_update_todo_not_found(todo_service, mock_repository):
     mock_repository.update_to_do.return_value = None
     todo_id = uuid.uuid4()
-    payload = TodoUpdateEntry(id=todo_id, title="Updated", description="Updated")
+    payload = TodoUpdateScheme(id=todo_id, title="Updated", description="Updated")
 
     with pytest.raises(ToDoNotFoundError):
         await todo_service.update_todo(todo_id, payload)
@@ -111,7 +153,7 @@ async def test_update_todo_not_found(todo_service, mock_repository):
 @pytest.mark.asyncio
 async def test_update_todo_already_exists(todo_service, mock_repository):
     todo_id = uuid.uuid4()
-    payload = TodoUpdateEntry(id=todo_id, title="Duplicate", description="Desc")
+    payload = TodoUpdateScheme(id=todo_id, title="Duplicate", description="Desc")
     mock_repository.update_to_do.side_effect = IntegrityError("msg", "params", "orig")
 
     with pytest.raises(ToDoAlreadyExistsError):

@@ -1,12 +1,12 @@
 import uuid
 from abc import ABC, abstractmethod
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, cast
 
 from sqlalchemy.exc import IntegrityError
 
 from backend.app.logger import CustomLogger
 from backend.app.models.todo import ToDoEntryData
-from backend.app.schemas.todo import TodoUpdateEntry
+from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 class ToDoRepositoryInterface(ABC):
@@ -23,7 +23,7 @@ class ToDoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateEntry) -> Optional[ToDoEntryData]:
+    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateScheme) -> Optional[ToDoEntryData]:
         pass
 
     @abstractmethod
@@ -67,9 +67,9 @@ class ToDoRepository(ToDoRepositoryInterface):
             session.delete(entry)
         return True
 
-    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateEntry) -> Optional[ToDoEntryData]:
+    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateScheme) -> Optional[ToDoEntryData]:
         with self.session_manager() as session:
-            entry = session.query(ToDoEntryData).filter(
+            entry: Optional[ToDoEntryData] = session.query(ToDoEntryData).filter(
                 ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False)
             ).first()
             if not entry:
@@ -85,13 +85,13 @@ class ToDoRepository(ToDoRepositoryInterface):
 
     def get_to_do_entry(self, entry_id: uuid.UUID) -> Optional[ToDoEntryData]:
         with self.session_manager() as session:
-            return session.query(ToDoEntryData).filter(
+            return cast(Optional[ToDoEntryData], session.query(ToDoEntryData).filter(
                 ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False)
-            ).first()
+            ).first())
 
     def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[ToDoEntryData]:
         skip = (page - 1) * limit
         with self.session_manager() as session:
-            return session.query(ToDoEntryData).filter(
+            return cast(List[ToDoEntryData], session.query(ToDoEntryData).filter(
                 ToDoEntryData.deleted.is_(False)
-            ).offset(skip).limit(limit).all()
+            ).offset(skip).limit(limit).all())

@@ -12,7 +12,6 @@ class TestErrorResponses:
 
     def test_404_error_format(self, client, mock_service):
         """Test 404 error has consistent format."""
-        # Mock service to raise not found error
         mock_service.get_todo = AsyncMock(side_effect=ToDoNotFoundError())
 
         response = client.get(f"/todo/{uuid4()}")

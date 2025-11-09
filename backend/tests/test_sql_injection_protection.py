@@ -8,7 +8,8 @@ import pytest
 
 from backend.app.business_logic.exceptions import (ToDoNotFoundError, ToDoValidationError)
 from backend.app.factory import create_todo_service
-from backend.app.schemas.todo import ToDoCreateEntry, TodoUpdateEntry
+from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
+from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 @pytest.fixture
@@ -20,7 +21,7 @@ def todo_service():
 @pytest.mark.asyncio
 async def test_create_valid_todo(todo_service):
     """Should create todo with normal text."""
-    todo = ToDoCreateEntry(
+    todo = ToDoCreateScheme(
         id=uuid4(),
         title="Buy milk",
         description="Remember to buy almond milk"
@@ -33,10 +34,10 @@ async def test_create_valid_todo(todo_service):
 @pytest.mark.asyncio
 async def test_update_valid_todo(todo_service):
     """Should allow updating with valid text."""
-    todo = ToDoCreateEntry(id=uuid4(), title="Clean kitchen", description="Morning task")
+    todo = ToDoCreateScheme(id=uuid4(), title="Clean kitchen", description="Morning task")
     created = await todo_service.create_todo(todo)
 
-    update = TodoUpdateEntry(
+    update = TodoUpdateScheme(
         id=created.id,
         title="Clean kitchen (updated)",
         description="Before lunch",
@@ -62,7 +63,7 @@ async def test_create_todo_with_sql_injection_attempt(todo_service):
 
     for payload in malicious_inputs:
         with pytest.raises(ToDoValidationError):
-            todo = ToDoCreateEntry(
+            todo = ToDoCreateScheme(
                 id=uuid4(),
                 title=payload,
                 description="attack test"
@@ -73,10 +74,10 @@ async def test_create_todo_with_sql_injection_attempt(todo_service):
 @pytest.mark.asyncio
 async def test_update_todo_with_sql_injection(todo_service):
     """Should reject SQL in title or description during update."""
-    todo = ToDoCreateEntry(id=uuid4(), title="Test", description="Legit")
+    todo = ToDoCreateScheme(id=uuid4(), title="Test", description="Legit")
     created = await todo_service.create_todo(todo)
 
-    bad_update = TodoUpdateEntry(
+    bad_update = TodoUpdateScheme(
         id=created.id,
         title="; DROP TABLE toDo;",
         description="none",
