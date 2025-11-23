@@ -16,6 +16,6 @@ class ListToDoResponse(ApiResponse):
     @field_validator("todo_entries")
     def validate_todo_entry_is_not_null(cls, value: List[ToDoSchema]) -> List[ToDoSchema]:
         """Verify todo_entries is not null."""
-        if not value:
+        if value is None:
             raise ValueError("todo_entry must not be null.")
         return value
