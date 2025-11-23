@@ -1,124 +1,96 @@
-"""The webservice base class"""
-import datetime
+"""Business logic layer for ToDo management (secure version)."""
 import uuid
 from typing import List
 
-from fastapi import HTTPException, status
 from pydantic import ValidationError
-from sqlalchemy.exc import IntegrityError
 
-from backend.app.data_access.repository import ToDoRepository
+from backend.app.business_logic.builders.builder_interface import BuilderInterface
+from backend.app.business_logic.decorators import handle_service_exceptions
+from backend.app.business_logic.exceptions import ToDoNotFoundError
+from backend.app.business_logic.validators import FieldValidator, ValidatorInterface
+from backend.app.data_access.repository import ToDoRepositoryInterface
 from backend.app.logger import CustomLogger
-from backend.app.models.todo import ToDoEntryData
-from backend.app.schemas.todo import DeleteToDoResponse, GetToDoResponse, ToDoCreateEntry, ToDoResponse, ToDoSchema, \
-    TodoUpdateEntry
-
-
-async def create_entry_data_from_create_entry(payload: ToDoCreateEntry) -> ToDoEntryData:
-    """Create a ToDoEntryData object from a ToDoCreateEntry."""
-    to_do_schema = payload.model_dump()
-    to_do_data_schema = ToDoEntryData(to_do_schema.get("id"), to_do_schema.get("title"),
-                                      to_do_schema.get("description"), created_at=datetime.datetime.now(),
-                                      updated_at=None, deleted=False, done=False)
-    return to_do_data_schema
+from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
+from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
+from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 class ToDoService:
-    """To Do service"""
+    """Application service for ToDo operations (secure)."""
 
-    def __init__(self, repository: ToDoRepository, logger: CustomLogger):
+    def __init__(
+            self,
+            repository: ToDoRepositoryInterface,
+            logger: CustomLogger,
+            input_sanitizer: ValidatorInterface,
+            uuid_validator: ValidatorInterface,
+            field_validator: ValidatorInterface,
+            builder: BuilderInterface,
+    ):
         self.repository = repository
         self.logger = logger
+        self.input_sanitizer = input_sanitizer
+        self.uuid_validator = uuid_validator
+        if not isinstance(field_validator, FieldValidator):
+            raise ValidationError(f"Field validator must be of type {FieldValidator.__name__}")
+        self.field_validator = field_validator
+        self.builder = builder
 
-    @staticmethod
-    def raise_http_exception(
-            status_code: int
-    ) -> HTTPException:
-        """Raise an exception error"""
-        match status_code:
-            case status.HTTP_409_CONFLICT:
-                raise HTTPException(
-                    status_code=status_code,
-                    detail="A ToDo with the given details does already exists.",
-                )
-            case status.HTTP_500_INTERNAL_SERVER_ERROR:
-                raise HTTPException(
-                    status_code=status_code,
-                    detail="An error occurred while creating the ToDo entry.",
-                )
-            case status.HTTP_404_NOT_FOUND:
-                raise HTTPException(
-                    status_code=status_code,
-                    detail=f"No ToDo entry.",
-                )
-            case _:
-                raise ValueError("{status_code} is unknown.")
+    @handle_service_exceptions
+    async def create_todo(self, payload: ToDoCreateScheme) -> ToDoSchema:
+        entry_data = await self.builder.build_from_create_schema(payload)
+        self.repository.create_to_do(entry_data)
+        return ToDoSchema.model_validate(entry_data)
 
-    async def update_todo(
-            self, to_do_id: uuid.UUID, payload: TodoUpdateEntry
-    ) -> ToDoResponse | HTTPException:
-        """Update an existing entry."""
-        try:
-            updated_entry = self.repository.update_to_do(to_do_id, payload)
-            to_do_schema = ToDoSchema.model_validate(updated_entry)
-            return ToDoResponse(
-                success=True, todo_entry=to_do_schema
-            )
-        except ValueError:
-            return self.raise_http_exception(status.HTTP_404_NOT_FOUND)
-        except IntegrityError:
-            return self.raise_http_exception(status.HTTP_409_CONFLICT)
-        except HTTPException:
-            return self.raise_http_exception(
-                status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+    @handle_service_exceptions
+    async def get_todo(self, to_do_id: str | uuid.UUID) -> ToDoSchema:
+        valid_uuid = self.uuid_validator.validate(to_do_id)
+        entry = self.repository.get_to_do_entry(valid_uuid)
+        if not entry:
+            raise ToDoNotFoundError
+        return ToDoSchema.model_validate(entry)
 
-    async def get_todo(self, to_do_id: uuid.UUID) -> GetToDoResponse | HTTPException:
-        """Get a specific entry."""
+    @handle_service_exceptions
+    async def update_todo(self, to_do_id: uuid.UUID, payload: TodoUpdateScheme) -> ToDoSchema:
+        if payload.done:
+            updated_entry = await self.mark_to_do_as_done(to_do_id)
+            return updated_entry
+
+        if payload.title is not None:
+            payload.title = self.field_validator.validate_required(payload.title, field_name="title")
+        if payload.description is not None:
+            payload.description = self.field_validator.validate_optional(payload.description)
+
+        updated_entry = self.repository.update_to_do(to_do_id, payload)
+        if not updated_entry:
+            raise ToDoNotFoundError
+
+        return ToDoSchema.model_validate(updated_entry)
+
+    @handle_service_exceptions
+    async def delete_todo(self, to_do_id: uuid.UUID) -> bool:
+        deleted = self.repository.delete_to_do(self.uuid_validator.validate(to_do_id))
+        if not deleted:
+            raise ToDoNotFoundError
+        return True
+
+    @handle_service_exceptions
+    async def get_all_todos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
+        entries = self.repository.get_all_to_do_entries(limit, page)
+        result: list[ToDoSchema] = []
+        for entry in entries:
+            try:
+                result.append(ToDoSchema.model_validate(entry))
+            except ValidationError as e:
+                self.logger.warning("Invalid DB entry skipped: %s", e)
+        return result
+
+    @handle_service_exceptions
+    async def mark_to_do_as_done(self, to_do_id: uuid.UUID) -> ToDoSchema:
+        """Mark a todo as done."""
         entry = self.repository.get_to_do_entry(to_do_id)
         if not entry:
-            return self.raise_http_exception(status.HTTP_404_NOT_FOUND)
-        try:
-            return GetToDoResponse(
-                success=True,
-                todo_entry=ToDoSchema.model_validate(entry),
-            )
-        except HTTPException:
-            return self.raise_http_exception(
-                status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    async def create_todo(self, payload: ToDoCreateEntry) -> ToDoResponse | None:
-        """Add a new entry."""
-        to_do_data_schema = await create_entry_data_from_create_entry(payload)
-        try:
-            self.repository.create_to_do(to_do_data_schema)
-            to_do_schema = ToDoSchema.model_validate(to_do_data_schema)
-            return ToDoResponse(
-                success=True, todo_entry=to_do_schema
-            )
-        except IntegrityError:
-            self.raise_http_exception(status.HTTP_409_CONFLICT)
-
-    async def delete_todo(
-        self, to_do_id: uuid.UUID
-    ) -> DeleteToDoResponse | HTTPException:
-        """Soft delete a todo entry."""
-        success = self.repository.delete_to_do(to_do_id)
-        if success:
-            return DeleteToDoResponse(
-                success=True, message="ToDo deleted successfully."
-            )
-        return self.raise_http_exception(status.HTTP_404_NOT_FOUND)
-
-    async def get_all_todos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
-        """Get all to do entries."""
-        data_entries = self.repository.get_all_to_do_entries(limit, page)
-        entries_schemata = []
-        for entry in data_entries:
-            try:
-                entries_schemata.append(ToDoSchema.model_validate(entry))
-            except ValidationError as e:
-                # do not stop with 500 because of invalid database entries
-                self.logger.error("Validation error: %s entry %s", e, entry.id)
-        return entries_schemata
+            raise ToDoNotFoundError
+        done_entry = TodoUpdateScheme(id=entry.id, done=True, description=entry.description, title=entry.title)
+        updated_entry = self.repository.update_to_do(to_do_id, TodoUpdateScheme.model_validate(done_entry))
+        return ToDoSchema.model_validate(updated_entry)
