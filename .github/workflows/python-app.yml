@@ -87,7 +87,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           GITHUB_TOKEN: ${{ github.token }}
-          COVERAGE_PATH: backend/coverage.xml
+          COVERAGE_PATH: backend
 
   Lint:
     name: Lint the python code
