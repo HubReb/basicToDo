@@ -64,9 +64,18 @@ jobs:
     permissions:
       contents: read
     steps:
-        - uses: actions/checkout@v4
-        - name: run linter
-          run: |
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          # Install a specific version of uv.
+          version: "0.7.16"
+      - name: Enable caching
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: run linter
+      - uses: actions/checkout@v4
+        run: |
               pwd
               ls -ltr
               cd backend 
