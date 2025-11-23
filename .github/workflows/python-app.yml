@@ -67,5 +67,6 @@ jobs:
         - name: run linter
           run: |
               pwd
+              ls -ltr
               cd backend 
               uv run pylint app/*py --exit-zero
