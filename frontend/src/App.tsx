@@ -4,7 +4,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import './App.css';
 import Header from './components/Header';
-import Todos, {TodosProvider} from './components/Todos';
+import { TodoList } from './components/todos/TodoList';
+import { TodosProvider } from './contexts/TodosContext';
 import { queryClient } from './config/queryClient';
 import { toaster } from './hooks/useToast';
 
@@ -14,7 +15,7 @@ function App() {
       <ChakraProvider value={defaultSystem}>
         <TodosProvider >
           <Header />
-          <Todos />
+          <TodoList />
           <Toaster toaster={toaster}>{() => null}</Toaster>
         </TodosProvider>
       </ChakraProvider>
