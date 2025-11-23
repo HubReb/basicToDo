@@ -2,6 +2,7 @@ import datetime
 import os
 import uuid
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Generator
 
 from sqlalchemy import Boolean, CheckConstraint, Column, String, TIMESTAMP, Table, create_engine
@@ -20,8 +21,15 @@ def get_safe_database_url() -> str:
     """Return a validated and safe database URL."""
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        db_url = "/home/rebekka/projects/basicToDo/backend/todo.db"
-        db_url = f"sqlite:///{db_url}"
+        # Use relative path from project root or current working directory
+        # This works in both local dev and CI environments
+        db_path = Path("backend/todo.db")
+
+        # Ensure parent directory exists
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Convert to absolute path for SQLite
+        db_url = f"sqlite:///{db_path.absolute()}"
     elif not db_url.startswith(("sqlite://", "postgresql://", "mysql://")):
         raise RuntimeError(f"Invalid or unsafe DATABASE_URL: {db_url}")
     return db_url
