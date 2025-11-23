@@ -20,7 +20,8 @@ class Config:
             with open(self.config_file, encoding="utf-8") as f:
                 config = json.load(f)
                 self.port: int = int(config.get("PORT"))
-                self.host: str = config.get("HOST")
-                return config.get("db_path", "")
+                self.host: str = str(config.get("HOST", ""))
+                db_path: str = str(config.get("db_path", ""))
+                return db_path
         except FileNotFoundError:
             raise ValueError("Specify the config file or set the environment variable 'DATABASE_URL'!")
