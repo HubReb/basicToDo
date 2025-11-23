@@ -8,7 +8,7 @@ from backend.app.business_logic.exceptions import (
     ToDoValidationError,
 )
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
-from backend.tests.test_api.test_setup_for_api_endpoins import (client, created_todo, mock_service, sample_todo_id)
+from backend.tests.test_api.test_setup_for_api_endpoins import (client, created_todo, mock_service)
 
 
 class TestCreateTodo:

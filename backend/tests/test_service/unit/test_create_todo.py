@@ -12,6 +12,7 @@ from backend.app.business_logic.exceptions import (
 from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
+from backend.tests.test_data.factories import create_todo_create_scheme
 
 
 class TestCreateTodoSuccess:
@@ -20,8 +21,7 @@ class TestCreateTodoSuccess:
     @pytest.mark.asyncio
     async def test_create_success(self, todo_service, mock_repository):
         """Test creating a ToDo successfully."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(id=todo_id, title="Test", description="Desc")
+        payload = create_todo_create_scheme(title="Test", description="Desc")
         mock_repository.create_to_do.return_value = None
 
         result = await todo_service.create_todo(payload)
@@ -34,9 +34,7 @@ class TestCreateTodoSuccess:
     @pytest.mark.asyncio
     async def test_create_with_valid_emojis(self, todo_service, mock_repository):
         """Test creating ToDo with emojis works."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
+        payload = create_todo_create_scheme(
             title="🎉 Party time 🎂",
             description="Celebrate"
         )
@@ -49,9 +47,7 @@ class TestCreateTodoSuccess:
     @pytest.mark.asyncio
     async def test_create_strips_whitespace(self, todo_service, mock_repository):
         """Test create_todo strips whitespace from title and description."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
+        payload = create_todo_create_scheme(
             title="  Test  ",
             description="  Desc  "
         )
@@ -65,8 +61,7 @@ class TestCreateTodoSuccess:
     @pytest.mark.asyncio
     async def test_create_with_empty_description(self, todo_service, mock_repository):
         """Test creating ToDo with empty description."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(id=todo_id, title="Test", description="")
+        payload = create_todo_create_scheme(title="Test", description="")
         mock_repository.create_to_do.return_value = None
 
         result = await todo_service.create_todo(payload)
@@ -78,9 +73,7 @@ class TestCreateTodoSuccess:
     @pytest.mark.asyncio
     async def test_create_with_unicode(self, todo_service, mock_repository):
         """Test creating ToDo with Unicode characters."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
+        payload = create_todo_create_scheme(
             title="Hello 世界 🌍",
             description="Test"
         )
@@ -97,9 +90,7 @@ class TestCreateTodoValidation:
     @pytest.mark.asyncio
     async def test_create_with_sql_injection_title(self, todo_service):
         """Test creating ToDo rejects SQL injection in title."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
+        payload = create_todo_create_scheme(
             title="'; DROP TABLE todos; --",
             description="Desc"
         )
@@ -112,9 +103,7 @@ class TestCreateTodoValidation:
     @pytest.mark.asyncio
     async def test_create_with_sql_injection_description(self, todo_service):
         """Test creating ToDo rejects SQL injection in description."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
+        payload = create_todo_create_scheme(
             title="Valid Title",
             description="Test /* */ SELECT * FROM users"
         )
@@ -195,8 +184,7 @@ class TestCreateTodoRepositoryErrors:
     @pytest.mark.asyncio
     async def test_create_already_exists(self, todo_service, mock_repository):
         """Test creating a ToDo that already exists."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(id=todo_id, title="Duplicate", description="Desc")
+        payload = create_todo_create_scheme(title="Duplicate", description="Desc")
         mock_repository.create_to_do.side_effect = IntegrityError("msg", "params", "orig")
 
         with pytest.raises(ToDoAlreadyExistsError):
@@ -209,8 +197,7 @@ class TestCreateTodoRepositoryInteraction:
     @pytest.mark.asyncio
     async def test_create_calls_repository_create(self, todo_service, mock_repository):
         """Test create_todo calls repository.create_to_do."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(id=todo_id, title="Test", description="Desc")
+        payload = create_todo_create_scheme(title="Test", description="Desc")
         mock_repository.create_to_do.return_value = None
 
         await todo_service.create_todo(payload)
@@ -218,14 +205,12 @@ class TestCreateTodoRepositoryInteraction:
         mock_repository.create_to_do.assert_called_once()
         args = mock_repository.create_to_do.call_args[0]
         assert isinstance(args[0], ToDoEntryData)
-        assert args[0].id == todo_id
+        assert args[0].id == payload.id
 
     @pytest.mark.asyncio
     async def test_create_passes_validated_data(self, todo_service, mock_repository):
         """Test create_todo passes validated data to repository."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
+        payload = create_todo_create_scheme(
             title="  Test  ",
             description="  Desc  "
         )
@@ -240,8 +225,7 @@ class TestCreateTodoRepositoryInteraction:
     @pytest.mark.asyncio
     async def test_create_sets_default_values(self, todo_service, mock_repository):
         """Test create_todo sets default values for new entry."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(id=todo_id, title="Test", description="Desc")
+        payload = create_todo_create_scheme(title="Test", description="Desc")
         mock_repository.create_to_do.return_value = None
 
         await todo_service.create_todo(payload)

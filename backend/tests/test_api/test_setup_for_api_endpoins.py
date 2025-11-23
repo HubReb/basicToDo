@@ -23,12 +23,6 @@ def client(mock_service):
 
 
 @pytest.fixture
-def sample_todo_id():
-    """Provide consistent UUID for testing."""
-    return uuid4()
-
-
-@pytest.fixture
 def created_todo(client, mock_service, sample_todo_id):
     """Create a todo and return its data."""
     # Mock the service to return a ToDoSchema constructed from the payload
