@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, registry, sessionmaker
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.sql import func
-from sqlalchemy_utils import UUIDType
+from sqlalchemy_utils import UUIDType  # type: ignore[import-untyped]
 
 from backend.app.models.todo import ToDoEntryData
 

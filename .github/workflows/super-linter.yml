@@ -15,7 +15,10 @@ jobs:
   run-lint:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      statuses: write
+      checks: write
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

@@ -21,7 +21,7 @@ service = create_todo_service()
 
 
 @app.post("/todo", response_model=ToDoResponse)
-async def create_todo(payload: ToDoCreateScheme):
+async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
     try:
         todo = await service.create_todo(payload)
         return ToDoResponse(success=True, todo_entry=todo)
@@ -34,7 +34,7 @@ async def create_todo(payload: ToDoCreateScheme):
 
 
 @app.get("/todo/{todo_id}", response_model=GetToDoResponse)
-async def get_todo(todo_id: UUID):
+async def get_todo(todo_id: UUID) -> GetToDoResponse:
     try:
         todo = await service.get_todo(todo_id)
         return GetToDoResponse(success=True, todo_entry=todo)
@@ -43,7 +43,7 @@ async def get_todo(todo_id: UUID):
 
 
 @app.put("/todo/{todo_id}", response_model=ToDoResponse)
-async def update_todo(todo_id: UUID, payload: TodoUpdateScheme):
+async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
     try:
         todo = await service.update_todo(todo_id, payload)
         return ToDoResponse(success=True, todo_entry=todo)
@@ -56,7 +56,7 @@ async def update_todo(todo_id: UUID, payload: TodoUpdateScheme):
 
 
 @app.delete("/todo/{todo_id}", response_model=DeleteToDoResponse)
-async def delete_todo(todo_id: UUID):
+async def delete_todo(todo_id: UUID) -> DeleteToDoResponse:
     try:
         await service.delete_todo(todo_id)
         return DeleteToDoResponse(success=True, message="Deleted successfully")
@@ -69,6 +69,6 @@ async def delete_todo(todo_id: UUID):
 
 
 @app.get("/todo", response_model=ListToDoResponse)
-async def list_todos(limit: int = 10, page: int = 1):
+async def list_todos(limit: int = 10, page: int = 1) -> ListToDoResponse:
     todos = await service.get_all_todos(limit, page)
     return ListToDoResponse(success=True, results=len(todos), todo_entries=todos)

@@ -29,7 +29,6 @@ class TestUpdateTodo:
         ))
 
         update_payload = {
-            "id": created_todo["id"],
             "title": "Updated Title",
             "description": "Updated Description"
         }
@@ -57,7 +56,6 @@ class TestUpdateTodo:
         ))
 
         update_payload = {
-            "id": created_todo["id"],
             "done": True
         }
 
@@ -82,7 +80,6 @@ class TestUpdateTodo:
         ))
 
         update_payload = {
-            "id": created_todo["id"],
             "title": "Only Title Updated"
         }
 
@@ -101,7 +98,6 @@ class TestUpdateTodo:
 
         non_existent_id = uuid4()
         update_payload = {
-            "id": str(non_existent_id),
             "title": "Updated"
         }
 
@@ -112,7 +108,6 @@ class TestUpdateTodo:
     def test_update_todo_invalid_uuid_returns_422(self, client):
         """Test invalid UUID returns 422."""
         update_payload = {
-            "id": "not-a-uuid",
             "title": "Updated"
         }
 
@@ -127,7 +122,6 @@ class TestUpdateTodo:
             side_effect=ToDoValidationError("Invalid characters or SQL keywords in input"))
 
         update_payload = {
-            "id": created_todo["id"],
             "title": "'; DROP TABLE todo;--"
         }
 
@@ -141,7 +135,6 @@ class TestUpdateTodo:
         mock_service.update_todo = AsyncMock(side_effect=ToDoValidationError("Title cannot be empty"))
 
         update_payload = {
-            "id": created_todo["id"],
             "title": ""
         }
 
@@ -164,7 +157,6 @@ class TestUpdateTodo:
         ))
 
         update_payload = {
-            "id": created_todo["id"],
             "title": "Updated with emoji 🎉"
         }
 

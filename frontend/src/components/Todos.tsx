@@ -7,33 +7,21 @@ import {
   Input,
   Stack,
   Text,
-  Checkbox,
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerBody,
-  DrawerFooter,
-  useDisclosure
 } from '@chakra-ui/react';
 import { v4 as uuid } from "uuid";
-
-// Define Todo interface
-interface Todo {
-  id: string;
-  title: string;
-  description: string;
-  done: boolean; // Add done status for the todo
-}
+import { todoApi } from '../services/api/todoApi';
+import { ApiClientError } from '../services/api/client';
+import type { Todo } from '../types/todo';
 
 // Define the TodoContextType interface
 interface TodoContextType {
   todos: Todo[];
-  fetchTodos: (page: number, limit: number) => void;
+  fetchTodos: (page?: number, limit?: number) => void;
   total: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
   page: number;
   limit: number;
-  toggleDone: (id: string, done: boolean) => void; // Function to toggle done state
+  toggleDone: (id: string, done: boolean) => void;
 }
 
 // Create TodosContext to manage the state globally
@@ -45,33 +33,27 @@ export const useTodos = () => {
   if (!context) {
     throw new Error('useTodos must be used within a TodosProvider');
   }
-console.log('Todos context:', context);  // Add this line to log the context
   return context;
 };
 
 // Component to handle todo update (edit title/description)
-const UpdateToDo = ({ item, id, description, fetchTodos }: { item: string, id: string, description: string, fetchTodos: () => void }) => {
+const UpdateToDo = ({ item, id, fetchTodos }: { item: string, id: string, fetchTodos: () => void }) => {
   const [todoTitle, setTodoTitle] = useState(item);
   const [isOpen, setIsOpen] = useState(false);
   const updateToDo = async () => {
     try {
-      await fetch(`http://localhost:8000/todo/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json"
-        },
-        body: JSON.stringify({
-          id: id,
-          title: todoTitle,
-          description: "not implemented yet",
-          done: false
-        }),
+      await todoApi.update(id, {
+        title: todoTitle,
+        description: "not implemented yet",
       });
       await fetchTodos();
       setIsOpen(false);
     } catch (error) {
-      console.error("Error updating todo:", error);
+      if (error instanceof ApiClientError) {
+        console.error("Error updating todo:", error.detail);
+      } else {
+        console.error("Error updating todo:", error);
+      }
     }
   };
 
@@ -121,18 +103,14 @@ const UpdateToDo = ({ item, id, description, fetchTodos }: { item: string, id: s
 
 
 // Component to display a single todo
-const TodoHelper = ({ item, id, done, description, fetchTodos, toggleDone }: { item: string; id: string; done: boolean; description: string; fetchTodos: () => void; toggleDone: (id: string, done: boolean) => void }) => {
-
-    const handleToggleDone = useCallback(() => {
-        toggleDone(id, !done); // Toggle done state manually
-    }, [toggleDone, id, done]);
+const TodoHelper = ({ item, id, fetchTodos }: { item: string; id: string; fetchTodos: () => void }) => {
   return (
     <Box p={1} shadow="sm">
       <Flex justify="space-between" gap="2rem" rowGap="2rem">
         <Text mt={4} as="div">
           {item}
           <Flex align="end" gap="1rem">
-            <UpdateToDo id={id} item={item} description={description} fetchTodos={fetchTodos} />
+            <UpdateToDo id={id} item={item} fetchTodos={fetchTodos} />
             <DeleteTodo id={id} fetchTodos={fetchTodos} />
           </Flex>
         </Text>
@@ -143,19 +121,17 @@ const TodoHelper = ({ item, id, done, description, fetchTodos, toggleDone }: { i
 
 // Component to handle todo deletion
 const DeleteTodo = ({ id, fetchTodos }: { id: string; fetchTodos: () => void }) => {
-        console.log("DeleteTodo ID:", id);
   const deleteTodo = async () => {
     if (window.confirm("Do you really want to delete this item?")) {
       try {
-        await fetch(`http://localhost:8000/todo/${id}`, {
-          method: "DELETE",
-          headers: {
-            "accept": "application/json"
-          }
-        });
+        await todoApi.delete(id);
         await fetchTodos();
       } catch (error) {
-        console.error("Error deleting todo:", error);
+        if (error instanceof ApiClientError) {
+          console.error("Error deleting todo:", error.detail);
+        } else {
+          console.error("Error deleting todo:", error);
+        }
       }
     }
   };
@@ -185,25 +161,20 @@ const AddToDo = ({ fetchTodos }: { fetchTodos: () => void }) => {
     if (!item.trim()) return;
 
     try {
-      const newTodo = {
+      await todoApi.create({
         id: uuid(),
         title: item.trim(),
         description: "not implemented yet",
-      };
-
-      await fetch(`http://localhost:8000/todo/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json"
-        },
-        body: JSON.stringify(newTodo)
       });
 
       await fetchTodos();
       setItem("");
     } catch (error) {
-      console.error("Error adding todo:", error);
+      if (error instanceof ApiClientError) {
+        console.error("Error adding todo:", error.detail);
+      } else {
+        console.error("Error adding todo:", error);
+      }
     }
   };
 
@@ -224,39 +195,37 @@ const AddToDo = ({ fetchTodos }: { fetchTodos: () => void }) => {
 // TodosProvider Component for managing global state
 export const TodosProvider = ({ children }: { children: React.ReactNode }) => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [page, setPage] = useState(1); // Current page
-  const [limit, setLimit] = useState(10); // Todos per page
-  const [total, setTotal] = useState(0); // Total number of todos
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const fetchTodos = useCallback(async (currentPage = page, currentLimit = limit) => {
     try {
-      const response = await fetch(`http://localhost:8000/todo?limit=${currentLimit}&page=${currentPage}`);
-      const result = await response.json();
+      const result = await todoApi.list(currentLimit, currentPage);
       if (Array.isArray(result.todo_entries)) {
-        setTodos(result.todo_entries); // Use the correct response structure
+        setTodos(result.todo_entries);
       }
-      setTotal(result.results || 0); // Set total from response
+      setTotal(result.results || 0);
     } catch (error) {
-      console.error("Error fetching todos:", error);
+      if (error instanceof ApiClientError) {
+        console.error("Error fetching todos:", error.detail);
+      } else {
+        console.error("Error fetching todos:", error);
+      }
       setTodos([]);
     }
   }, [page, limit]);
 
   const toggleDone = async (id: string, done: boolean) => {
     try {
-      await fetch(`http://localhost:8000/todo/entry?item=${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json"
-        },
-        body: JSON.stringify({
-          done: done
-        }),
-      });
-      await fetchTodos(); // Refetch todos to update done status
+      await todoApi.toggleDone(id, done);
+      await fetchTodos();
     } catch (error) {
-      console.error("Error toggling done state:", error);
+      if (error instanceof ApiClientError) {
+        console.error("Error toggling done state:", error.detail);
+      } else {
+        console.error("Error toggling done state:", error);
+      }
     }
   };
 
@@ -270,7 +239,7 @@ export const TodosProvider = ({ children }: { children: React.ReactNode }) => {
 // Main Todos component to render the UI
 
 export default function Todos() {
-  const { todos, fetchTodos, page, total, setPage, limit, toggleDone } = useTodos();
+  const { todos, fetchTodos, page, limit } = useTodos();
 
   useEffect(() => {
         if (todos.length === 0) {
@@ -284,12 +253,10 @@ export default function Todos() {
       <Stack gap={5}>
         {todos.map((todo: Todo) => (
           <TodoHelper
+            key={todo.id}
             item={todo.title}
             id={todo.id}
-            done={todo.done}
-            description={todo.description}
             fetchTodos={fetchTodos}
-            toggleDone={toggleDone}
           />
         ))}
       </Stack>

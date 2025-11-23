@@ -21,7 +21,7 @@ class TestUpdateTodoSuccess:
     async def test_update_success(self, todo_service, mock_repository):
         """Test updating a ToDo successfully."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="Updated", description="Updated")
+        payload = TodoUpdateScheme( title="Updated", description="Updated")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Updated",
@@ -43,7 +43,7 @@ class TestUpdateTodoSuccess:
     async def test_update_partial_title_only(self, todo_service, mock_repository):
         """Test updating only title."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="New Title")
+        payload = TodoUpdateScheme( title="New Title")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="New Title",
@@ -63,7 +63,7 @@ class TestUpdateTodoSuccess:
     async def test_update_partial_description_only(self, todo_service, mock_repository):
         """Test updating only description."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, description="New Desc")
+        payload = TodoUpdateScheme( description="New Desc")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Old Title",
@@ -113,7 +113,7 @@ class TestUpdateTodoWithDone:
     async def test_update_with_done_true_calls_mark_as_done(self, todo_service, mock_repository):
         """Test updating with done=True calls mark_to_do_as_done."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, done=True)
+        payload = TodoUpdateScheme( done=True)
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Test",
@@ -144,7 +144,7 @@ class TestUpdateTodoWithDone:
     async def test_update_with_done_false_normal_update(self, todo_service, mock_repository):
         """Test updating with done=False uses normal update path."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="Updated", done=False)
+        payload = TodoUpdateScheme( title="Updated", done=False)
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Updated",
@@ -168,7 +168,7 @@ class TestUpdateTodoValidation:
     async def test_update_with_empty_string_title(self, todo_service):
         """Test updating with empty string title raises error."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="", description="Desc")
+        payload = TodoUpdateScheme( title="", description="Desc")
 
         with pytest.raises(ToDoValidationError) as exc_info:
             await todo_service.update_todo(todo_id, payload)
@@ -179,7 +179,7 @@ class TestUpdateTodoValidation:
     async def test_update_with_whitespace_only_title(self, todo_service):
         """Test updating with whitespace-only title raises error."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="   ", description="Desc")
+        payload = TodoUpdateScheme( title="   ", description="Desc")
 
         with pytest.raises(ToDoValidationError) as exc_info:
             await todo_service.update_todo(todo_id, payload)
@@ -220,7 +220,7 @@ class TestUpdateTodoValidation:
     async def test_update_validates_title_when_provided(self, todo_service, mock_repository):
         """Test update validates title only when provided."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, description="New Desc")
+        payload = TodoUpdateScheme( description="New Desc")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Old Title",
@@ -245,7 +245,7 @@ class TestUpdateTodoRepositoryErrors:
         """Test updating a non-existent ToDo."""
         mock_repository.update_to_do.return_value = None
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="Updated", description="Updated")
+        payload = TodoUpdateScheme( title="Updated", description="Updated")
 
         with pytest.raises(ToDoNotFoundError):
             await todo_service.update_todo(todo_id, payload)
@@ -254,7 +254,7 @@ class TestUpdateTodoRepositoryErrors:
     async def test_update_already_exists(self, todo_service, mock_repository):
         """Test updating ToDo to duplicate title."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="Duplicate", description="Desc")
+        payload = TodoUpdateScheme( title="Duplicate", description="Desc")
         mock_repository.update_to_do.side_effect = IntegrityError("msg", "params", "orig")
 
         with pytest.raises(ToDoAlreadyExistsError):

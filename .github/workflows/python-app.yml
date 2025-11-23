@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-name: Python application
+name: Python Application CI
 
 on:
   push:
@@ -10,53 +7,79 @@ on:
     branches: [ "main" ]
 
 permissions:
-    pull-requests: write
-    contents: write
-jobs:          
-  build:
+  contents: write
+  pull-requests: write
+  actions: read     
+  
+jobs:
+  backend:
+    name: Backend Tests & Quality Checks
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          # Install a specific version of uv.
           version: "0.7.16"
-      - name: Enable caching
-        uses: astral-sh/setup-uv@v5
-        with:
           enable-cache: true
-      - uses: actions/checkout@v4
-      - name: setup sqlite
-        uses: ryohidaka/action-setup-sqlite@v1.2.0
-        with:
-          version: 3.40.1
-      - name: setup database table
+
+      - name: Install Python dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Initialize database schema
+        run: uv run python backend/scripts/init_db.py
+
+      - name: Run MyPy type checking
+        run: uv run mypy backend/app/
+        continue-on-error: true
+
+      - name: Run tests with coverage
         run: |
-          cd backend
-          sqlite3 todo.db "create table toDo (id uuid PRIMARY KEY, title TEXT, description TEXT, created_at DATETIME NOT NULL, updated_at DATETIME, deleted BIT default 0, done BIT default 0); create index title_index on toDo(title);"
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.13"
-      - name: Install dependencies
-        run: |
-          cd backend 
-          uv sync --locked --all-extras --dev
-      - name: Test with pytest
-        run: |
-          cd backend
-          uv run pytest tests/* --junitxml=junit/test-results.xml
-      - name: Upload pytest test results
+          uv run pytest backend/tests/ \
+            --cov=backend/app \
+            --cov-report=term-missing \
+            --cov-report=xml:backend/coverage.xml \
+            --cov-report=html:backend/htmlcov \
+            --junitxml=backend/junit/test-results.xml \
+            --cov-fail-under=80
+        continue-on-error: false
+
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
-            name: pytest-results
-            path: backend/junit/test-results.xml
-          # Use always() to always run this step to publish test results when there are test failures
-        if: ${{ always() }}
+          name: backend-test-results
+          path: backend/junit/test-results.xml
+        if: always()
+
+      - name: Upload coverage report (HTML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-html
+          path: backend/htmlcov/
+        if: always()
+
+      - name: Upload coverage report (XML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-xml
+          path: backend/coverage.xml
+        if: always()
+
+      - name: Comment coverage on PR
+        uses: py-cov-action/python-coverage-comment-action@v3
+        if: github.event_name == 'pull_request'
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          COVERAGE_PATH: .
 
   Lint:
     name: Lint the python code
@@ -82,3 +105,47 @@ jobs:
         run: |
               cd backend 
               uv run pylint app/*py --exit-zero
+
+  frontend:
+    name: Frontend Build & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run TypeScript type checking
+        run: |
+          cd frontend
+          npx tsc --noEmit
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npm run lint
+        continue-on-error: true
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+        continue-on-error: true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+        if: success()

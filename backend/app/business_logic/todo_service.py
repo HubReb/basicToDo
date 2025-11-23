@@ -61,11 +61,11 @@ class ToDoService:
         if payload.description is not None:
             payload.description = self.field_validator.validate_optional(payload.description)
 
-        updated_entry = self.repository.update_to_do(to_do_id, payload)
-        if not updated_entry:
+        updated_entry_data = self.repository.update_to_do(to_do_id, payload)
+        if not updated_entry_data:
             raise ToDoNotFoundError
 
-        return ToDoSchema.model_validate(updated_entry)
+        return ToDoSchema.model_validate(updated_entry_data)
 
     @handle_service_exceptions
     async def delete_todo(self, to_do_id: uuid.UUID) -> bool:
@@ -91,6 +91,8 @@ class ToDoService:
         entry = self.repository.get_to_do_entry(to_do_id)
         if not entry:
             raise ToDoNotFoundError
-        done_entry = TodoUpdateScheme(id=entry.id, done=True, description=entry.description, title=entry.title)
-        updated_entry = self.repository.update_to_do(to_do_id, TodoUpdateScheme.model_validate(done_entry))
-        return ToDoSchema.model_validate(updated_entry)
+        done_entry = TodoUpdateScheme(done=True, description=entry.description, title=entry.title)
+        updated_entry_data = self.repository.update_to_do(to_do_id, done_entry)
+        if not updated_entry_data:
+            raise ToDoNotFoundError
+        return ToDoSchema.model_validate(updated_entry_data)
