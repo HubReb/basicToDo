@@ -22,7 +22,6 @@ class TestUpdateTodoValidationIntegration:
         """Test update_todo validates and sanitizes title."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
-            id=todo_id,
             title="  Updated Title  ",
             description="Desc"
         )
@@ -48,7 +47,6 @@ class TestUpdateTodoValidationIntegration:
         """Test update_todo validates and sanitizes description."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
-            id=todo_id,
             description="  Updated Desc  "
         )
         mock_entry = ToDoEntryData(
@@ -72,7 +70,7 @@ class TestUpdateTodoValidationIntegration:
     async def test_update_rejects_empty_title(self, todo_service):
         """Test update_todo rejects empty title."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="")
+        payload = TodoUpdateScheme(title="")
 
         with pytest.raises(ToDoValidationError) as exc_info:
             await todo_service.update_todo(todo_id, payload)
@@ -83,7 +81,7 @@ class TestUpdateTodoValidationIntegration:
     async def test_update_rejects_whitespace_only_title(self, todo_service):
         """Test update_todo rejects whitespace-only title."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="   ")
+        payload = TodoUpdateScheme(title="   ")
 
         with pytest.raises(ToDoValidationError) as exc_info:
             await todo_service.update_todo(todo_id, payload)
@@ -99,7 +97,6 @@ class TestUpdateTodoSQLInjectionIntegration:
         """Test update_todo blocks SQL injection in title."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
-            id=todo_id,
             title="'; DROP TABLE todos; --"
         )
 
@@ -113,7 +110,6 @@ class TestUpdateTodoSQLInjectionIntegration:
         """Test update_todo blocks SQL injection in description."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
-            id=todo_id,
             title="Valid",
             description="Test /* comment */ UNION SELECT"
         )
@@ -128,7 +124,6 @@ class TestUpdateTodoSQLInjectionIntegration:
         """Test update_todo blocks double dash comments in title."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
-            id=todo_id,
             title="Test -- comment"
         )
 
@@ -140,7 +135,6 @@ class TestUpdateTodoSQLInjectionIntegration:
         """Test update_todo blocks semicolon in description."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
-            id=todo_id,
             description="Test; DROP TABLE"
         )
 
@@ -155,7 +149,7 @@ class TestUpdateTodoDoneIntegration:
     async def test_update_with_done_true_marks_as_done(self, todo_service, mock_repository):
         """Test update with done=True uses mark_as_done flow."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, done=True)
+        payload = TodoUpdateScheme(done=True)
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Test",
@@ -185,7 +179,7 @@ class TestUpdateTodoDoneIntegration:
     async def test_update_with_done_true_calls_get_entry(self, todo_service, mock_repository):
         """Test update with done=True calls get_to_do_entry."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, done=True)
+        payload = TodoUpdateScheme(done=True)
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Test",
@@ -220,7 +214,7 @@ class TestUpdateTodoErrorHandlingIntegration:
         """Test update_todo raises ToDoNotFoundError when entry not found."""
         mock_repository.update_to_do.return_value = None
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="Updated")
+        payload = TodoUpdateScheme(title="Updated")
 
         with pytest.raises(ToDoNotFoundError):
             await todo_service.update_todo(todo_id, payload)
@@ -229,7 +223,7 @@ class TestUpdateTodoErrorHandlingIntegration:
     async def test_update_integrity_error_becomes_already_exists(self, todo_service, mock_repository):
         """Test update_todo converts IntegrityError to ToDoAlreadyExistsError."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="Duplicate")
+        payload = TodoUpdateScheme(title="Duplicate")
         mock_repository.update_to_do.side_effect = IntegrityError("msg", "params", "orig")
 
         with pytest.raises(ToDoAlreadyExistsError):
@@ -243,7 +237,7 @@ class TestUpdateTodoPartialUpdatesIntegration:
     async def test_update_only_title_validates_title(self, todo_service, mock_repository):
         """Test updating only title validates title field."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="  New Title  ")
+        payload = TodoUpdateScheme(title="  New Title  ")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="New Title",
@@ -264,7 +258,7 @@ class TestUpdateTodoPartialUpdatesIntegration:
     async def test_update_only_description_validates_description(self, todo_service, mock_repository):
         """Test updating only description validates description field."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, description="  New Desc  ")
+        payload = TodoUpdateScheme(description="  New Desc  ")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Old Title",
@@ -285,7 +279,7 @@ class TestUpdateTodoPartialUpdatesIntegration:
     async def test_update_description_only_skips_title_validation(self, todo_service, mock_repository):
         """Test updating description only doesn't validate title."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, description="New Desc")
+        payload = TodoUpdateScheme(description="New Desc")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Old Title",

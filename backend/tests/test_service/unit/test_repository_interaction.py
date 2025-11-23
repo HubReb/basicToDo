@@ -14,7 +14,7 @@ class TestUpdateTodoRepositoryInteraction:
     async def test_update_calls_repository_update(self, todo_service, mock_repository):
         """Test update_todo calls repository.update_to_do."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(id=todo_id, title="Updated")
+        payload = TodoUpdateScheme(title="Updated")
         mock_entry = ToDoEntryData(
             id=todo_id,
             title="Updated",
@@ -35,7 +35,6 @@ class TestUpdateTodoRepositoryInteraction:
         """Test update_todo passes sanitized payload to repository."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
-            id=todo_id,
             title="  Test  ",
             description="  Desc  "
         )
