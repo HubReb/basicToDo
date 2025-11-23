@@ -12,6 +12,9 @@ permissions:
 jobs:
   backend:
     name: Backend Tests & Quality Checks
+    pull-requests: write
+    contents: write     
+
     runs-on: ubuntu-latest
 
     steps:
@@ -44,12 +47,6 @@ jobs:
         run: |
           cd backend
           uv run mypy app/
-        continue-on-error: true
-
-      - name: Run Pylint
-        run: |
-          cd backend
-          uv run pylint app/*.py app/**/*.py
         continue-on-error: true
 
       - name: Run tests with coverage
@@ -91,6 +88,31 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ github.token }}
           COVERAGE_PATH: backend/coverage.xml
+
+  Lint:
+    name: Lint the python code
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          # Install a specific version of uv.
+          version: "0.7.16"
+      - name: Enable caching
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.13"
+      - name: run linter
+        run: |
+              cd backend 
+              uv run pylint app/*py --exit-zero
 
   frontend:
     name: Frontend Build & Lint
