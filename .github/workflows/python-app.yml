@@ -7,13 +7,12 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
-
+  pull-requests: write
+  contents: write     
+  
 jobs:
   backend:
     name: Backend Tests & Quality Checks
-    pull-requests: write
-    contents: write     
 
     runs-on: ubuntu-latest
 
