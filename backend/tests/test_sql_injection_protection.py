@@ -7,15 +7,14 @@ from uuid import uuid4
 import pytest
 
 from backend.app.business_logic.exceptions import (ToDoNotFoundError, ToDoValidationError)
-from backend.app.factory import create_todo_service
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 @pytest.fixture
-def todo_service():
-    """Provide a clean service instance for each test."""
-    return create_todo_service()
+def todo_service(todo_service_with_real_db):
+    """Provide a clean service instance with real database for each test."""
+    return todo_service_with_real_db
 
 
 @pytest.mark.asyncio

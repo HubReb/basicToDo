@@ -1,12 +1,20 @@
 """Root conftest.py with shared fixtures for all tests."""
+import os
 import uuid
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Generator
 from unittest.mock import MagicMock
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.todo_service import ToDoService
 from backend.app.business_logic.validators import ValidatorFactory
+from backend.app.data_access.database import Base, ToDoORM
+from backend.app.data_access.repository import ToDoRepository
 from backend.app.logger import CustomLogger
 
 
@@ -109,6 +117,97 @@ def todo_service_integration(
     """
     return ToDoService(
         repository=mock_repository,
+        logger=session_logger,
+        input_sanitizer=session_input_sanitizer,
+        uuid_validator=session_uuid_validator,
+        field_validator=session_field_validator,
+        builder=session_builder,
+    )
+
+
+# Database fixtures for integration tests with real database
+@pytest.fixture(scope="function")
+def test_db_engine():
+    """Create a test database engine using in-memory SQLite."""
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        echo=False
+    )
+
+    # Create all tables
+    Base.metadata.create_all(bind=engine)
+
+    yield engine
+
+    # Cleanup
+    Base.metadata.drop_all(bind=engine)
+    engine.dispose()
+
+
+@pytest.fixture(scope="function")
+def test_db_session(test_db_engine):
+    """Create a test database session."""
+    TestSessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=test_db_engine,
+        expire_on_commit=False
+    )
+
+    session = TestSessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+@pytest.fixture(scope="function")
+def test_session_scope(test_db_engine):
+    """Create a session scope context manager for testing."""
+    TestSessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=test_db_engine,
+        expire_on_commit=False
+    )
+
+    @contextmanager
+    def _session_scope() -> Generator[Session, None, None]:
+        session = TestSessionLocal()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    return _session_scope
+
+
+@pytest.fixture(scope="function")
+def todo_service_with_real_db(
+    test_session_scope,
+    session_logger,
+    session_input_sanitizer,
+    session_uuid_validator,
+    session_field_validator,
+    session_builder,
+):
+    """Create ToDoService with real database for integration tests.
+
+    This fixture provides a complete service with:
+    - Real in-memory SQLite database
+    - Real repository
+    - Real validators
+    - Fresh database for each test
+    """
+    repository = ToDoRepository(test_session_scope, session_logger)
+
+    return ToDoService(
+        repository=repository,
         logger=session_logger,
         input_sanitizer=session_input_sanitizer,
         uuid_validator=session_uuid_validator,
