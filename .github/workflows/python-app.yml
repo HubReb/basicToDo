@@ -51,13 +51,12 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          cd backend
-          uv run pytest tests/ \
-            --cov=app \
+          uv run pytest backend/tests/ \
+            --cov=backend/app \
             --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --cov-report=html:htmlcov \
-            --junitxml=junit/test-results.xml \
+            --cov-report=xml:backend/coverage.xml \
+            --cov-report=html:backend/htmlcov \
+            --junitxml=backend/junit/test-results.xml \
             --cov-fail-under=80
         continue-on-error: false
 
@@ -87,7 +86,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           GITHUB_TOKEN: ${{ github.token }}
-          COVERAGE_PATH: backend
+          COVERAGE_PATH: .
 
   Lint:
     name: Lint the python code

@@ -63,14 +63,14 @@ python_functions = "test_*"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=app",
+    "--cov=backend/app",
     "--cov-report=term-missing",
-    "--cov-report=html:htmlcov",
-    "--cov-report=xml:coverage.xml",
+    "--cov-report=html:backend/htmlcov",
+    "--cov-report=xml:backend/coverage.xml",
 ]
 
 [tool.coverage.run]
-source = ["app"]
+source = ["backend/app"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",
