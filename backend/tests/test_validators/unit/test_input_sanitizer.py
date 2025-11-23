@@ -1,16 +1,9 @@
 """Unit tests for InputSanitizer."""
-from unittest.mock import MagicMock
-
 import pytest
 
 from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.business_logic.validators.input_sanitizer import InputSanitizer
-
-
-@pytest.fixture
-def mock_logger():
-    """Create a mock logger."""
-    return MagicMock()
+from backend.tests.test_data.constants import SQL_INJECTION_PATTERNS, VALID_STRINGS_WITH_SQL_LIKE_CONTENT
 
 
 @pytest.fixture
@@ -62,10 +55,11 @@ class TestInputSanitizerValidText:
         result = sanitizer.validate("  Hello  ")
         assert result == "Hello"
 
-    def test_validate_allows_word_containing_sql_keyword(self, sanitizer):
+    @pytest.mark.parametrize("valid_string", VALID_STRINGS_WITH_SQL_LIKE_CONTENT)
+    def test_validate_allows_word_containing_sql_keyword(self, sanitizer, valid_string):
         """Test validation allows words containing SQL keywords (e.g., 'updated')."""
-        result = sanitizer.validate("This was updated yesterday")
-        assert result == "This was updated yesterday"
+        result = sanitizer.validate(valid_string)
+        assert result == valid_string
 
 
 class TestInputSanitizerNoneAndEmpty:
@@ -109,33 +103,7 @@ class TestInputSanitizerNonStringValues:
         mock_logger.warning.assert_called_once()
 
 
-@pytest.mark.parametrize("sql_pattern,description", [
-    ("--", "double dash comment"),
-    (";", "semicolon separator"),
-    ("/*", "multi-line comment start"),
-    ("*/", "multi-line comment end"),
-    ("DROP TABLE users", "DROP keyword"),
-    ("DELETE FROM users", "DELETE keyword"),
-    ("INSERT INTO users", "INSERT keyword"),
-    ("UPDATE users SET", "UPDATE keyword"),
-    ("SELECT * FROM users", "SELECT keyword"),
-    ("UNION SELECT", "UNION keyword"),
-    ("EXEC sp_executesql", "EXEC keyword"),
-    ("EXECUTE sp_executesql", "EXECUTE keyword"),
-    ("xp_cmdshell 'dir'", "xp_cmdshell"),
-    ("SHUTDOWN WITH NOWAIT", "SHUTDOWN keyword"),
-    ("CREATE TABLE test", "CREATE keyword"),
-    ("ALTER TABLE users", "ALTER keyword"),
-    ("RENAME TABLE users", "RENAME keyword"),
-    ("TRUNCATE TABLE users", "TRUNCATE keyword"),
-    ("DECLARE @var", "DECLARE keyword"),
-    ("1=1 OR 1=1", "OR keyword"),
-    ("drop table users", "lowercase DROP"),
-    ("DeLeTe FrOm users", "mixed case DELETE"),
-    ("Test; DROP TABLE", "semicolon followed by DROP"),
-    ("Test -- comment", "double dash at end"),
-    ("/* malicious */", "complete comment block"),
-])
+@pytest.mark.parametrize("sql_pattern,description", SQL_INJECTION_PATTERNS)
 class TestInputSanitizerSQLInjection:
     """Test InputSanitizer detects SQL injection patterns."""
 
