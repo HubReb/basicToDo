@@ -10,8 +10,8 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
-
+    pull-requests: write
+    contents: write
 jobs:          
   build:
 
@@ -46,11 +46,6 @@ jobs:
         run: |
           cd backend 
           uv sync --locked --all-extras --dev
-      - name: Lint
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          cd backend 
-          uv run pylint app/*py --exit-zero
       - name: Test with pytest
         run: |
           cd backend
@@ -62,3 +57,14 @@ jobs:
             path: junit/test-results.xml
           # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
+
+  Lint:
+    name: Lint the python code
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+        - name: run linter
+          run: |
+              cd backend 
+              uv run pylint app/*py --exit-zero
