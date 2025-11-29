@@ -53,21 +53,16 @@ export default defineConfig({
   webServer: [
     {
       command: 'DATABASE_URL=sqlite:///test.db uv run python -m backend.app.main',
-      url: 'http://localhost:8000',
+      url: 'http://localhost:8000/docs',
       cwd: '..',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
-      stdout: 'pipe',
-      stderr: 'pipe',
     },
     {
       command: 'npm run dev',
       url: 'http://localhost:5173',
-      cwd: '.',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
-      stdout: 'pipe',
-      stderr: 'pipe',
     },
   ],
 });
