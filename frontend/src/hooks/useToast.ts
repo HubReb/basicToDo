@@ -1,4 +1,4 @@
-import { toaster } from '@/components/ui/toaster'
+import { toaster } from '@/lib/toaster'
 
 export interface ToastOptions {
   title: string
