@@ -54,19 +54,27 @@ test.describe('Smoke Tests', () => {
   test('should find the input field', async ({ page }) => {
     await page.goto('/');
 
-    // Wait a bit for React to render
-    await page.waitForTimeout(2000);
+    // Debug: print page content
+    const bodyText = await page.locator('body').textContent();
+    console.log('Page body text:', bodyText);
 
-    // Try different selectors
-    const input1 = page.getByPlaceholder('Add a todo item');
-    const input2 = page.locator('input[type="text"]');
-    const input3 = page.locator('input');
+    const html = await page.content();
+    console.log('Page HTML length:', html.length);
+    console.log('Has root div:', html.includes('id="root"'));
 
-    console.log('Input 1 count:', await input1.count());
-    console.log('Input 2 count:', await input2.count());
-    console.log('Input 3 count:', await input3.count());
+    // Wait for either spinner to disappear or form to appear
+    try {
+      await page.waitForSelector('input[placeholder="Add a todo item"]', { timeout: 10000 });
+      console.log('Found input by placeholder!');
+    } catch (e) {
+      console.log('Could not find input, checking for error/loading states');
+      const spinner = await page.locator('svg').count();
+      const errorMsg = await page.getByText(/error|failed/i).count();
+      console.log('Spinner count:', spinner);
+      console.log('Error message count:', errorMsg);
+    }
 
     // Take screenshot
-    await page.screenshot({ path: 'test-results/finding-input.png' });
+    await page.screenshot({ path: 'test-results/finding-input.png', fullPage: true });
   });
 });
