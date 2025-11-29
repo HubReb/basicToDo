@@ -72,8 +72,8 @@ uv run pytest/backend .
 ## Stack
 ### Frontend
 The frontend is currently written in
-- Typescript
-- React (+ React Query) 
+- TypeScript
+- React (+ React Query)
 - _vite_
  
 The look of the app will undergo severe changes in the future to improve both UI and UX.
