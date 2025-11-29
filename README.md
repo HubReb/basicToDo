@@ -50,6 +50,8 @@ and run the frontend
 
 ```bash
 npm run dev
+# or if not developing
+tsc -b && vite build
 ```
 
 ### Testing
@@ -59,7 +61,7 @@ Both the backend and frontend have their own testsuite. The backend uses _pytest
 #### Frontend
 ```bash
 cd frontend
-vitest -run
+npm test -- --run
 ```
 
 ### Backend 
@@ -71,8 +73,8 @@ uv run pytest/backend .
 ### Frontend
 The frontend is currently written in
 - Typescript
--  React (+ React Query) 
-- _vite_. 
+- React (+ React Query) 
+- _vite_
  
 The look of the app will undergo severe changes in the future to improve both UI and UX.
 
