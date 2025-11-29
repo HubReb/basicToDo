@@ -32,27 +32,56 @@ It is recommended to use a python package manager.
 This project uses ```uv```. Refer to [uv installations instructions](https://docs.astral.sh/uv/getting-started/installation/) for installation instructions.
 
 Run 
-```uv sync uv.lock```
+``` bash
+uv sync uv.lock
+```
+
 to install the python dependencies.
 
 
-## Running the application
+## Running the application for development
 
 Run the python backend 
-``` python -m app.main```
+``` bash
+python -m app.main
+```
 
 and run the frontend
 
-```npm run dev```
+```bash
+npm run dev
+```
+
+### Testing
+
+Both the backend and frontend have their own testsuite. The backend uses _pytest_ and the frontend _vitest_. 
+
+#### Frontend
+```bash
+cd frontend
+vitest -run
+```
+
+### Backend 
+``` bash
+uv run pytest/backend .
+```
 
 ## Stack
 ### Frontend
-The frontend is currently written in _Typescript_ and _React_ with _vite_ and uses vite's default. The look of the app will undergo severe changes in the future to improve both UI and UX.
+The frontend is currently written in
+- Typescript
+-  React (+ React Query) 
+- _vite_. 
+ 
+The look of the app will undergo severe changes in the future to improve both UI and UX.
 
 ### Backend
 The backend is written in _python_ with a SQLite database. The stack is as follows:
 - SQLite database
 - SQLAlchemy
+- Pydantic
+- mypy
 - FastAPI
 
 
@@ -71,10 +100,6 @@ These further improvements define the next milestone.
 - Suggestions of new ToDos
 - Subtasks: Add subtasks to a ToDo entry to break big tasks into smaller ones.
 - Reminder: Set a date to have the task finished and be reminded of the upcoming deadline.
-
-### Code base
-  -  Refactoring of the frontend for better modularity
-  -  Refactoring of the backend to improve software design
 
 
 
