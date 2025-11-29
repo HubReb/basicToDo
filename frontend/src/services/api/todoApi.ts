@@ -63,15 +63,6 @@ export class TodoApi {
       params: { limit, page },
     });
   }
-
-  /**
-   * Toggle todo done status
-   * PUT /todo/{todo_id}
-   */
-  async toggleDone(todoId: string, done: boolean): Promise<Todo> {
-    const response = await apiClient.put<TodoResponse>(`/todo/${todoId}`, { done });
-    return response.todo_entry;
-  }
 }
 
 // Export singleton instance

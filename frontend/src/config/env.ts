@@ -9,13 +9,7 @@ interface Config {
 }
 
 const getConfig = (): Config => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-  if (!apiBaseUrl) {
-    throw new Error(
-      'VITE_API_BASE_URL is not defined. Please check your .env file.'
-    );
-  }
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   return {
     apiBaseUrl,

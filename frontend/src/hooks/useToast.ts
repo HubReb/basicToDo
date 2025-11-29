@@ -1,9 +1,4 @@
-import { createToaster } from '@chakra-ui/react'
-
-const toaster = createToaster({
-  placement: 'top',
-  duration: 5000,
-})
+import { toaster } from '@/lib/toaster'
 
 export interface ToastOptions {
   title: string
@@ -29,6 +24,4 @@ export const useAppToast = () => {
 
   return { showToast }
 }
-
-export { toaster }
 

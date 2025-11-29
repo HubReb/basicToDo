@@ -2,6 +2,7 @@
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
@@ -17,7 +18,23 @@ from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 app = FastAPI(title="ToDo API")
+
+# Configure CORS to allow frontend access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 service = create_todo_service()
+
+
+@app.get("/")
+async def health_check() -> dict[str, str]:
+    """Health check endpoint for testing."""
+    return {"status": "ok"}
 
 
 @app.post("/todo", response_model=ToDoResponse)
