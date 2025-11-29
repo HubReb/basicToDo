@@ -1,9 +1,10 @@
+---
 name: Python Application CI
 
 on:
   push:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: write
@@ -102,6 +103,5 @@ jobs:
           python-version: "3.13"
       - name: run linter
         run: |
-              cd backend 
+              cd backend
               uv run pylint app/*py --exit-zero
-

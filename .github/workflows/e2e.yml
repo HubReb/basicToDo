@@ -1,9 +1,10 @@
+---
 name: End-to-End Tests
 
 on:
   push:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
