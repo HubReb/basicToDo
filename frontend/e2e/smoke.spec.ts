@@ -1,7 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Smoke Tests', () => {
-  test.beforeEach(async ({ request }) => {
+  test.beforeEach(async ({ request, page }) => {
+    // Capture console errors
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        console.log(`Browser ERROR: ${msg.text()}`);
+      }
+    });
+
+    page.on('pageerror', error => {
+      console.log(`Page ERROR: ${error.message}`);
+      console.log(`Stack: ${error.stack}`);
+    });
+
     // Clean up test database before each test
     const response = await request.get('http://localhost:8000/todo?limit=1000&page=1');
     const data = await response.json();
@@ -54,6 +66,9 @@ test.describe('Smoke Tests', () => {
   test('should find the input field', async ({ page }) => {
     await page.goto('/');
 
+    // Wait for the page to fully load
+    await page.waitForLoadState('networkidle');
+
     // Debug: print page content
     const bodyText = await page.locator('body').textContent();
     console.log('Page body text:', bodyText);
@@ -61,6 +76,11 @@ test.describe('Smoke Tests', () => {
     const html = await page.content();
     console.log('Page HTML length:', html.length);
     console.log('Has root div:', html.includes('id="root"'));
+
+    // Check if root div has any children
+    const rootHtml = await page.locator('#root').innerHTML();
+    console.log('Root innerHTML length:', rootHtml.length);
+    console.log('Root innerHTML:', rootHtml.substring(0, 200));
 
     // Wait for either spinner to disappear or form to appear
     try {
