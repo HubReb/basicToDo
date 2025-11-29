@@ -12,14 +12,14 @@ export const TodoDeleteButton = ({ id }: TodoDeleteButtonProps) => {
 
   const handleDelete = () => {
     if (window.confirm("Do you really want to delete this item?")) {
+      // Show toast immediately before mutation
+      showToast({
+        title: 'Todo deleted',
+        description: 'Your todo has been deleted successfully',
+        status: 'success',
+      })
+
       deleteTodo.mutate(id, {
-        onSuccess: () => {
-          showToast({
-            title: 'Todo deleted',
-            description: 'Your todo has been deleted successfully',
-            status: 'success',
-          })
-        },
         onError: (error) => {
           showToast({
             title: 'Failed to delete todo',
