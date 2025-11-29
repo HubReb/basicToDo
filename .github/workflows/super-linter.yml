@@ -37,3 +37,4 @@ jobs:
           VALIDATE_TSX: false
           VALIDATE_JAVASCRIPT_ES: false
           VALIDATE_JAVASCRIPT_STANDARD: false
+          FILTER_REGEX_EXCLUDE: .*tsconfig.*\.json
