@@ -1,29 +1,25 @@
-import { useEffect } from 'react'
 import { Container, Stack } from '@chakra-ui/react'
-import { useTodos } from '../../contexts/TodosContext'
+import { useTodoList } from '@/hooks/queries/useTodoList'
 import { TodoForm } from './TodoForm'
 import { TodoItem } from './TodoItem'
-import type { Todo } from '../../types/todo'
 
 export const TodoList = () => {
-  const { todos, fetchTodos, page, limit } = useTodos()
+  const { data, isLoading, error } = useTodoList(10, 1)
 
-  useEffect(() => {
-    if (todos.length === 0) {
-      fetchTodos(page, limit)
-    }
-  }, [page, limit, fetchTodos, todos.length])
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error loading todos</div>
+
+  const todos = data?.todo_entries || []
 
   return (
     <Container maxW="container.xl" pt="100px">
-      <TodoForm onSuccess={fetchTodos} />
+      <TodoForm />
       <Stack gap={5}>
-        {todos.map((todo: Todo) => (
+        {todos.map((todo) => (
           <TodoItem
             key={todo.id}
             id={todo.id}
             title={todo.title}
-            onUpdate={fetchTodos}
           />
         ))}
       </Stack>

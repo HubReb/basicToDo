@@ -1,32 +1,22 @@
 import { useState } from 'react'
 import { Box, Button, Flex, Input } from '@chakra-ui/react'
-import { todoApi } from '../../services/api/todoApi'
-import { ApiClientError } from '../../services/api/client'
+import { useUpdateTodo } from '@/hooks/queries/useUpdateTodo'
 
 interface TodoEditFormProps {
   id: string
   initialTitle: string
-  onSuccess: () => void
   onCancel: () => void
 }
 
-export const TodoEditForm = ({ id, initialTitle, onSuccess, onCancel }: TodoEditFormProps) => {
+export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) => {
   const [title, setTitle] = useState(initialTitle)
+  const updateTodo = useUpdateTodo()
 
-  const handleUpdate = async () => {
-    try {
-      await todoApi.update(id, {
-        title,
-        description: "not implemented yet",
-      })
-      await onSuccess()
-    } catch (error) {
-      if (error instanceof ApiClientError) {
-        console.error("Error updating todo:", error.detail)
-      } else {
-        console.error("Error updating todo:", error)
-      }
-    }
+  const handleUpdate = () => {
+    updateTodo.mutate(
+      { id, data: { title, description: "not implemented yet" } },
+      { onSuccess: onCancel }
+    )
   }
 
   return (
@@ -37,7 +27,12 @@ export const TodoEditForm = ({ id, initialTitle, onSuccess, onCancel }: TodoEdit
         placeholder="Edit todo"
       />
       <Flex gap={2} mt={2}>
-        <Button size="sm" onClick={handleUpdate} colorScheme="blue">
+        <Button
+          size="sm"
+          onClick={handleUpdate}
+          colorScheme="blue"
+          loading={updateTodo.isPending}
+        >
           Save
         </Button>
         <Button size="sm" onClick={onCancel} variant="outline">

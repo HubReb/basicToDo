@@ -5,7 +5,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import './App.css';
 import Header from './components/Header';
 import { TodoList } from './components/todos/TodoList';
-import { TodosProvider } from './contexts/TodosContext';
 import { queryClient } from './config/queryClient';
 import { toaster } from './hooks/useToast';
 
@@ -13,11 +12,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={defaultSystem}>
-        <TodosProvider >
-          <Header />
-          <TodoList />
-          <Toaster toaster={toaster}>{() => null}</Toaster>
-        </TodosProvider>
+        <Header />
+        <TodoList />
+        <Toaster toaster={toaster}>{() => null}</Toaster>
       </ChakraProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

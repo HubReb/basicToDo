@@ -6,16 +6,10 @@ import { TodoDeleteButton } from './TodoDeleteButton'
 interface TodoItemProps {
   id: string
   title: string
-  onUpdate: () => void
 }
 
-export const TodoItem = ({ id, title, onUpdate }: TodoItemProps) => {
+export const TodoItem = ({ id, title }: TodoItemProps) => {
   const [isEditing, setIsEditing] = useState(false)
-
-  const handleUpdateSuccess = () => {
-    setIsEditing(false)
-    onUpdate()
-  }
 
   return (
     <Box p={1} shadow="sm">
@@ -27,7 +21,7 @@ export const TodoItem = ({ id, title, onUpdate }: TodoItemProps) => {
               <Button size="sm" onClick={() => setIsEditing(true)}>
                 Edit
               </Button>
-              <TodoDeleteButton id={id} onSuccess={onUpdate} />
+              <TodoDeleteButton id={id} />
             </Flex>
           )}
         </Text>
@@ -36,7 +30,6 @@ export const TodoItem = ({ id, title, onUpdate }: TodoItemProps) => {
         <TodoEditForm
           id={id}
           initialTitle={title}
-          onSuccess={handleUpdateSuccess}
           onCancel={() => setIsEditing(false)}
         />
       )}
