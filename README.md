@@ -38,7 +38,7 @@ This project uses ```uv```. Refer to [uv installations instructions](https://doc
 Run
 
 ```bash
-uv sync uv.lock
+uv sync
 ```
 
 to install the python dependencies.
