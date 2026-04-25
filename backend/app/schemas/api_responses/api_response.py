@@ -1,4 +1,4 @@
-""" Data schemes for the API responses"""
+"""Data schemes for the API responses"""
 
 from typing import Optional
 

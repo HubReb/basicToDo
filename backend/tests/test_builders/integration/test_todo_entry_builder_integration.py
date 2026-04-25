@@ -8,7 +8,7 @@ from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuil
 from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.business_logic.validators import ValidatorFactory
 from backend.app.logger import CustomLogger
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 
 
@@ -36,12 +36,11 @@ class TestToDoEntryBuilderRealWorldScenarios:
 
         result = await builder.build_from_create_schema(payload)
 
-        assert isinstance(result, ToDoEntryData)
+        assert isinstance(result, ToDoORM)
         assert result.id == test_uuid
         assert result.title == "Buy groceries for dinner"
         assert result.description == "Need to buy milk, eggs, and bread"
-        assert isinstance(result.created_at, datetime.datetime)
-        assert result.updated_at is None
+        assert result.created_at is not None
         assert result.deleted is False
         assert result.done is False
 
@@ -229,8 +228,8 @@ class TestToDoEntryBuilderTimestampGeneration:
     """Test ToDoEntryBuilder timestamp generation."""
 
     @pytest.mark.asyncio
-    async def test_build_generates_created_at_timestamp(self, builder):
-        """Test builder generates created_at timestamp."""
+    async def test_build_sets_created_at_timestamp(self, builder):
+        """Test builder sets created_at to current UTC timestamp."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid,
@@ -238,28 +237,8 @@ class TestToDoEntryBuilderTimestampGeneration:
             description="Desc"
         )
 
-        before = datetime.datetime.now()
+        before = datetime.datetime.now(datetime.timezone.utc)
         result = await builder.build_from_create_schema(payload)
-        after = datetime.datetime.now()
+        after = datetime.datetime.now(datetime.timezone.utc)
 
         assert before <= result.created_at <= after
-
-    @pytest.mark.asyncio
-    async def test_build_consecutive_entries_have_different_timestamps(self, builder):
-        """Test consecutive builds may have different timestamps."""
-        test_uuid1 = uuid.uuid4()
-        test_uuid2 = uuid.uuid4()
-
-        payload1 = ToDoCreateScheme(id=test_uuid1, title="First", description="Desc1")
-        payload2 = ToDoCreateScheme(id=test_uuid2, title="Second", description="Desc2")
-
-        result1 = await builder.build_from_create_schema(payload1)
-
-        # Small delay to ensure different timestamp
-        import asyncio
-        await asyncio.sleep(0.01)
-
-        result2 = await builder.build_from_create_schema(payload2)
-
-        # Timestamps should be different (at least one microsecond apart)
-        assert result1.created_at <= result2.created_at

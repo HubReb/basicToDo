@@ -1,4 +1,5 @@
 """Decorators for business logic layer."""
+
 import asyncio
 import functools
 from typing import Any, Callable, TypeVar, cast
@@ -12,7 +13,7 @@ from backend.app.business_logic.exceptions import (
     ToDoValidationError,
 )
 
-_F = TypeVar('_F', bound=Callable[..., Any])
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 
 def handle_service_exceptions(func: _F) -> _F:
@@ -50,4 +51,6 @@ def handle_service_exceptions(func: _F) -> _F:
             self.logger.error("Error in %s: %s", func.__name__, exc)
             raise ToDoRepositoryError from exc
 
-    return cast(_F, async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper)
+    return cast(
+        _F, async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+    )

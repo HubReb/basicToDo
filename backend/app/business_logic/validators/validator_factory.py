@@ -1,4 +1,5 @@
 """Factory for creating validator instances."""
+
 from backend.app.business_logic.validators.field_validator import FieldValidator
 from backend.app.business_logic.validators.input_sanitizer import InputSanitizer
 from backend.app.business_logic.validators.uuid_validator import UUIDValidator
@@ -25,7 +26,9 @@ class ValidatorFactory:
         return FieldValidator(input_sanitizer, logger)
 
     @staticmethod
-    def create_all_validators(logger: CustomLogger) -> tuple[InputSanitizer, UUIDValidator, FieldValidator]:
+    def create_all_validators(
+        logger: CustomLogger,
+    ) -> tuple[InputSanitizer, UUIDValidator, FieldValidator]:
         """Create all validators with proper dependencies.
 
         Returns:

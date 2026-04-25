@@ -1,43 +1,29 @@
 import { useState } from 'react'
-import { Box, Button, Flex, Input, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Input, Text, Textarea } from '@chakra-ui/react'
 import { useUpdateTodo } from '@/hooks/queries/useUpdateTodo'
 import { useAppToast } from '@/hooks/useToast'
-
-const MAX_TITLE_LENGTH = 255
+import { useTodoValidation, MAX_TITLE_LENGTH } from '@/hooks/useTodoValidation'
 
 interface TodoEditFormProps {
   id: string
   initialTitle: string
+  initialDescription?: string
   onCancel: () => void
 }
 
-export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) => {
+export const TodoEditForm = ({ id, initialTitle, initialDescription = '', onCancel }: TodoEditFormProps) => {
   const [title, setTitle] = useState(initialTitle)
-  const [error, setError] = useState("")
+  const [description, setDescription] = useState(initialDescription)
   const updateTodo = useUpdateTodo()
   const { showToast } = useAppToast()
-
-  const validateTitle = (value: string): string | null => {
-    const trimmed = value.trim()
-
-    if (!trimmed) {
-      return "Todo title cannot be empty"
-    }
-
-    if (trimmed.length > MAX_TITLE_LENGTH) {
-      return `Todo title cannot exceed ${MAX_TITLE_LENGTH} characters`
-    }
-
-    return null
-  }
+  const { validateTitle, error, setError, clearError } = useTodoValidation()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setTitle(value)
 
-    // Clear error when user starts typing
     if (error) {
-      setError("")
+      clearError()
     }
   }
 
@@ -48,7 +34,13 @@ export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) 
       return
     }
 
-    const updateData = { id, data: { title: title.trim(), description: "not implemented yet" } }
+    const updateData = {
+      id,
+      data: {
+        title: title.trim(),
+        description: description.trim() || null,
+      },
+    }
 
     updateTodo.mutate(updateData, {
       onSuccess: () => {
@@ -81,6 +73,15 @@ export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) 
         placeholder="Edit todo"
         borderColor={error ? "red.500" : undefined}
         maxLength={MAX_TITLE_LENGTH}
+      />
+      <Textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Description (optional)"
+        mt={2}
+        size="sm"
+        resize="vertical"
+        maxLength={255}
       />
       {error && (
         <Text color="red.500" fontSize="sm" mt={1}>

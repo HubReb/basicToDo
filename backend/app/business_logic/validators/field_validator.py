@@ -1,4 +1,5 @@
 """Field validator for validating required and optional fields."""
+
 from typing import Any
 
 from backend.app.business_logic.exceptions import ToDoValidationError
@@ -19,8 +20,8 @@ class FieldValidator(ValidatorInterface):
 
         Defaults to required field validation unless 'required' kwarg is False.
         """
-        field_name = kwargs.get('field_name', 'field')
-        required = kwargs.get('required', True)
+        field_name = kwargs.get("field_name", "field")
+        required = kwargs.get("required", True)
 
         if required:
             return self.validate_required(value, field_name)

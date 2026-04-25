@@ -25,23 +25,23 @@ const renderWithProviders = (component: React.ReactElement) => {
 
 describe('TodoItem', () => {
   it('renders todo title', () => {
-    renderWithProviders(<TodoItem id="123" title="Test Todo" />)
+    renderWithProviders(<TodoItem id="123" title="Test Todo" done={false} />)
     expect(screen.getByText('Test Todo')).toBeInTheDocument()
   })
 
   it('shows edit form when edit clicked', () => {
-    renderWithProviders(<TodoItem id="123" title="Test Todo" />)
+    renderWithProviders(<TodoItem id="123" title="Test Todo" done={false} />)
     fireEvent.click(screen.getByText('Edit'))
     expect(screen.getByPlaceholderText('Edit todo')).toBeInTheDocument()
   })
 
   it('shows delete button', () => {
-    renderWithProviders(<TodoItem id="123" title="Test Todo" />)
+    renderWithProviders(<TodoItem id="123" title="Test Todo" done={false} />)
     expect(screen.getByText('Delete Todo')).toBeInTheDocument()
   })
 
   it('hides edit and delete buttons when editing', () => {
-    renderWithProviders(<TodoItem id="123" title="Test Todo" />)
+    renderWithProviders(<TodoItem id="123" title="Test Todo" done={false} />)
     fireEvent.click(screen.getByText('Edit'))
     expect(screen.queryByText('Edit')).not.toBeInTheDocument()
     expect(screen.queryByText('Delete Todo')).not.toBeInTheDocument()

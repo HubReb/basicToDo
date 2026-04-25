@@ -16,9 +16,7 @@ class CustomLogger(Logger):
         handler.setLevel(INFO)
 
         # Create formatter
-        formatter = Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
+        formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         handler.setFormatter(formatter)
 
         # Add handler to logger

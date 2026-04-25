@@ -12,7 +12,7 @@ from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 @pytest.fixture
 def mock_service():
     """Provide a mock service for API tests."""
-    with patch("backend.app.api.api.service") as mock:
+    with patch("backend.app.api.api.service", new_callable=AsyncMock) as mock:
         yield mock
 
 

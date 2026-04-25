@@ -1,27 +1,22 @@
-""" The configuration of the backend."""
-import json
-import os
+"""Configuration for the backend using Pydantic BaseSettings."""
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Config:
-    def __init__(self, filename: str):
-        self.db_path: str = self._get_db_path()
-        self.database_url: str = f"sqlite:///{self.db_path}todo.db"
-        self.reload: bool = os.getenv("RELOAD", "true").lower() == "true"
-        self.config_file: str = filename
-        self._get_db_path()
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
 
-    def _get_db_path(self) -> str:
-        try:
-            DATABASE_URL = os.environ["DATABASE_URL"]
-            return DATABASE_URL
-        except KeyError as err:
-            pass
-            with open(self.config_file, encoding="utf-8") as f:
-                config = json.load(f)
-                self.port: int = int(config.get("PORT"))
-                self.host: str = str(config.get("HOST", ""))
-                db_path: str = str(config.get("db_path", ""))
-                return db_path
-        except FileNotFoundError:
-            raise ValueError("Specify the config file or set the environment variable 'DATABASE_URL'!")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    database_url: str = "sqlite+aiosqlite:///todo.db"
+    host: str = "0.0.0.0"
+    port: int = 8000
+    reload: bool = True
+    cors_origins: list[str] = ["http://localhost:5173"]
+
+
+settings = Settings()

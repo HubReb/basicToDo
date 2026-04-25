@@ -9,7 +9,7 @@ from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
     ToDoValidationError,
 )
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 from backend.tests.test_data.factories import create_todo_create_scheme
@@ -204,7 +204,7 @@ class TestCreateTodoRepositoryInteraction:
 
         mock_repository.create_to_do.assert_called_once()
         args = mock_repository.create_to_do.call_args[0]
-        assert isinstance(args[0], ToDoEntryData)
+        assert isinstance(args[0], ToDoORM)
         assert args[0].id == payload.id
 
     @pytest.mark.asyncio

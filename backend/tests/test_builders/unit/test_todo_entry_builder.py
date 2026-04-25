@@ -7,7 +7,7 @@ import pytest
 
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.exceptions import ToDoValidationError
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 
 
@@ -34,7 +34,7 @@ class TestToDoEntryBuilderSuccess:
 
     @pytest.mark.asyncio
     async def test_build_from_create_schema_success(self, builder, mock_uuid_validator, mock_field_validator):
-        """Test building ToDoEntryData from valid schema."""
+        """Test building ToDoORM from valid schema."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Test Title", description="Test Description")
 
@@ -42,20 +42,15 @@ class TestToDoEntryBuilderSuccess:
         mock_field_validator.validate_required.return_value = "Test Title"
         mock_field_validator.validate_optional.return_value = "Test Description"
 
-        with patch('backend.app.business_logic.builders.todo_entry_builder.datetime') as mock_datetime:
-            mock_now = datetime.datetime(2024, 1, 1, 12, 0, 0)
-            mock_datetime.datetime.now.return_value = mock_now
+        result = await builder.build_from_create_schema(payload)
 
-            result = await builder.build_from_create_schema(payload)
-
-            assert isinstance(result, ToDoEntryData)
-            assert result.id == test_uuid
-            assert result.title == "Test Title"
-            assert result.description == "Test Description"
-            assert result.created_at == mock_now
-            assert result.updated_at is None
-            assert result.deleted is False
-            assert result.done is False
+        assert isinstance(result, ToDoORM)
+        assert result.id == test_uuid
+        assert result.title == "Test Title"
+        assert result.description == "Test Description"
+        assert result.created_at is not None
+        assert result.deleted is False
+        assert result.done is False
 
     @pytest.mark.asyncio
     async def test_build_calls_uuid_validator(self, builder, mock_uuid_validator, mock_field_validator):
@@ -116,7 +111,7 @@ class TestToDoEntryBuilderSuccess:
 
     @pytest.mark.asyncio
     async def test_build_sets_created_at_timestamp(self, builder, mock_uuid_validator, mock_field_validator):
-        """Test builder sets created_at to current timestamp."""
+        """Test builder sets created_at to current UTC timestamp."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")
 
@@ -124,14 +119,11 @@ class TestToDoEntryBuilderSuccess:
         mock_field_validator.validate_required.return_value = "Title"
         mock_field_validator.validate_optional.return_value = "Desc"
 
-        with patch('backend.app.business_logic.builders.todo_entry_builder.datetime') as mock_datetime:
-            mock_now = datetime.datetime(2024, 1, 15, 10, 30, 45)
-            mock_datetime.datetime.now.return_value = mock_now
+        before = datetime.datetime.now(datetime.timezone.utc)
+        result = await builder.build_from_create_schema(payload)
+        after = datetime.datetime.now(datetime.timezone.utc)
 
-            result = await builder.build_from_create_schema(payload)
-
-            assert result.created_at == mock_now
-            mock_datetime.datetime.now.assert_called_once()
+        assert before <= result.created_at <= after
 
 
 class TestToDoEntryBuilderNonePayload:

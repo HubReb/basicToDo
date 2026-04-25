@@ -60,6 +60,7 @@ export interface GetTodoResponse extends ApiResponse {
  */
 export interface TodoListResponse extends ApiResponse {
   results: number;
+  total_count: number;
   todo_entries: Todo[];
 }
 

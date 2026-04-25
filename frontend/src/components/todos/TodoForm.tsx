@@ -1,38 +1,23 @@
 import React, { useState } from 'react'
-import { Input, Box, Text } from '@chakra-ui/react'
+import { Input, Box, Text, Textarea } from '@chakra-ui/react'
 import { v4 as uuid } from 'uuid'
 import { useCreateTodo } from '@/hooks/queries/useCreateTodo'
 import { useAppToast } from '@/hooks/useToast'
-
-const MAX_TITLE_LENGTH = 255
+import { useTodoValidation, MAX_TITLE_LENGTH } from '@/hooks/useTodoValidation'
 
 export const TodoForm = () => {
   const [item, setItem] = useState("")
-  const [error, setError] = useState("")
+  const [description, setDescription] = useState("")
   const createTodo = useCreateTodo()
   const { showToast } = useAppToast()
-
-  const validateTitle = (value: string): string | null => {
-    const trimmed = value.trim()
-
-    if (!trimmed) {
-      return "Todo title cannot be empty"
-    }
-
-    if (trimmed.length > MAX_TITLE_LENGTH) {
-      return `Todo title cannot exceed ${MAX_TITLE_LENGTH} characters`
-    }
-
-    return null
-  }
+  const { validateTitle, error, setError, clearError } = useTodoValidation()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setItem(value)
 
-    // Clear error when user starts typing
     if (error) {
-      setError("")
+      clearError()
     }
   }
 
@@ -48,13 +33,14 @@ export const TodoForm = () => {
     const todoData = {
       id: uuid(),
       title: item.trim(),
-      description: "not implemented yet",
+      description: description.trim() || null,
     }
 
     createTodo.mutate(todoData, {
       onSuccess: () => {
         setItem("")
-        setError("")
+        setDescription("")
+        clearError()
         showToast({
           title: 'Todo created',
           description: 'Your todo has been added successfully',
@@ -87,6 +73,17 @@ export const TodoForm = () => {
           disabled={createTodo.isPending}
           borderColor={error ? "red.500" : undefined}
           maxLength={MAX_TITLE_LENGTH}
+        />
+        <Textarea
+          value={description}
+          placeholder="Description (optional)"
+          aria-label="Todo description"
+          onChange={(e) => setDescription(e.target.value)}
+          disabled={createTodo.isPending}
+          mt={2}
+          size="sm"
+          resize="vertical"
+          maxLength={255}
         />
       </form>
       {error && (

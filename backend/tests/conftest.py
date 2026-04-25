@@ -1,78 +1,76 @@
 """Root conftest.py with shared fixtures for all tests."""
-import os
 import uuid
-from contextlib import contextmanager
-from pathlib import Path
-from typing import Generator
-from unittest.mock import MagicMock
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.todo_service import ToDoService
-from backend.app.business_logic.validators import ValidatorFactory
 from backend.app.data_access.database import Base, ToDoORM
 from backend.app.data_access.repository import ToDoRepository
 from backend.app.logger import CustomLogger
+from backend.app.business_logic.validators import ValidatorFactory
 
 
 # Session-scoped fixtures for shared components
 @pytest.fixture(scope="session")
-def session_logger():
+def session_logger() -> CustomLogger:
     """Create a real logger for the entire test session."""
     return CustomLogger("TestSession")
 
 
 @pytest.fixture(scope="session")
-def session_validators(session_logger):
+def session_validators(session_logger: CustomLogger):  # type: ignore[no-untyped-def]
     """Create real validators for the entire test session."""
     return ValidatorFactory.create_all_validators(session_logger)
 
 
 @pytest.fixture(scope="session")
-def session_input_sanitizer(session_validators):
+def session_input_sanitizer(session_validators):  # type: ignore[no-untyped-def]
     """Get input sanitizer from session validators."""
     input_sanitizer, _, _ = session_validators
     return input_sanitizer
 
 
 @pytest.fixture(scope="session")
-def session_uuid_validator(session_validators):
+def session_uuid_validator(session_validators):  # type: ignore[no-untyped-def]
     """Get UUID validator from session validators."""
     _, uuid_validator, _ = session_validators
     return uuid_validator
 
 
 @pytest.fixture(scope="session")
-def session_field_validator(session_validators):
+def session_field_validator(session_validators):  # type: ignore[no-untyped-def]
     """Get field validator from session validators."""
     _, _, field_validator = session_validators
     return field_validator
 
 
 @pytest.fixture(scope="session")
-def session_builder(session_uuid_validator, session_field_validator):
+def session_builder(session_uuid_validator, session_field_validator):  # type: ignore[no-untyped-def]
     """Create a real builder for the entire test session."""
     return ToDoEntryBuilder(session_uuid_validator, session_field_validator)
 
 
 # Function-scoped fixtures that need fresh instances per test
 @pytest.fixture
-def mock_repository():
-    """Create a mock repository for each test."""
-    return MagicMock()
+def mock_repository() -> AsyncMock:
+    """Create a mock repository for each test (async-compatible)."""
+    return AsyncMock()
 
 
 @pytest.fixture
-def mock_logger():
+def mock_logger() -> MagicMock:
     """Create a mock logger for each test."""
     return MagicMock()
 
 
 @pytest.fixture
-def sample_todo_id():
+def sample_todo_id() -> uuid.UUID:
     """Provide a consistent UUID for testing."""
     return uuid.uuid4()
 
@@ -80,17 +78,14 @@ def sample_todo_id():
 # Commonly used service fixtures
 @pytest.fixture
 def todo_service_with_mock_repo(
-    mock_repository,
-    mock_logger,
-    session_input_sanitizer,
-    session_uuid_validator,
-    session_field_validator,
-    session_builder,
-):
-    """Create ToDoService with mocked repository and real validators.
-
-    This is the standard service fixture for unit tests.
-    """
+    mock_repository: AsyncMock,
+    mock_logger: MagicMock,
+    session_input_sanitizer,  # type: ignore[no-untyped-def]
+    session_uuid_validator,  # type: ignore[no-untyped-def]
+    session_field_validator,  # type: ignore[no-untyped-def]
+    session_builder,  # type: ignore[no-untyped-def]
+) -> ToDoService:
+    """Create ToDoService with mocked repository and real validators."""
     return ToDoService(
         repository=mock_repository,
         logger=mock_logger,
@@ -103,18 +98,14 @@ def todo_service_with_mock_repo(
 
 @pytest.fixture
 def todo_service_integration(
-    mock_repository,
-    session_logger,
-    session_input_sanitizer,
-    session_uuid_validator,
-    session_field_validator,
-    session_builder,
-):
-    """Create ToDoService for integration tests with real logger.
-
-    This fixture uses real validators and logger but mocked repository,
-    suitable for integration tests.
-    """
+    mock_repository: AsyncMock,
+    session_logger: CustomLogger,
+    session_input_sanitizer,  # type: ignore[no-untyped-def]
+    session_uuid_validator,  # type: ignore[no-untyped-def]
+    session_field_validator,  # type: ignore[no-untyped-def]
+    session_builder,  # type: ignore[no-untyped-def]
+) -> ToDoService:
+    """Create ToDoService for integration tests with real logger."""
     return ToDoService(
         repository=mock_repository,
         logger=session_logger,
@@ -125,86 +116,75 @@ def todo_service_integration(
     )
 
 
-# Database fixtures for integration tests with real database
-@pytest.fixture(scope="function")
-def test_db_engine():
-    """Create a test database engine using in-memory SQLite."""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        echo=False
+# Async database fixtures for integration tests
+@pytest_asyncio.fixture(scope="function")
+async def test_async_engine():  # type: ignore[no-untyped-def]
+    """Create a test async database engine using in-memory SQLite."""
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:",
+        echo=False,
     )
 
-    # Create all tables
-    Base.metadata.create_all(bind=engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
     yield engine
 
-    # Cleanup
-    Base.metadata.drop_all(bind=engine)
-    engine.dispose()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
 
 
-@pytest.fixture(scope="function")
-def test_db_session(test_db_engine):
-    """Create a test database session."""
-    TestSessionLocal = sessionmaker(
+@pytest_asyncio.fixture(scope="function")
+async def test_async_session(test_async_engine):  # type: ignore[no-untyped-def]
+    """Create a test async database session."""
+    session_factory = async_sessionmaker(
+        bind=test_async_engine,
+        class_=AsyncSession,
         autocommit=False,
         autoflush=False,
-        bind=test_db_engine,
-        expire_on_commit=False
+        expire_on_commit=False,
     )
 
-    session = TestSessionLocal()
-    try:
+    async with session_factory() as session:
         yield session
-    finally:
-        session.close()
 
 
-@pytest.fixture(scope="function")
-def test_session_scope(test_db_engine):
-    """Create a session scope context manager for testing."""
-    TestSessionLocal = sessionmaker(
+@pytest_asyncio.fixture(scope="function")
+async def async_session_scope(test_async_engine):  # type: ignore[no-untyped-def]
+    """Create an async session scope context manager for testing."""
+    session_factory = async_sessionmaker(
+        bind=test_async_engine,
+        class_=AsyncSession,
         autocommit=False,
         autoflush=False,
-        bind=test_db_engine,
-        expire_on_commit=False
+        expire_on_commit=False,
     )
 
-    @contextmanager
-    def _session_scope() -> Generator[Session, None, None]:
-        session = TestSessionLocal()
-        try:
-            yield session
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
+    @asynccontextmanager
+    async def _session_scope() -> AsyncGenerator[AsyncSession, None]:
+        async with session_factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
     return _session_scope
 
 
-@pytest.fixture(scope="function")
-def todo_service_with_real_db(
-    test_session_scope,
-    session_logger,
-    session_input_sanitizer,
-    session_uuid_validator,
-    session_field_validator,
-    session_builder,
-):
-    """Create ToDoService with real database for integration tests.
-
-    This fixture provides a complete service with:
-    - Real in-memory SQLite database
-    - Real repository
-    - Real validators
-    - Fresh database for each test
-    """
-    repository = ToDoRepository(test_session_scope, session_logger)
+@pytest_asyncio.fixture(scope="function")
+async def todo_service_with_real_db(
+    async_session_scope,  # type: ignore[no-untyped-def]
+    session_logger: CustomLogger,
+    session_input_sanitizer,  # type: ignore[no-untyped-def]
+    session_uuid_validator,  # type: ignore[no-untyped-def]
+    session_field_validator,  # type: ignore[no-untyped-def]
+    session_builder,  # type: ignore[no-untyped-def]
+) -> ToDoService:
+    """Create ToDoService with real async database for integration tests."""
+    repository = ToDoRepository(async_session_scope, session_logger)
 
     return ToDoService(
         repository=repository,

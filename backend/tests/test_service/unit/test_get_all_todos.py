@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 
 
 class TestGetAllTodosSuccess:
@@ -13,7 +13,7 @@ class TestGetAllTodosSuccess:
     @pytest.mark.asyncio
     async def test_get_all_success(self, todo_service, mock_repository):
         """Test getting all ToDos successfully."""
-        entry1 = ToDoEntryData(
+        entry1 = ToDoORM(
             id=uuid.uuid4(),
             title="Test1",
             description="Desc1",
@@ -22,7 +22,7 @@ class TestGetAllTodosSuccess:
             done=False,
             deleted=False
         )
-        entry2 = ToDoEntryData(
+        entry2 = ToDoORM(
             id=uuid.uuid4(),
             title="Test2",
             description="Desc2",
@@ -61,7 +61,7 @@ class TestGetAllTodosSuccess:
     @pytest.mark.asyncio
     async def test_get_all_single_entry(self, todo_service, mock_repository):
         """Test getting all ToDos with single entry."""
-        entry = ToDoEntryData(
+        entry = ToDoORM(
             id=uuid.uuid4(),
             title="Single",
             description="Desc",
@@ -125,7 +125,7 @@ class TestGetAllTodosInvalidEntries:
     @pytest.mark.asyncio
     async def test_get_all_skips_invalid(self, todo_service, mock_repository):
         """Test get_all_todos skips invalid entries."""
-        valid_entry = ToDoEntryData(
+        valid_entry = ToDoORM(
             id=uuid.uuid4(),
             title="Valid",
             description="Desc",
@@ -145,7 +145,7 @@ class TestGetAllTodosInvalidEntries:
     @pytest.mark.asyncio
     async def test_get_all_logs_invalid_entries(self, todo_service, mock_repository, mock_logger):
         """Test get_all_todos logs warning for invalid entries."""
-        valid_entry = ToDoEntryData(
+        valid_entry = ToDoORM(
             id=uuid.uuid4(),
             title="Valid",
             description="Desc",
