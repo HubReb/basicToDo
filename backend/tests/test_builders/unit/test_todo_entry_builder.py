@@ -7,7 +7,7 @@ import pytest
 
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.exceptions import ToDoValidationError
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 
 
@@ -34,7 +34,7 @@ class TestToDoEntryBuilderSuccess:
 
     @pytest.mark.asyncio
     async def test_build_from_create_schema_success(self, builder, mock_uuid_validator, mock_field_validator):
-        """Test building ToDoEntryData from valid schema."""
+        """Test building ToDoORM from valid schema."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Test Title", description="Test Description")
 
@@ -48,7 +48,7 @@ class TestToDoEntryBuilderSuccess:
 
             result = await builder.build_from_create_schema(payload)
 
-            assert isinstance(result, ToDoEntryData)
+            assert isinstance(result, ToDoORM)
             assert result.id == test_uuid
             assert result.title == "Test Title"
             assert result.description == "Test Description"

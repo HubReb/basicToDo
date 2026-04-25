@@ -8,7 +8,7 @@ from backend.app.business_logic.exceptions import (
     ToDoNotFoundError,
     ToDoValidationError,
 )
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 
 
 class TestGetTodoValidationIntegration:
@@ -18,7 +18,7 @@ class TestGetTodoValidationIntegration:
     async def test_get_validates_uuid_string(self, todo_service, mock_repository):
         """Test get_todo validates string UUID."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -57,7 +57,7 @@ class TestGetTodoValidationIntegration:
     async def test_get_accepts_uuid_object(self, todo_service, mock_repository):
         """Test get_todo accepts UUID object."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -100,7 +100,7 @@ class TestGetTodoSuccessIntegration:
     async def test_get_returns_complete_todo(self, todo_service, mock_repository):
         """Test get_todo returns complete ToDo data."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Complete Task",
             description="Full description",
@@ -123,7 +123,7 @@ class TestGetTodoSuccessIntegration:
     async def test_get_returns_minimal_todo(self, todo_service, mock_repository):
         """Test get_todo returns minimal ToDo data."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Minimal",
             description="",

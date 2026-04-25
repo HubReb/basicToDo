@@ -5,7 +5,7 @@ const Header = () => {
 		<Flex
 			as="nav"
 			align="center"
-			justify="space-betwee"
+			justify="space-between"
 			wrap="wrap"
 			padding="1rem"
 			bg="gray.400"

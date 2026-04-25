@@ -11,6 +11,7 @@ class ListToDoResponse(ApiResponse):
     """List of ToDos"""
 
     results: Optional[int] = 0
+    total_count: int = 0
     todo_entries: List[ToDoSchema]
 
     @field_validator("todo_entries")

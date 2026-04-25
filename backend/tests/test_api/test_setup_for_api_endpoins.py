@@ -13,6 +13,7 @@ from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 def mock_service():
     """Provide a mock service for API tests."""
     with patch("backend.app.api.api.service") as mock:
+        mock.get_count = AsyncMock(return_value=0)
         yield mock
 
 

@@ -8,9 +8,11 @@ import * as todoApi from '@/services/api/todoApi'
 vi.mock('@/services/api/todoApi', () => ({
   todoApi: {
     list: vi.fn(),
+    listDeleted: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    restore: vi.fn(),
   },
 }))
 
@@ -39,6 +41,13 @@ describe('TodoList', () => {
       success: true,
       todo_entries: [],
       results: 0,
+      total_count: 0,
+    })
+    vi.mocked(todoApi.todoApi.listDeleted).mockResolvedValue({
+      success: true,
+      todo_entries: [],
+      results: 0,
+      total_count: 0,
     })
   })
 

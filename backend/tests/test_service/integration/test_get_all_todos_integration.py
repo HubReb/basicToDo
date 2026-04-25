@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 
 
 class TestGetAllTodosSuccessIntegration:
@@ -13,7 +13,7 @@ class TestGetAllTodosSuccessIntegration:
     @pytest.mark.asyncio
     async def test_get_all_returns_valid_entries(self, todo_service, mock_repository):
         """Test get_all_todos returns valid entries."""
-        entry1 = ToDoEntryData(
+        entry1 = ToDoORM(
             id=uuid.uuid4(),
             title="Test1",
             description="Desc1",
@@ -22,7 +22,7 @@ class TestGetAllTodosSuccessIntegration:
             done=False,
             deleted=False
         )
-        entry2 = ToDoEntryData(
+        entry2 = ToDoORM(
             id=uuid.uuid4(),
             title="Test2",
             description="Desc2",
@@ -52,7 +52,7 @@ class TestGetAllTodosSuccessIntegration:
     @pytest.mark.asyncio
     async def test_get_all_returns_single_entry(self, todo_service, mock_repository):
         """Test get_all_todos returns single entry."""
-        entry = ToDoEntryData(
+        entry = ToDoORM(
             id=uuid.uuid4(),
             title="Single",
             description="Desc",
@@ -75,7 +75,7 @@ class TestGetAllTodosInvalidEntriesIntegration:
     @pytest.mark.asyncio
     async def test_get_all_skips_invalid_entries(self, todo_service, mock_repository):
         """Test get_all_todos skips invalid entries."""
-        valid_entry = ToDoEntryData(
+        valid_entry = ToDoORM(
             id=uuid.uuid4(),
             title="Valid",
             description="Desc",
@@ -107,7 +107,7 @@ class TestGetAllTodosInvalidEntriesIntegration:
     @pytest.mark.asyncio
     async def test_get_all_skips_multiple_invalid_entries(self, todo_service, mock_repository):
         """Test get_all_todos skips multiple invalid entries."""
-        valid1 = ToDoEntryData(
+        valid1 = ToDoORM(
             id=uuid.uuid4(),
             title="Valid1",
             description="Desc1",
@@ -116,7 +116,7 @@ class TestGetAllTodosInvalidEntriesIntegration:
             done=False,
             deleted=False
         )
-        valid2 = ToDoEntryData(
+        valid2 = ToDoORM(
             id=uuid.uuid4(),
             title="Valid2",
             description="Desc2",

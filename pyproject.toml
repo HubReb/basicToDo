@@ -26,6 +26,8 @@ dependencies = [
     "types-pyyaml>=6.0.12.20250516",
     "types-ujson>=5.10.0.20250326",
     "uvicorn>=0.34.2",
+    "aiosqlite>=0.20.0",
+    "pydantic-settings>=2.7.0",
 ]
 [tool.setuptools_scm]
 version = "v0.1.0"
@@ -60,6 +62,7 @@ testpaths = ["backend/tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+asyncio_mode = "auto"
 addopts = [
     "--strict-markers",
     "--strict-config",

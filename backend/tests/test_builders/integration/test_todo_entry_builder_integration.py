@@ -8,7 +8,7 @@ from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuil
 from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.business_logic.validators import ValidatorFactory
 from backend.app.logger import CustomLogger
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 
 
@@ -36,7 +36,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
 
         result = await builder.build_from_create_schema(payload)
 
-        assert isinstance(result, ToDoEntryData)
+        assert isinstance(result, ToDoORM)
         assert result.id == test_uuid
         assert result.title == "Buy groceries for dinner"
         assert result.description == "Need to buy milk, eggs, and bread"
@@ -238,9 +238,9 @@ class TestToDoEntryBuilderTimestampGeneration:
             description="Desc"
         )
 
-        before = datetime.datetime.now()
+        before = datetime.datetime.now(datetime.timezone.utc)
         result = await builder.build_from_create_schema(payload)
-        after = datetime.datetime.now()
+        after = datetime.datetime.now(datetime.timezone.utc)
 
         assert before <= result.created_at <= after
 
