@@ -1,6 +1,6 @@
 # basicToDo
 
-A simple ToDo application to be enhanced over time. *This is in an early beta state with rapid development and breaking changes. This serves as a playground to extend my knowledge and experience of the used tech stage. As such, it it as is and not intended for production usage.*
+Spec-driven modernization playground for full-stack patterns. Originally a simple CRUD ToDo, now used to explore async architecture, ORM evolution, and AI-assisted development workflows
 
 ## Basic functionality
 ![image](images/basicApp.png)
@@ -117,4 +117,3 @@ These further improvements define the next milestone.
 - Subtasks: Add subtasks to a ToDo entry to break big tasks into smaller ones.
 - Reminder: Set a date to have the task finished and be reminded of the upcoming deadline.
 
-The backend will also undergo further restructuring and changes to improve stability and quality.
