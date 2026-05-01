@@ -117,12 +117,12 @@ class TestCreateTodoSQLInjectionIntegration:
             await todo_service.create_todo(payload)
 
     @pytest.mark.asyncio
-    async def test_create_blocks_union_select(self, todo_service):
-        """Test create_todo blocks UNION SELECT."""
+    async def test_create_blocks_union_select_with_comment(self, todo_service):
+        """A UNION SELECT becomes injection-shaped when chained with a SQL comment."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=todo_id,
-            title="Test UNION SELECT * FROM users",
+            title="Test UNION SELECT * FROM users--",
             description="Desc"
         )
 

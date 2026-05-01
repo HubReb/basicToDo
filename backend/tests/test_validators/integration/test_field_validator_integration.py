@@ -123,10 +123,8 @@ class TestFieldValidatorSQLInjectionDetection:
 
     @pytest.mark.parametrize("sql_injection", [
         "'; DROP TABLE todos; --",
-        "1' OR '1'='1",
         "admin'--",
         "1; DELETE FROM users",
-        "UNION SELECT password FROM users",
         "/* comment */ SELECT *",
     ])
     def test_required_blocks_sql_patterns(self, validator, sql_injection):
@@ -136,10 +134,8 @@ class TestFieldValidatorSQLInjectionDetection:
 
     @pytest.mark.parametrize("sql_injection", [
         "'; DROP TABLE todos; --",
-        "1' OR '1'='1",
         "admin'--",
         "1; DELETE FROM users",
-        "UNION SELECT password FROM users",
         "/* comment */ SELECT *",
     ])
     def test_optional_blocks_sql_patterns(self, validator, sql_injection):

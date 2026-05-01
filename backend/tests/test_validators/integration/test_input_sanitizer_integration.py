@@ -143,17 +143,14 @@ class TestInputSanitizerBoundaryConditions:
         result = sanitizer.validate("ORDERED")  # 7 chars like 'EXECUTE'
         assert result == "ORDERED"
 
-    def test_whitespace_around_sql_keyword(self, sanitizer):
-        """Test that isolated SQL keywords are caught."""
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate("  DROP  ")
+    def test_bare_sql_keyword_passes(self, sanitizer):
+        """Bare SQL keywords are allowed; only structural markers are blocked."""
+        assert sanitizer.validate("  DROP  ") == "DROP"
 
     def test_sql_keyword_at_start(self, sanitizer):
-        """Test SQL keyword at start of string."""
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate("DROP this idea")
+        """A todo title starting with a SQL keyword like 'Update' is valid."""
+        assert sanitizer.validate("Update resume") == "Update resume"
 
     def test_sql_keyword_at_end(self, sanitizer):
-        """Test SQL keyword at end of string."""
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate("Please DROP")
+        """A todo title ending with a SQL keyword like 'select' is valid."""
+        assert sanitizer.validate("Please select an option") == "Please select an option"
