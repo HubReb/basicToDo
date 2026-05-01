@@ -52,7 +52,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: [
     {
-      command: 'DATABASE_URL=sqlite+aiosqlite:///test.db uv run python -m backend.app.main',
+      command: 'DATABASE_URL=sqlite+aiosqlite:///test.db RATE_LIMIT_ENABLED=false uv run python -m backend.app.main',
       url: 'http://localhost:8000/docs',
       cwd: '..',
       reuseExistingServer: !process.env.CI,

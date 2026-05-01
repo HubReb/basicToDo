@@ -22,7 +22,7 @@ from backend.app.schemas.api_responses.to_do_response import ToDoResponse
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, enabled=settings.rate_limit_enabled)
 
 app = FastAPI(title="ToDo API")
 app.state.limiter = limiter

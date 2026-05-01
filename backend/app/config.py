@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = True
     cors_origins: list[str] = ["http://localhost:5173"]
+    rate_limit_enabled: bool = True
 
 
 settings = Settings()
