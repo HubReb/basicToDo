@@ -80,10 +80,13 @@ class ToDoRepository(ToDoRepositoryInterface):
         return True
 
     async def hard_delete_to_do(self, to_do_id: uuid.UUID) -> bool:
-        entry = await self.get_to_do_entry(to_do_id)
-        if not entry:
-            return False
         async with self.session_manager() as session:
+            result = await session.execute(
+                select(ToDoORM).where(ToDoORM.id == to_do_id)
+            )
+            entry = result.scalars().first()
+            if not entry:
+                return False
             await session.delete(entry)
         return True
 
