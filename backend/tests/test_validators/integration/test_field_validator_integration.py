@@ -1,4 +1,5 @@
 """Integration tests for FieldValidator with real InputSanitizer."""
+
 import pytest
 
 from backend.app.business_logic.exceptions import ToDoValidationError
@@ -75,8 +76,6 @@ class TestFieldValidatorOptionalRealWorld:
         result = validator.validate_optional(description)
         assert result == "Need to buy milk, eggs, and bread from the store"
 
-    @pytest.mark.skip(
-        reason="Bug: SQL regex too strict - rejects 'Execute' in normal text. See BUG_REPORT_SQL_REGEX.md")
     def test_validate_optional_multiline_description(self, validator):
         """Test validating multi-line description."""
         description = "Step 1: Prepare\nStep 2: Execute\nStep 3: Review"
@@ -121,23 +120,29 @@ class TestFieldValidatorOptionalRealWorld:
 class TestFieldValidatorSQLInjectionDetection:
     """Test FieldValidator SQL injection detection through InputSanitizer."""
 
-    @pytest.mark.parametrize("sql_injection", [
-        "'; DROP TABLE todos; --",
-        "admin'--",
-        "1; DELETE FROM users",
-        "/* comment */ SELECT *",
-    ])
+    @pytest.mark.parametrize(
+        "sql_injection",
+        [
+            "'; DROP TABLE todos; --",
+            "admin'--",
+            "1; DELETE FROM users",
+            "/* comment */ SELECT *",
+        ],
+    )
     def test_required_blocks_sql_patterns(self, validator, sql_injection):
         """Test required field blocks various SQL injection patterns."""
         with pytest.raises(ToDoValidationError):
             validator.validate_required(sql_injection, "title")
 
-    @pytest.mark.parametrize("sql_injection", [
-        "'; DROP TABLE todos; --",
-        "admin'--",
-        "1; DELETE FROM users",
-        "/* comment */ SELECT *",
-    ])
+    @pytest.mark.parametrize(
+        "sql_injection",
+        [
+            "'; DROP TABLE todos; --",
+            "admin'--",
+            "1; DELETE FROM users",
+            "/* comment */ SELECT *",
+        ],
+    )
     def test_optional_blocks_sql_patterns(self, validator, sql_injection):
         """Test optional field blocks various SQL injection patterns."""
         with pytest.raises(ToDoValidationError):
@@ -191,7 +196,9 @@ class TestFieldValidatorDataConsistency:
         validator2 = ValidatorFactory.create_field_validator(logger2)
 
         text = "  Test  "
-        assert validator1.validate_required(text, "title") == validator2.validate_required(text, "title")
+        assert validator1.validate_required(
+            text, "title"
+        ) == validator2.validate_required(text, "title")
 
 
 class TestFieldValidatorBoundaryConditions:

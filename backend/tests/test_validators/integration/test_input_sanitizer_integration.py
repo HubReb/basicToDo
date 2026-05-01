@@ -1,4 +1,5 @@
 """Integration tests for InputSanitizer with real logger."""
+
 import pytest
 
 from backend.app.business_logic.exceptions import ToDoValidationError
@@ -153,4 +154,6 @@ class TestInputSanitizerBoundaryConditions:
 
     def test_sql_keyword_at_end(self, sanitizer):
         """A todo title ending with a SQL keyword like 'select' is valid."""
-        assert sanitizer.validate("Please select an option") == "Please select an option"
+        assert (
+            sanitizer.validate("Please select an option") == "Please select an option"
+        )

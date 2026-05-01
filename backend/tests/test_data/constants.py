@@ -1,4 +1,5 @@
 """Shared test data constants."""
+
 from typing import List, Tuple
 
 # SQL Injection test patterns the sanitizer must still reject.
