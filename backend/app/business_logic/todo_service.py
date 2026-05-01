@@ -8,7 +8,6 @@ from backend.app.business_logic.builders.builder_interface import BuilderInterfa
 from backend.app.business_logic.decorators import handle_service_exceptions
 from backend.app.business_logic.exceptions import ToDoNotFoundError
 from backend.app.business_logic.validators import FieldValidator, ValidatorInterface
-from backend.app.data_access.database import ToDoORM
 from backend.app.data_access.repository import ToDoRepositoryInterface
 from backend.app.logger import CustomLogger
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
@@ -39,7 +38,7 @@ class ToDoService:
 
     @handle_service_exceptions
     async def create_todo(self, payload: ToDoCreateScheme) -> ToDoSchema:
-        entry_data: ToDoORM = await self.builder.build_from_create_schema(payload)
+        entry_data = await self.builder.build_from_create_schema(payload)
         await self.repository.create_to_do(entry_data)
         return ToDoSchema.model_validate(entry_data)
 
