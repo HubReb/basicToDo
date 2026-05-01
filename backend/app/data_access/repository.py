@@ -1,4 +1,5 @@
 """Async repository for ToDo operations."""
+import datetime
 import uuid
 from abc import ABC, abstractmethod
 from typing import Callable, List, Optional
@@ -74,6 +75,7 @@ class ToDoRepository(ToDoRepositoryInterface):
             return False
         async with self.session_manager() as session:
             entry.deleted = True
+            entry.updated_at = datetime.datetime.now(datetime.timezone.utc)
             await session.merge(entry)
         return True
 
