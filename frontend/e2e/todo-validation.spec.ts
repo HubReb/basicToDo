@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Todo Validation', () => {
   test.beforeEach(async ({ page, request }) => {
     // Clean up test database before each test
-    const response = await request.get('http://localhost:8000/todo?limit=1000&page=1');
+    const response = await request.get('http://localhost:8000/todo?limit=100&page=1');
     const data = await response.json();
 
     if (data.todo_entries && data.todo_entries.length > 0) {
