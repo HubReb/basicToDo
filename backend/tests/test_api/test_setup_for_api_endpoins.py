@@ -14,6 +14,7 @@ def mock_service():
     """Provide a mock service for API tests."""
     with patch("backend.app.api.api.service") as mock:
         mock.get_count = AsyncMock(return_value=0)
+        mock.count_deleted = AsyncMock(return_value=0)
         yield mock
 
 

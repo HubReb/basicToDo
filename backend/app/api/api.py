@@ -68,7 +68,8 @@ async def list_deleted_todos(
     page: int = Query(1, ge=1),
 ) -> ListToDoResponse:
     todos = await service.get_deleted_todos(limit, page)
-    return ListToDoResponse(success=True, results=len(todos), total_count=len(todos), todo_entries=todos)
+    total_count = await service.count_deleted()
+    return ListToDoResponse(success=True, results=len(todos), total_count=total_count, todo_entries=todos)
 
 
 @app.patch("/todo/{todo_id}/restore", response_model=ToDoResponse)

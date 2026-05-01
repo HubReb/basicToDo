@@ -89,6 +89,10 @@ class ToDoService:
         return await self.repository.get_count()
 
     @handle_service_exceptions
+    async def count_deleted(self) -> int:
+        return await self.repository.count_deleted()
+
+    @handle_service_exceptions
     async def get_deleted_todos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
         entries = await self.repository.get_deleted_todos(limit, page)
         result: list[ToDoSchema] = []

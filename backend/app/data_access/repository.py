@@ -45,6 +45,10 @@ class ToDoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
+    async def count_deleted(self) -> int:
+        pass
+
+    @abstractmethod
     async def restore_to_do(self, to_do_id: uuid.UUID) -> Optional[ToDoORM]:
         pass
 
@@ -139,6 +143,13 @@ class ToDoRepository(ToDoRepositoryInterface):
                 .limit(limit)
             )
             return list(result.scalars().all())
+
+    async def count_deleted(self) -> int:
+        async with self.session_manager() as session:
+            result = await session.execute(
+                select(func.count(ToDoORM.id)).where(ToDoORM.deleted.is_(True))
+            )
+            return result.scalar() or 0
 
     async def restore_to_do(self, to_do_id: uuid.UUID) -> Optional[ToDoORM]:
         async with self.session_manager() as session:
