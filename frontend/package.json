@@ -25,7 +25,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "snippet": "^0.0.0",
-    "uuid": "^11.1.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
