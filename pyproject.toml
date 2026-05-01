@@ -54,6 +54,7 @@ warn_unused_ignores = true
 
 [tool.isort]
 profile = "black"
+known_first_party = ["backend"]
 
 [dependency-groups]
 dev = [
