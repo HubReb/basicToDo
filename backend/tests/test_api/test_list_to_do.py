@@ -35,6 +35,8 @@ class TestListTodos:
         assert isinstance(data["todo_entries"], list)
         assert "results" in data
         assert isinstance(data["results"], int)
+        assert "total_count" in data
+        assert isinstance(data["total_count"], int)
 
     def test_list_todos_returns_created_items(self, client, mock_service):
         """Test that created todos appear in list."""

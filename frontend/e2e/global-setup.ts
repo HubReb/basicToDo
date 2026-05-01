@@ -5,7 +5,7 @@ async function globalSetup() {
   const context = await request.newContext();
 
   try {
-    const response = await context.get('http://localhost:8000/todo?limit=1000&page=1');
+    const response = await context.get('http://localhost:8000/todo?limit=100&page=1');
     const data = await response.json();
 
     if (data.todo_entries && data.todo_entries.length > 0) {

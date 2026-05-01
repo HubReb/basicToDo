@@ -8,7 +8,7 @@ from backend.app.business_logic.exceptions import (
     ToDoNotFoundError,
     ToDoValidationError,
 )
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 
 
 class TestGetTodoSuccess:
@@ -18,7 +18,7 @@ class TestGetTodoSuccess:
     async def test_get_success(self, todo_service, mock_repository):
         """Test getting a ToDo successfully."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -40,7 +40,7 @@ class TestGetTodoSuccess:
     async def test_get_with_string_uuid(self, todo_service, mock_repository):
         """Test getting ToDo with string UUID."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -59,7 +59,7 @@ class TestGetTodoSuccess:
     async def test_get_with_uuid_object(self, todo_service, mock_repository):
         """Test getting ToDo with UUID object."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -78,7 +78,7 @@ class TestGetTodoSuccess:
     async def test_get_with_all_fields_populated(self, todo_service, mock_repository):
         """Test getting ToDo with all fields populated."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Complete Task",
             description="Full description",
@@ -164,7 +164,7 @@ class TestGetTodoRepositoryInteraction:
     async def test_get_calls_repository_get(self, todo_service, mock_repository):
         """Test get_todo calls repository.get_to_do_entry."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -183,7 +183,7 @@ class TestGetTodoRepositoryInteraction:
     async def test_get_passes_validated_uuid(self, todo_service, mock_repository):
         """Test get_todo passes validated UUID to repository."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",

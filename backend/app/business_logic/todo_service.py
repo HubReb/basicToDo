@@ -1,4 +1,4 @@
-"""Business logic layer for ToDo management (secure version)."""
+"""Business logic layer for ToDo management."""
 import uuid
 from typing import List
 
@@ -16,7 +16,7 @@ from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 class ToDoService:
-    """Application service for ToDo operations (secure)."""
+    """Application service for ToDo operations."""
 
     def __init__(
             self,
@@ -39,13 +39,13 @@ class ToDoService:
     @handle_service_exceptions
     async def create_todo(self, payload: ToDoCreateScheme) -> ToDoSchema:
         entry_data = await self.builder.build_from_create_schema(payload)
-        self.repository.create_to_do(entry_data)
+        await self.repository.create_to_do(entry_data)
         return ToDoSchema.model_validate(entry_data)
 
     @handle_service_exceptions
     async def get_todo(self, to_do_id: str | uuid.UUID) -> ToDoSchema:
         valid_uuid = self.uuid_validator.validate(to_do_id)
-        entry = self.repository.get_to_do_entry(valid_uuid)
+        entry = await self.repository.get_to_do_entry(valid_uuid)
         if not entry:
             raise ToDoNotFoundError
         return ToDoSchema.model_validate(entry)
@@ -53,15 +53,14 @@ class ToDoService:
     @handle_service_exceptions
     async def update_todo(self, to_do_id: uuid.UUID, payload: TodoUpdateScheme) -> ToDoSchema:
         if payload.done:
-            updated_entry = await self.mark_to_do_as_done(to_do_id)
-            return updated_entry
+            return await self.mark_to_do_as_done(to_do_id)
 
         if payload.title is not None:
             payload.title = self.field_validator.validate_required(payload.title, field_name="title")
         if payload.description is not None:
             payload.description = self.field_validator.validate_optional(payload.description)
 
-        updated_entry_data = self.repository.update_to_do(to_do_id, payload)
+        updated_entry_data = await self.repository.update_to_do(to_do_id, payload)
         if not updated_entry_data:
             raise ToDoNotFoundError
 
@@ -69,14 +68,14 @@ class ToDoService:
 
     @handle_service_exceptions
     async def delete_todo(self, to_do_id: uuid.UUID) -> bool:
-        deleted = self.repository.delete_to_do(self.uuid_validator.validate(to_do_id))
+        deleted = await self.repository.delete_to_do(self.uuid_validator.validate(to_do_id))
         if not deleted:
             raise ToDoNotFoundError
         return True
 
     @handle_service_exceptions
     async def get_all_todos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
-        entries = self.repository.get_all_to_do_entries(limit, page)
+        entries = await self.repository.get_all_to_do_entries(limit, page)
         result: list[ToDoSchema] = []
         for entry in entries:
             try:
@@ -86,13 +85,39 @@ class ToDoService:
         return result
 
     @handle_service_exceptions
+    async def get_count(self) -> int:
+        return await self.repository.get_count()
+
+    @handle_service_exceptions
+    async def count_deleted(self) -> int:
+        return await self.repository.count_deleted()
+
+    @handle_service_exceptions
+    async def get_deleted_todos(self, limit: int = 10, page: int = 1) -> List[ToDoSchema]:
+        entries = await self.repository.get_deleted_todos(limit, page)
+        result: list[ToDoSchema] = []
+        for entry in entries:
+            try:
+                result.append(ToDoSchema.model_validate(entry))
+            except ValidationError as e:
+                self.logger.warning("Invalid DB entry skipped: %s", e)
+        return result
+
+    @handle_service_exceptions
+    async def restore_todo(self, to_do_id: uuid.UUID) -> ToDoSchema:
+        entry = await self.repository.restore_to_do(self.uuid_validator.validate(to_do_id))
+        if not entry:
+            raise ToDoNotFoundError
+        return ToDoSchema.model_validate(entry)
+
+    @handle_service_exceptions
     async def mark_to_do_as_done(self, to_do_id: uuid.UUID) -> ToDoSchema:
         """Mark a todo as done."""
-        entry = self.repository.get_to_do_entry(to_do_id)
+        entry = await self.repository.get_to_do_entry(to_do_id)
         if not entry:
             raise ToDoNotFoundError
         done_entry = TodoUpdateScheme(done=True, description=entry.description, title=entry.title)
-        updated_entry_data = self.repository.update_to_do(to_do_id, done_entry)
+        updated_entry_data = await self.repository.update_to_do(to_do_id, done_entry)
         if not updated_entry_data:
             raise ToDoNotFoundError
         return ToDoSchema.model_validate(updated_entry_data)

@@ -63,6 +63,25 @@ export class TodoApi {
       params: { limit, page },
     });
   }
+
+  /**
+   * List deleted todos with pagination
+   * GET /todo/deleted?limit={limit}&page={page}
+   */
+  async listDeleted(limit: number = 10, page: number = 1): Promise<TodoListResponse> {
+    return apiClient.get<TodoListResponse>('/todo/deleted', {
+      params: { limit, page },
+    });
+  }
+
+  /**
+   * Restore a deleted todo
+   * PATCH /todo/{todo_id}/restore
+   */
+  async restore(todoId: string): Promise<Todo> {
+    const response = await apiClient.patch<TodoResponse>(`/todo/${todoId}/restore`);
+    return response.todo_entry;
+  }
 }
 
 // Export singleton instance

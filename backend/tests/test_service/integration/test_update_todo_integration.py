@@ -10,7 +10,7 @@ from backend.app.business_logic.exceptions import (
     ToDoNotFoundError,
     ToDoValidationError,
 )
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
@@ -25,7 +25,7 @@ class TestUpdateTodoValidationIntegration:
             title="  Updated Title  ",
             description="Desc"
         )
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Updated Title",
             description="Desc",
@@ -49,7 +49,7 @@ class TestUpdateTodoValidationIntegration:
         payload = TodoUpdateScheme(
             description="  Updated Desc  "
         )
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Title",
             description="Updated Desc",
@@ -150,7 +150,7 @@ class TestUpdateTodoDoneIntegration:
         """Test update with done=True uses mark_as_done flow."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(done=True)
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -159,7 +159,7 @@ class TestUpdateTodoDoneIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -180,7 +180,7 @@ class TestUpdateTodoDoneIntegration:
         """Test update with done=True calls get_to_do_entry."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(done=True)
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -189,7 +189,7 @@ class TestUpdateTodoDoneIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -238,7 +238,7 @@ class TestUpdateTodoPartialUpdatesIntegration:
         """Test updating only title validates title field."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(title="  New Title  ")
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="New Title",
             description="Old Desc",
@@ -259,7 +259,7 @@ class TestUpdateTodoPartialUpdatesIntegration:
         """Test updating only description validates description field."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(description="  New Desc  ")
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Old Title",
             description="New Desc",
@@ -280,7 +280,7 @@ class TestUpdateTodoPartialUpdatesIntegration:
         """Test updating description only doesn't validate title."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(description="New Desc")
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Old Title",
             description="New Desc",

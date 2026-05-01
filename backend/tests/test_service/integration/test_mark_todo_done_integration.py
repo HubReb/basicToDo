@@ -5,7 +5,7 @@ import uuid
 import pytest
 
 from backend.app.business_logic.exceptions import ToDoNotFoundError
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 
 
@@ -16,7 +16,7 @@ class TestMarkTodoDoneSuccessIntegration:
     async def test_mark_as_done_success(self, todo_service, mock_repository):
         """Test marking ToDo as done."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -25,7 +25,7 @@ class TestMarkTodoDoneSuccessIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -46,7 +46,7 @@ class TestMarkTodoDoneSuccessIntegration:
     async def test_mark_as_done_preserves_title(self, todo_service, mock_repository):
         """Test mark_as_done preserves original title."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Original Title",
             description="Original Desc",
@@ -55,7 +55,7 @@ class TestMarkTodoDoneSuccessIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Original Title",
             description="Original Desc",
@@ -75,7 +75,7 @@ class TestMarkTodoDoneSuccessIntegration:
     async def test_mark_as_done_preserves_description(self, todo_service, mock_repository):
         """Test mark_as_done preserves original description."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Title",
             description="Original Description",
@@ -84,7 +84,7 @@ class TestMarkTodoDoneSuccessIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Title",
             description="Original Description",
@@ -131,7 +131,7 @@ class TestMarkTodoDoneRepositoryIntegration:
     async def test_mark_as_done_calls_get_then_update(self, todo_service, mock_repository):
         """Test mark_as_done calls get_to_do_entry then update_to_do."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -140,7 +140,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -161,7 +161,7 @@ class TestMarkTodoDoneRepositoryIntegration:
     async def test_mark_as_done_updates_with_done_true(self, todo_service, mock_repository):
         """Test mark_as_done creates update payload with done=True."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Original",
             description="Original Desc",
@@ -170,7 +170,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Original",
             description="Original Desc",
@@ -195,7 +195,7 @@ class TestMarkTodoDoneRepositoryIntegration:
     async def test_mark_as_done_passes_correct_todo_id(self, todo_service, mock_repository):
         """Test mark_as_done passes correct todo_id to update_to_do."""
         todo_id = uuid.uuid4()
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
@@ -204,7 +204,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             done=False,
             deleted=False
         )
-        mock_updated_entry = ToDoEntryData(
+        mock_updated_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",

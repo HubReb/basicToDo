@@ -6,17 +6,17 @@ from typing import Any
 import factory
 from factory import Factory, Faker, LazyFunction
 
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
 class ToDoEntryDataFactory(Factory):
-    """Factory for creating ToDoEntryData instances."""
+    """Factory for creating ToDoORM instances."""
 
     class Meta:  # type: ignore
-        model = ToDoEntryData
+        model = ToDoORM
 
     id = LazyFunction(uuid.uuid4)
     title = Faker("sentence", nb_words=3)
@@ -66,8 +66,8 @@ class ToDoSchemaFactory(Factory):
 
 
 # Convenience functions for common test data patterns
-def create_todo_entry(**kwargs: Any) -> ToDoEntryData:
-    """Create a ToDoEntryData instance with optional overrides."""
+def create_todo_entry(**kwargs: Any) -> ToDoORM:
+    """Create a ToDoORM instance with optional overrides."""
     return ToDoEntryDataFactory.build(**kwargs)
 
 

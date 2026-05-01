@@ -1,14 +1,19 @@
 """FastAPI routes for ToDo operations."""
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
     ToDoNotFoundError,
-    ToDoRepositoryError, ToDoValidationError,
+    ToDoRepositoryError,
+    ToDoValidationError,
 )
+from backend.app.config import settings
 from backend.app.factory import create_todo_service
 from backend.app.schemas.api_responses.delete_to_do_response import DeleteToDoResponse
 from backend.app.schemas.api_responses.get_list_to_do_response import ListToDoResponse
@@ -17,12 +22,16 @@ from backend.app.schemas.api_responses.to_do_response import ToDoResponse
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
+limiter = Limiter(key_func=get_remote_address, enabled=settings.rate_limit_enabled)
+
 app = FastAPI(title="ToDo API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS to allow frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,7 +47,8 @@ async def health_check() -> dict[str, str]:
 
 
 @app.post("/todo", response_model=ToDoResponse)
-async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
+@limiter.limit("30/minute")
+async def create_todo(request: Request, payload: ToDoCreateScheme) -> ToDoResponse:
     try:
         todo = await service.create_todo(payload)
         return ToDoResponse(success=True, todo_entry=todo)
@@ -50,8 +60,31 @@ async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 
 
+@app.get("/todo/deleted", response_model=ListToDoResponse)
+@limiter.limit("60/minute")
+async def list_deleted_todos(
+    request: Request,
+    limit: int = Query(10, ge=1, le=100),
+    page: int = Query(1, ge=1),
+) -> ListToDoResponse:
+    todos = await service.get_deleted_todos(limit, page)
+    total_count = await service.count_deleted()
+    return ListToDoResponse(success=True, results=len(todos), total_count=total_count, todo_entries=todos)
+
+
+@app.patch("/todo/{todo_id}/restore", response_model=ToDoResponse)
+@limiter.limit("30/minute")
+async def restore_todo(request: Request, todo_id: UUID) -> ToDoResponse:
+    try:
+        todo = await service.restore_todo(todo_id)
+        return ToDoResponse(success=True, todo_entry=todo)
+    except ToDoNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
+
+
 @app.get("/todo/{todo_id}", response_model=GetToDoResponse)
-async def get_todo(todo_id: UUID) -> GetToDoResponse:
+@limiter.limit("60/minute")
+async def get_todo(request: Request, todo_id: UUID) -> GetToDoResponse:
     try:
         todo = await service.get_todo(todo_id)
         return GetToDoResponse(success=True, todo_entry=todo)
@@ -60,7 +93,8 @@ async def get_todo(todo_id: UUID) -> GetToDoResponse:
 
 
 @app.put("/todo/{todo_id}", response_model=ToDoResponse)
-async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
+@limiter.limit("30/minute")
+async def update_todo(request: Request, todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
     try:
         todo = await service.update_todo(todo_id, payload)
         return ToDoResponse(success=True, todo_entry=todo)
@@ -73,7 +107,8 @@ async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
 
 
 @app.delete("/todo/{todo_id}", response_model=DeleteToDoResponse)
-async def delete_todo(todo_id: UUID) -> DeleteToDoResponse:
+@limiter.limit("30/minute")
+async def delete_todo(request: Request, todo_id: UUID) -> DeleteToDoResponse:
     try:
         await service.delete_todo(todo_id)
         return DeleteToDoResponse(success=True, message="Deleted successfully")
@@ -86,6 +121,12 @@ async def delete_todo(todo_id: UUID) -> DeleteToDoResponse:
 
 
 @app.get("/todo", response_model=ListToDoResponse)
-async def list_todos(limit: int = 10, page: int = 1) -> ListToDoResponse:
+@limiter.limit("60/minute")
+async def list_todos(
+    request: Request,
+    limit: int = Query(10, ge=1, le=100),
+    page: int = Query(1, ge=1),
+) -> ListToDoResponse:
     todos = await service.get_all_todos(limit, page)
-    return ListToDoResponse(success=True, results=len(todos), todo_entries=todos)
+    total_count = await service.get_count()
+    return ListToDoResponse(success=True, results=len(todos), total_count=total_count, todo_entries=todos)

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Todo CRUD Operations', () => {
   test.beforeEach(async ({ page, request }) => {
     // Clean up test database before each test
-    const response = await request.get('http://localhost:8000/todo?limit=1000&page=1');
+    const response = await request.get('http://localhost:8000/todo?limit=100&page=1');
     const data = await response.json();
 
     if (data.todo_entries && data.todo_entries.length > 0) {
@@ -65,11 +65,11 @@ test.describe('Todo CRUD Operations', () => {
   test('should delete a todo', async ({ page }) => {
     // Create a todo
     const input = page.getByPlaceholder('Add a todo item');
-    await input.fill('Todo to delete');
+    await input.fill('Removable item');
     await input.press('Enter');
 
     // Wait for todo to appear
-    await expect(page.getByText('Todo to delete')).toBeVisible();
+    await expect(page.getByText('Removable item')).toBeVisible();
 
     // Set up dialog handler to confirm deletion
     page.on('dialog', dialog => dialog.accept());
@@ -81,7 +81,7 @@ test.describe('Todo CRUD Operations', () => {
     await expect(page.getByText('Todo deleted')).toBeVisible({ timeout: 3000 });
 
     // Verify todo is removed
-    await expect(page.getByText('Todo to delete')).not.toBeVisible();
+    await expect(page.getByText('Removable item')).not.toBeVisible();
   });
 
   test('should cancel todo edit', async ({ page }) => {

@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from backend.app.models.todo import ToDoEntryData
+from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
@@ -15,7 +15,7 @@ class TestUpdateTodoRepositoryInteraction:
         """Test update_todo calls repository.update_to_do."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(title="Updated")
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Updated",
             description="Desc",
@@ -38,7 +38,7 @@ class TestUpdateTodoRepositoryInteraction:
             title="  Test  ",
             description="  Desc  "
         )
-        mock_entry = ToDoEntryData(
+        mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
             description="Desc",
