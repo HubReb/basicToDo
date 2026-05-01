@@ -1,11 +1,10 @@
-""" GET /todo (list) tests"""
+"""GET /todo (list) tests"""
 
 import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
-from backend.tests.test_api.test_setup_for_api_endpoins import (client, mock_service)
 
 
 class TestListTodos:
@@ -13,18 +12,20 @@ class TestListTodos:
 
     def test_list_todos_success(self, client, mock_service):
         """Test listing todos returns 200 and array."""
-        # Mock service to return a list with one todo (empty lists are rejected by schema)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title="Test Todo",
-                description="Test Description",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        # Mock returns a one-todo list (empty lists are rejected by schema)
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title="Test Todo",
+                    description="Test Description",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         response = client.get("/todo")
 
@@ -46,15 +47,17 @@ class TestListTodos:
         for i in range(3):
             todo_id = uuid4()
             todo_ids.append(str(todo_id))
-            created_todos.append(ToDoSchema(
-                id=todo_id,
-                title=f"Todo {i}",
-                description=f"Description {i}",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            ))
+            created_todos.append(
+                ToDoSchema(
+                    id=todo_id,
+                    title=f"Todo {i}",
+                    description=f"Description {i}",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            )
 
         # Mock get_all_todos to return our test data
         mock_service.get_all_todos = AsyncMock(return_value=created_todos)
@@ -73,17 +76,20 @@ class TestListTodos:
     def test_list_todos_pagination_default(self, client, mock_service):
         """Test default pagination parameters."""
         # Mock service to return list of todos (max 10 by default)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title=f"Todo {i}",
-                description=f"Description {i}",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            ) for i in range(5)
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title=f"Todo {i}",
+                    description=f"Description {i}",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+                for i in range(5)
+            ]
+        )
 
         response = client.get("/todo")
 
@@ -95,17 +101,20 @@ class TestListTodos:
     def test_list_todos_pagination_custom_limit(self, client, mock_service):
         """Test pagination with custom limit."""
         # Mock service to return list with max 2 items
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title=f"Todo {i}",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            ) for i in range(2)
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title=f"Todo {i}",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+                for i in range(2)
+            ]
+        )
 
         # Request with limit 2
         response = client.get("/todo?limit=2&page=1")
@@ -117,17 +126,20 @@ class TestListTodos:
     def test_list_todos_pagination_page_2(self, client, mock_service):
         """Test getting second page of results."""
         # Mock service to return remaining items from page 2
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title=f"Todo {i}",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            ) for i in range(5)  # 5 remaining items on page 2
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title=f"Todo {i}",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+                for i in range(5)  # 5 remaining items on page 2
+            ]
+        )
 
         # Get page 2 with limit 10
         response = client.get("/todo?limit=10&page=2")
@@ -143,22 +155,20 @@ class TestListTodos:
         other_todo_id = uuid4()
 
         # Mock create_todo
-        mock_service.create_todo = AsyncMock(return_value=ToDoSchema(
-            id=todo_id,
-            title="To Be Deleted",
-            description="Test",
-            created_at=datetime.datetime.now(),
-            updated_at=None,
-            deleted=False,
-            done=False,
-        ))
+        mock_service.create_todo = AsyncMock(
+            return_value=ToDoSchema(
+                id=todo_id,
+                title="To Be Deleted",
+                description="Test",
+                created_at=datetime.datetime.now(),
+                updated_at=None,
+                deleted=False,
+                done=False,
+            )
+        )
 
         # Create a todo
-        payload = {
-            "id": str(todo_id),
-            "title": "To Be Deleted",
-            "description": "Test"
-        }
+        payload = {"id": str(todo_id), "title": "To Be Deleted", "description": "Test"}
         client.post("/todo", json=payload)
 
         # Mock delete_todo
@@ -168,17 +178,19 @@ class TestListTodos:
         client.delete(f"/todo/{todo_id}")
 
         # Mock get_all_todos to return only non-deleted todos
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=other_todo_id,
-                title="Not Deleted",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=other_todo_id,
+                    title="Not Deleted",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         # List todos
         response = client.get("/todo")
@@ -193,17 +205,19 @@ class TestListTodos:
     def test_list_todos_negative_limit_returns_error(self, client, mock_service):
         """Test negative limit returns error or is handled."""
         # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title="Test",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title="Test",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         response = client.get("/todo?limit=-1")
 
@@ -213,17 +227,19 @@ class TestListTodos:
     def test_list_todos_zero_limit(self, client, mock_service):
         """Test limit=0 is handled."""
         # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title="Test",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title="Test",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         response = client.get("/todo?limit=0")
 
@@ -233,17 +249,19 @@ class TestListTodos:
     def test_list_todos_negative_page_returns_error(self, client, mock_service):
         """Test negative page returns error or is handled."""
         # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title="Test",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title="Test",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         response = client.get("/todo?page=-1")
 
@@ -253,17 +271,19 @@ class TestListTodos:
     def test_list_todos_zero_page_returns_error(self, client, mock_service):
         """Test page=0 returns error or is handled."""
         # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title="Test",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title="Test",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         response = client.get("/todo?page=0")
 
@@ -273,17 +293,19 @@ class TestListTodos:
     def test_list_todos_very_large_limit(self, client, mock_service):
         """Test very large limit is handled."""
         # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title="Test",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title="Test",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         response = client.get("/todo?limit=10000")
 
@@ -293,17 +315,19 @@ class TestListTodos:
     def test_list_todos_returns_json_content_type(self, client, mock_service):
         """Test list endpoint returns JSON."""
         # Mock service to return a todo (empty lists are rejected by schema)
-        mock_service.get_all_todos = AsyncMock(return_value=[
-            ToDoSchema(
-                id=uuid4(),
-                title="Test",
-                description="Test",
-                created_at=datetime.datetime.now(),
-                updated_at=None,
-                deleted=False,
-                done=False,
-            )
-        ])
+        mock_service.get_all_todos = AsyncMock(
+            return_value=[
+                ToDoSchema(
+                    id=uuid4(),
+                    title="Test",
+                    description="Test",
+                    created_at=datetime.datetime.now(),
+                    updated_at=None,
+                    deleted=False,
+                    done=False,
+                )
+            ]
+        )
 
         response = client.get("/todo")
 

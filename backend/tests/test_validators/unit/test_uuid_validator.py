@@ -1,4 +1,5 @@
 """Unit tests for UUIDValidator."""
+
 import uuid
 from unittest.mock import MagicMock
 
@@ -68,25 +69,30 @@ class TestUUIDValidatorValidInputs:
         assert isinstance(result, uuid.UUID)
 
 
-@pytest.mark.parametrize("invalid_uuid,description", [
-    ("", "empty string"),
-    ("not-a-uuid", "random text"),
-    ("123", "short number"),
-    ("12345678-1234-1234-1234-1234567890", "too short"),
-    ("12345678-1234-1234-1234-1234567890123", "too long"),
-    ("550e8400-e29b-41d4-a716", "incomplete UUID"),
-    ("550e8400-e29b-41d4-a716-44665544000g", "invalid character 'g'"),
-    ("550e8400-e29b-41d4-a716-4466554400zz", "invalid characters 'zz'"),
-    ("550e8400-e29b-41d4-a716-446655440000-extra", "extra characters"),
-    ("550e8400_e29b_41d4_a716_446655440000", "underscores instead of hyphens"),
-    ("   ", "only whitespace"),
-    ("null", "null string"),
-    ("undefined", "undefined string"),
-])
+@pytest.mark.parametrize(
+    "invalid_uuid,description",
+    [
+        ("", "empty string"),
+        ("not-a-uuid", "random text"),
+        ("123", "short number"),
+        ("12345678-1234-1234-1234-1234567890", "too short"),
+        ("12345678-1234-1234-1234-1234567890123", "too long"),
+        ("550e8400-e29b-41d4-a716", "incomplete UUID"),
+        ("550e8400-e29b-41d4-a716-44665544000g", "invalid character 'g'"),
+        ("550e8400-e29b-41d4-a716-4466554400zz", "invalid characters 'zz'"),
+        ("550e8400-e29b-41d4-a716-446655440000-extra", "extra characters"),
+        ("550e8400_e29b_41d4_a716_446655440000", "underscores instead of hyphens"),
+        ("   ", "only whitespace"),
+        ("null", "null string"),
+        ("undefined", "undefined string"),
+    ],
+)
 class TestUUIDValidatorInvalidInputs:
     """Test UUIDValidator with invalid UUID inputs."""
 
-    def test_invalid_uuid_raises_error(self, validator, mock_logger, invalid_uuid, description):
+    def test_invalid_uuid_raises_error(
+        self, validator, mock_logger, invalid_uuid, description
+    ):
         """Test that invalid UUID raises ToDoValidationError."""
         with pytest.raises(ToDoValidationError) as exc_info:
             validator.validate(invalid_uuid)

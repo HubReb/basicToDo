@@ -1,48 +1,36 @@
 """Unit tests for ToDoEntryBuilder."""
+
 import datetime
 import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
-
-
-@pytest.fixture
-def mock_uuid_validator():
-    """Create a mock UUIDValidator."""
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_field_validator():
-    """Create a mock FieldValidator."""
-    return MagicMock()
-
-
-@pytest.fixture
-def builder(mock_uuid_validator, mock_field_validator):
-    """Create ToDoEntryBuilder with mocked validators."""
-    return ToDoEntryBuilder(mock_uuid_validator, mock_field_validator)
 
 
 class TestToDoEntryBuilderSuccess:
     """Test ToDoEntryBuilder successful builds."""
 
     @pytest.mark.asyncio
-    async def test_build_from_create_schema_success(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_from_create_schema_success(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test building ToDoORM from valid schema."""
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(id=test_uuid, title="Test Title", description="Test Description")
+        payload = ToDoCreateScheme(
+            id=test_uuid, title="Test Title", description="Test Description"
+        )
 
         mock_uuid_validator.validate.return_value = test_uuid
         mock_field_validator.validate_required.return_value = "Test Title"
         mock_field_validator.validate_optional.return_value = "Test Description"
 
-        with patch('backend.app.business_logic.builders.todo_entry_builder.datetime') as mock_datetime:
+        with patch(
+            "backend.app.business_logic.builders.todo_entry_builder.datetime"
+        ) as mock_datetime:
             mock_now = datetime.datetime(2024, 1, 1, 12, 0, 0)
             mock_datetime.datetime.now.return_value = mock_now
 
@@ -58,7 +46,9 @@ class TestToDoEntryBuilderSuccess:
             assert result.done is False
 
     @pytest.mark.asyncio
-    async def test_build_calls_uuid_validator(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_calls_uuid_validator(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder calls UUID validator with payload ID."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")
@@ -72,7 +62,9 @@ class TestToDoEntryBuilderSuccess:
         mock_uuid_validator.validate.assert_called_once_with(test_uuid)
 
     @pytest.mark.asyncio
-    async def test_build_calls_field_validator_for_title(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_calls_field_validator_for_title(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder calls field validator for required title."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Test Title", description="Desc")
@@ -83,11 +75,14 @@ class TestToDoEntryBuilderSuccess:
 
         await builder.build_from_create_schema(payload)
 
-        mock_field_validator.validate_required.assert_called_once_with("Test Title", "title")
+        mock_field_validator.validate_required.assert_called_once_with(
+            "Test Title", "title"
+        )
 
     @pytest.mark.asyncio
-    async def test_build_calls_field_validator_for_description(self, builder, mock_uuid_validator,
-                                                               mock_field_validator):
+    async def test_build_calls_field_validator_for_description(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder calls field validator for optional description."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Test Desc")
@@ -101,7 +96,9 @@ class TestToDoEntryBuilderSuccess:
         mock_field_validator.validate_optional.assert_called_once_with("Test Desc")
 
     @pytest.mark.asyncio
-    async def test_build_with_empty_description(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_with_empty_description(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder with empty description."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="")
@@ -115,7 +112,9 @@ class TestToDoEntryBuilderSuccess:
         assert result.description == ""
 
     @pytest.mark.asyncio
-    async def test_build_sets_created_at_timestamp(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_sets_created_at_timestamp(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder sets created_at to current timestamp."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")
@@ -124,7 +123,9 @@ class TestToDoEntryBuilderSuccess:
         mock_field_validator.validate_required.return_value = "Title"
         mock_field_validator.validate_optional.return_value = "Desc"
 
-        with patch('backend.app.business_logic.builders.todo_entry_builder.datetime') as mock_datetime:
+        with patch(
+            "backend.app.business_logic.builders.todo_entry_builder.datetime"
+        ) as mock_datetime:
             mock_now = datetime.datetime(2024, 1, 15, 10, 30, 45)
             mock_datetime.datetime.now.return_value = mock_now
 
@@ -146,8 +147,9 @@ class TestToDoEntryBuilderNonePayload:
         assert "payload cannot be None" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_build_with_none_payload_does_not_call_validators(self, builder, mock_uuid_validator,
-                                                                    mock_field_validator):
+    async def test_build_with_none_payload_does_not_call_validators(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder doesn't call validators for None payload."""
         with pytest.raises(ToDoValidationError):
             await builder.build_from_create_schema(None)  # type: ignore
@@ -175,8 +177,9 @@ class TestToDoEntryBuilderNoneID:
         assert "id is required" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_build_with_none_id_does_not_call_validators(self, builder, mock_uuid_validator,
-                                                               mock_field_validator):
+    async def test_build_with_none_id_does_not_call_validators(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder doesn't call validators when ID is None."""
         # Bypass Pydantic validation by creating mock payload
         payload = MagicMock(spec=ToDoCreateScheme)
@@ -196,7 +199,9 @@ class TestToDoEntryBuilderValidatorErrors:
     """Test ToDoEntryBuilder propagates validator errors."""
 
     @pytest.mark.asyncio
-    async def test_build_propagates_uuid_validation_error(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_propagates_uuid_validation_error(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder propagates UUID validation errors."""
         # Bypass Pydantic validation by creating mock payload
         test_uuid = "invalid-uuid"
@@ -213,7 +218,9 @@ class TestToDoEntryBuilderValidatorErrors:
         assert "Invalid UUID" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_build_propagates_title_validation_error(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_propagates_title_validation_error(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder propagates title validation errors."""
         # Bypass Pydantic validation by creating mock payload
         test_uuid = uuid.uuid4()
@@ -223,7 +230,9 @@ class TestToDoEntryBuilderValidatorErrors:
         payload.description = "Desc"
 
         mock_uuid_validator.validate.return_value = test_uuid
-        mock_field_validator.validate_required.side_effect = ToDoValidationError("title is required")
+        mock_field_validator.validate_required.side_effect = ToDoValidationError(
+            "title is required"
+        )
 
         with pytest.raises(ToDoValidationError) as exc_info:
             await builder.build_from_create_schema(payload)
@@ -231,15 +240,20 @@ class TestToDoEntryBuilderValidatorErrors:
         assert "title is required" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_build_propagates_description_validation_error(self, builder, mock_uuid_validator,
-                                                                 mock_field_validator):
+    async def test_build_propagates_description_validation_error(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder propagates description validation errors."""
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(id=test_uuid, title="Title", description="DROP TABLE")
+        payload = ToDoCreateScheme(
+            id=test_uuid, title="Title", description="DROP TABLE"
+        )
 
         mock_uuid_validator.validate.return_value = test_uuid
         mock_field_validator.validate_required.return_value = "Title"
-        mock_field_validator.validate_optional.side_effect = ToDoValidationError("SQL injection detected")
+        mock_field_validator.validate_optional.side_effect = ToDoValidationError(
+            "SQL injection detected"
+        )
 
         with pytest.raises(ToDoValidationError) as exc_info:
             await builder.build_from_create_schema(payload)
@@ -251,7 +265,9 @@ class TestToDoEntryBuilderDefaults:
     """Test ToDoEntryBuilder sets correct default values."""
 
     @pytest.mark.asyncio
-    async def test_build_sets_updated_at_to_none(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_sets_updated_at_to_none(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder sets updated_at to None for new entries."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")
@@ -265,7 +281,9 @@ class TestToDoEntryBuilderDefaults:
         assert result.updated_at is None
 
     @pytest.mark.asyncio
-    async def test_build_sets_deleted_to_false(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_sets_deleted_to_false(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder sets deleted to False for new entries."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")
@@ -279,7 +297,9 @@ class TestToDoEntryBuilderDefaults:
         assert result.deleted is False
 
     @pytest.mark.asyncio
-    async def test_build_sets_done_to_false(self, builder, mock_uuid_validator, mock_field_validator):
+    async def test_build_sets_done_to_false(
+        self, builder, mock_uuid_validator, mock_field_validator
+    ):
         """Test builder sets done to False for new entries."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")

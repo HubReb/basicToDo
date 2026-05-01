@@ -1,4 +1,5 @@
 """Async repository for ToDo operations."""
+
 import datetime
 import uuid
 from abc import ABC, abstractmethod
@@ -26,7 +27,9 @@ class ToDoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateScheme) -> Optional[ToDoORM]:
+    async def update_to_do(
+        self, entry_id: uuid.UUID, data: TodoUpdateScheme
+    ) -> Optional[ToDoORM]:
         pass
 
     @abstractmethod
@@ -34,7 +37,9 @@ class ToDoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[ToDoORM]:
+    async def get_all_to_do_entries(
+        self, limit: int = 10, page: int = 1
+    ) -> List[ToDoORM]:
         pass
 
     @abstractmethod
@@ -90,7 +95,9 @@ class ToDoRepository(ToDoRepositoryInterface):
             await session.delete(entry)
         return True
 
-    async def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateScheme) -> Optional[ToDoORM]:
+    async def update_to_do(
+        self, entry_id: uuid.UUID, data: TodoUpdateScheme
+    ) -> Optional[ToDoORM]:
         async with self.session_manager() as session:
             result = await session.execute(
                 select(ToDoORM).where(
@@ -120,7 +127,9 @@ class ToDoRepository(ToDoRepositoryInterface):
             )
             return result.scalars().first()
 
-    async def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[ToDoORM]:
+    async def get_all_to_do_entries(
+        self, limit: int = 10, page: int = 1
+    ) -> List[ToDoORM]:
         skip = (page - 1) * limit
         async with self.session_manager() as session:
             result = await session.execute(

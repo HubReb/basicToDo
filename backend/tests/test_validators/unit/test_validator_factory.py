@@ -1,4 +1,5 @@
 """Unit tests for ValidatorFactory."""
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -101,7 +102,7 @@ class TestValidatorFactoryFieldValidator:
     def test_create_field_validator_has_input_sanitizer(self, mock_logger):
         """Test created FieldValidator has InputSanitizer composed."""
         validator = ValidatorFactory.create_field_validator(mock_logger)
-        assert hasattr(validator, 'input_sanitizer')
+        assert hasattr(validator, "input_sanitizer")
         assert isinstance(validator.input_sanitizer, InputSanitizer)
 
     def test_create_field_validator_sanitizer_has_same_logger(self, mock_logger):
@@ -118,7 +119,9 @@ class TestValidatorFactoryFieldValidator:
         assert isinstance(validator1, FieldValidator)
         assert isinstance(validator2, FieldValidator)
         assert validator1 is not validator2  # Different instances
-        assert validator1.input_sanitizer is not validator2.input_sanitizer  # Different sanitizers
+        assert (
+            validator1.input_sanitizer is not validator2.input_sanitizer
+        )  # Different sanitizers
 
     def test_create_field_validator_with_different_loggers(self):
         """Test factory creates validators with different loggers."""
@@ -144,7 +147,9 @@ class TestValidatorFactoryCreateAll:
 
     def test_create_all_validators_correct_types(self, mock_logger):
         """Test create_all_validators returns correct types in order."""
-        sanitizer, uuid_val, field_val = ValidatorFactory.create_all_validators(mock_logger)
+        sanitizer, uuid_val, field_val = ValidatorFactory.create_all_validators(
+            mock_logger
+        )
 
         assert isinstance(sanitizer, InputSanitizer)
         assert isinstance(uuid_val, UUIDValidator)
@@ -152,18 +157,22 @@ class TestValidatorFactoryCreateAll:
 
     def test_create_all_validators_have_logger(self, mock_logger):
         """Test all validators have logger."""
-        sanitizer, uuid_val, field_val = ValidatorFactory.create_all_validators(mock_logger)
+        sanitizer, uuid_val, field_val = ValidatorFactory.create_all_validators(
+            mock_logger
+        )
 
         # Each validator should have a logger (may be same or different instances)
-        assert hasattr(sanitizer, 'logger')
-        assert hasattr(uuid_val, 'logger')
-        assert hasattr(field_val, 'logger')
+        assert hasattr(sanitizer, "logger")
+        assert hasattr(uuid_val, "logger")
+        assert hasattr(field_val, "logger")
 
     def test_create_all_validators_field_has_sanitizer(self, mock_logger):
         """Test FieldValidator has InputSanitizer composed."""
-        sanitizer, uuid_val, field_val = ValidatorFactory.create_all_validators(mock_logger)
+        sanitizer, uuid_val, field_val = ValidatorFactory.create_all_validators(
+            mock_logger
+        )
 
-        assert hasattr(field_val, 'input_sanitizer')
+        assert hasattr(field_val, "input_sanitizer")
         assert isinstance(field_val.input_sanitizer, InputSanitizer)
 
     def test_create_all_validators_creates_new_instances(self, mock_logger):
@@ -214,6 +223,7 @@ class TestValidatorFactoryEdgeCases:
     def test_create_with_real_logger_object(self):
         """Test factory works with real logger objects."""
         from backend.app.logger import CustomLogger
+
         logger = CustomLogger("Test")
 
         sanitizer = ValidatorFactory.create_input_sanitizer(logger)
@@ -233,6 +243,6 @@ class TestValidatorFactoryEdgeCases:
         # Modifying one shouldn't affect others
         sanitizer.custom_attr = "test"  # type: ignore
 
-        assert hasattr(sanitizer, 'custom_attr')
-        assert not hasattr(uuid_val, 'custom_attr')
-        assert not hasattr(field_val, 'custom_attr')
+        assert hasattr(sanitizer, "custom_attr")
+        assert not hasattr(uuid_val, "custom_attr")
+        assert not hasattr(field_val, "custom_attr")

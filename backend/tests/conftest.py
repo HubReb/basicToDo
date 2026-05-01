@@ -1,4 +1,5 @@
 """Root conftest.py with shared fixtures for all tests."""
+
 import uuid
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -10,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.todo_service import ToDoService
 from backend.app.business_logic.validators import ValidatorFactory
-from backend.app.data_access.database import Base, ToDoORM
+from backend.app.data_access.database import Base
 from backend.app.data_access.repository import ToDoRepository
 from backend.app.logger import CustomLogger
 

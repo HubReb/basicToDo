@@ -1,7 +1,52 @@
-"""API test configuration - disables rate limiting during tests."""
+"""Shared fixtures for API tests."""
+
+import datetime
+from unittest.mock import AsyncMock, patch
+
 import pytest
+from fastapi.testclient import TestClient
 
-from backend.app.api.api import limiter
+from backend.app.api.api import app, limiter
+from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 
-# Disable rate limiting for all API tests
 limiter.enabled = False
+
+
+@pytest.fixture
+def mock_service():
+    """Provide a mock service for API tests."""
+    with patch("backend.app.api.api.service") as mock:
+        mock.get_count = AsyncMock(return_value=0)
+        mock.count_deleted = AsyncMock(return_value=0)
+        yield mock
+
+
+@pytest.fixture
+def client(mock_service):
+    """Provide FastAPI test client with mocked service."""
+    return TestClient(app)
+
+
+@pytest.fixture
+def created_todo(client, mock_service, sample_todo_id):
+    """Create a todo and return its data."""
+    mock_service.create_todo = AsyncMock(
+        return_value=ToDoSchema(
+            id=sample_todo_id,
+            title="Test Todo",
+            description="Test Description",
+            created_at=datetime.datetime.now(),
+            updated_at=None,
+            deleted=False,
+            done=False,
+        )
+    )
+
+    payload = {
+        "id": str(sample_todo_id),
+        "title": "Test Todo",
+        "description": "Test Description",
+    }
+    response = client.post("/todo", json=payload)
+    assert response.status_code == 200
+    return response.json()["todo_entry"]

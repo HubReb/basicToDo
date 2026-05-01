@@ -1,4 +1,5 @@
 """Integration tests for ToDoService.get_todo() with real validators."""
+
 import datetime
 import uuid
 
@@ -25,7 +26,7 @@ class TestGetTodoValidationIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -64,7 +65,7 @@ class TestGetTodoValidationIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -85,7 +86,9 @@ class TestGetTodoNotFoundIntegration:
             await todo_service.get_todo(uuid.uuid4())
 
     @pytest.mark.asyncio
-    async def test_get_not_found_does_not_return_none(self, todo_service, mock_repository):
+    async def test_get_not_found_does_not_return_none(
+        self, todo_service, mock_repository
+    ):
         """Test get_todo raises error instead of returning None."""
         mock_repository.get_to_do_entry.return_value = None
 
@@ -107,7 +110,7 @@ class TestGetTodoSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -130,7 +133,7 @@ class TestGetTodoSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 

@@ -1,4 +1,5 @@
 """UUID validator for validating UUID strings."""
+
 import uuid
 from typing import Any
 

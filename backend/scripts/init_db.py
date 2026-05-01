@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 """Initialize database schema for testing/deployment."""
+
 import asyncio
 import sys
-from pathlib import Path
 
-backend_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(backend_dir))
-
-from app.config import settings
-from app.data_access.database import Base, engine
-from app.logger import CustomLogger
+from backend.app.config import settings
+from backend.app.data_access.database import Base, engine
+from backend.app.logger import CustomLogger
 
 logger = CustomLogger("DBInit")
 

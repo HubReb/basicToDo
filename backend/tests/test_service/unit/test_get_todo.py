@@ -1,4 +1,5 @@
 """Unit tests for ToDoService.get_todo() method."""
+
 import datetime
 import uuid
 
@@ -25,7 +26,7 @@ class TestGetTodoSuccess:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -47,7 +48,7 @@ class TestGetTodoSuccess:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -66,7 +67,7 @@ class TestGetTodoSuccess:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -85,7 +86,7 @@ class TestGetTodoSuccess:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -110,7 +111,9 @@ class TestGetTodoValidation:
         assert "Invalid UUID" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_get_validates_uuid_before_repository_call(self, todo_service, mock_repository):
+    async def test_get_validates_uuid_before_repository_call(
+        self, todo_service, mock_repository
+    ):
         """Test get_todo validates UUID before calling repository."""
         invalid_id = "invalid"
 
@@ -146,7 +149,9 @@ class TestGetTodoNotFound:
             await todo_service.get_todo(uuid.uuid4())
 
     @pytest.mark.asyncio
-    async def test_get_not_found_returns_none_from_repo(self, todo_service, mock_repository):
+    async def test_get_not_found_returns_none_from_repo(
+        self, todo_service, mock_repository
+    ):
         """Test get_todo raises error when repository returns None."""
         mock_repository.get_to_do_entry.return_value = None
         todo_id = uuid.uuid4()
@@ -171,7 +176,7 @@ class TestGetTodoRepositoryInteraction:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 
@@ -190,7 +195,7 @@ class TestGetTodoRepositoryInteraction:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
 

@@ -1,4 +1,4 @@
-""" DELETE /todo/{todo_id} tests"""
+"""DELETE /todo/{todo_id} tests"""
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
@@ -6,7 +6,6 @@ from uuid import uuid4
 from backend.app.business_logic.exceptions import (
     ToDoNotFoundError,
 )
-from backend.tests.test_api.test_setup_for_api_endpoins import (client, created_todo, mock_service)
 
 
 class TestDeleteTodo:

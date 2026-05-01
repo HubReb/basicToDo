@@ -1,4 +1,5 @@
 """Integration tests for ToDoService.get_all_todos()."""
+
 import datetime
 import uuid
 
@@ -20,7 +21,7 @@ class TestGetAllTodosSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         entry2 = ToDoORM(
             id=uuid.uuid4(),
@@ -29,7 +30,7 @@ class TestGetAllTodosSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_all_to_do_entries.return_value = [entry1, entry2]
 
@@ -40,7 +41,9 @@ class TestGetAllTodosSuccessIntegration:
         assert result[1].title == "Test2"
 
     @pytest.mark.asyncio
-    async def test_get_all_returns_empty_list_when_no_entries(self, todo_service, mock_repository):
+    async def test_get_all_returns_empty_list_when_no_entries(
+        self, todo_service, mock_repository
+    ):
         """Test get_all_todos returns empty list when no entries."""
         mock_repository.get_all_to_do_entries.return_value = []
 
@@ -59,7 +62,7 @@ class TestGetAllTodosSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_all_to_do_entries.return_value = [entry]
 
@@ -82,10 +85,13 @@ class TestGetAllTodosInvalidEntriesIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         invalid_entry = "invalid"
-        mock_repository.get_all_to_do_entries.return_value = [valid_entry, invalid_entry]
+        mock_repository.get_all_to_do_entries.return_value = [
+            valid_entry,
+            invalid_entry,
+        ]
 
         result = await todo_service.get_all_todos()
 
@@ -93,11 +99,16 @@ class TestGetAllTodosInvalidEntriesIntegration:
         assert result[0].title == "Valid"
 
     @pytest.mark.asyncio
-    async def test_get_all_returns_empty_when_all_invalid(self, todo_service, mock_repository):
+    async def test_get_all_returns_empty_when_all_invalid(
+        self, todo_service, mock_repository
+    ):
         """Test get_all_todos returns empty list when all entries invalid."""
         invalid_entry1 = "invalid1"
         invalid_entry2 = None
-        mock_repository.get_all_to_do_entries.return_value = [invalid_entry1, invalid_entry2]
+        mock_repository.get_all_to_do_entries.return_value = [
+            invalid_entry1,
+            invalid_entry2,
+        ]
 
         result = await todo_service.get_all_todos()
 
@@ -105,7 +116,9 @@ class TestGetAllTodosInvalidEntriesIntegration:
         assert isinstance(result, list)
 
     @pytest.mark.asyncio
-    async def test_get_all_skips_multiple_invalid_entries(self, todo_service, mock_repository):
+    async def test_get_all_skips_multiple_invalid_entries(
+        self, todo_service, mock_repository
+    ):
         """Test get_all_todos skips multiple invalid entries."""
         valid1 = ToDoORM(
             id=uuid.uuid4(),
@@ -114,7 +127,7 @@ class TestGetAllTodosInvalidEntriesIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         valid2 = ToDoORM(
             id=uuid.uuid4(),
@@ -123,11 +136,16 @@ class TestGetAllTodosInvalidEntriesIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         invalid1 = "invalid1"
         invalid2 = {"bad": "data"}
-        mock_repository.get_all_to_do_entries.return_value = [valid1, invalid1, valid2, invalid2]
+        mock_repository.get_all_to_do_entries.return_value = [
+            valid1,
+            invalid1,
+            valid2,
+            invalid2,
+        ]
 
         result = await todo_service.get_all_todos()
 
@@ -158,7 +176,9 @@ class TestGetAllTodosPaginationIntegration:
         mock_repository.get_all_to_do_entries.assert_called_once_with(10, 3)
 
     @pytest.mark.asyncio
-    async def test_get_all_with_custom_limit_and_page(self, todo_service, mock_repository):
+    async def test_get_all_with_custom_limit_and_page(
+        self, todo_service, mock_repository
+    ):
         """Test get_all_todos with custom limit and page."""
         mock_repository.get_all_to_do_entries.return_value = []
 

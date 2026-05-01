@@ -1,4 +1,5 @@
 """Builder interface."""
+
 from abc import ABC, abstractmethod
 
 from backend.app.data_access.database import ToDoORM

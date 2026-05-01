@@ -1,4 +1,5 @@
 """Integration tests for ToDoService.mark_to_do_as_done()."""
+
 import datetime
 import uuid
 
@@ -23,7 +24,7 @@ class TestMarkTodoDoneSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_updated_entry = ToDoORM(
             id=todo_id,
@@ -32,7 +33,7 @@ class TestMarkTodoDoneSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
         mock_repository.update_to_do.return_value = mock_updated_entry
@@ -53,7 +54,7 @@ class TestMarkTodoDoneSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_updated_entry = ToDoORM(
             id=todo_id,
@@ -62,7 +63,7 @@ class TestMarkTodoDoneSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
         mock_repository.update_to_do.return_value = mock_updated_entry
@@ -72,7 +73,9 @@ class TestMarkTodoDoneSuccessIntegration:
         assert result.title == "Original Title"
 
     @pytest.mark.asyncio
-    async def test_mark_as_done_preserves_description(self, todo_service, mock_repository):
+    async def test_mark_as_done_preserves_description(
+        self, todo_service, mock_repository
+    ):
         """Test mark_as_done preserves original description."""
         todo_id = uuid.uuid4()
         mock_entry = ToDoORM(
@@ -82,7 +85,7 @@ class TestMarkTodoDoneSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_updated_entry = ToDoORM(
             id=todo_id,
@@ -91,7 +94,7 @@ class TestMarkTodoDoneSuccessIntegration:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
         mock_repository.update_to_do.return_value = mock_updated_entry
@@ -113,7 +116,9 @@ class TestMarkTodoDoneNotFoundIntegration:
             await todo_service.mark_to_do_as_done(uuid.uuid4())
 
     @pytest.mark.asyncio
-    async def test_mark_as_done_not_found_does_not_update(self, todo_service, mock_repository):
+    async def test_mark_as_done_not_found_does_not_update(
+        self, todo_service, mock_repository
+    ):
         """Test mark_as_done doesn't call update when entry not found."""
         mock_repository.get_to_do_entry.return_value = None
         todo_id = uuid.uuid4()
@@ -128,7 +133,9 @@ class TestMarkTodoDoneRepositoryIntegration:
     """Integration tests for mark_to_do_as_done repository interaction."""
 
     @pytest.mark.asyncio
-    async def test_mark_as_done_calls_get_then_update(self, todo_service, mock_repository):
+    async def test_mark_as_done_calls_get_then_update(
+        self, todo_service, mock_repository
+    ):
         """Test mark_as_done calls get_to_do_entry then update_to_do."""
         todo_id = uuid.uuid4()
         mock_entry = ToDoORM(
@@ -138,7 +145,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_updated_entry = ToDoORM(
             id=todo_id,
@@ -147,7 +154,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
         mock_repository.update_to_do.return_value = mock_updated_entry
@@ -158,7 +165,9 @@ class TestMarkTodoDoneRepositoryIntegration:
         mock_repository.update_to_do.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_mark_as_done_updates_with_done_true(self, todo_service, mock_repository):
+    async def test_mark_as_done_updates_with_done_true(
+        self, todo_service, mock_repository
+    ):
         """Test mark_as_done creates update payload with done=True."""
         todo_id = uuid.uuid4()
         mock_entry = ToDoORM(
@@ -168,7 +177,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_updated_entry = ToDoORM(
             id=todo_id,
@@ -177,7 +186,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
         mock_repository.update_to_do.return_value = mock_updated_entry
@@ -192,7 +201,9 @@ class TestMarkTodoDoneRepositoryIntegration:
         assert update_payload.description == "Original Desc"
 
     @pytest.mark.asyncio
-    async def test_mark_as_done_passes_correct_todo_id(self, todo_service, mock_repository):
+    async def test_mark_as_done_passes_correct_todo_id(
+        self, todo_service, mock_repository
+    ):
         """Test mark_as_done passes correct todo_id to update_to_do."""
         todo_id = uuid.uuid4()
         mock_entry = ToDoORM(
@@ -202,7 +213,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_updated_entry = ToDoORM(
             id=todo_id,
@@ -211,7 +222,7 @@ class TestMarkTodoDoneRepositoryIntegration:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_to_do_entry.return_value = mock_entry
         mock_repository.update_to_do.return_value = mock_updated_entry

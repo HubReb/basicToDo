@@ -1,4 +1,5 @@
 """Integration tests for UUIDValidator with real logger."""
+
 import uuid
 
 import pytest

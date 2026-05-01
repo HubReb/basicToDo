@@ -1,4 +1,5 @@
 """Unit tests for ToDoService.delete_todo() method."""
+
 import uuid
 
 import pytest
@@ -72,7 +73,9 @@ class TestDeleteTodoNotFound:
             await todo_service.delete_todo(todo_id)
 
     @pytest.mark.asyncio
-    async def test_delete_not_found_returns_false_from_repo(self, todo_service, mock_repository):
+    async def test_delete_not_found_returns_false_from_repo(
+        self, todo_service, mock_repository
+    ):
         """Test delete_todo raises error when repository returns False."""
         mock_repository.delete_to_do.return_value = False
         todo_id = uuid.uuid4()

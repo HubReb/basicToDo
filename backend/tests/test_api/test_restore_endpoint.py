@@ -1,13 +1,11 @@
 """Tests for PATCH /todo/{id}/restore endpoint."""
+
 import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-import pytest
-
 from backend.app.business_logic.exceptions import ToDoNotFoundError
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
-from backend.tests.test_api.test_setup_for_api_endpoins import client, mock_service
 
 
 class TestRestoreEndpoint:

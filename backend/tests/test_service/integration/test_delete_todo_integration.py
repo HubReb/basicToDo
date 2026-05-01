@@ -1,4 +1,5 @@
 """Integration tests for ToDoService.delete_todo() with real validators."""
+
 import uuid
 
 import pytest
@@ -43,7 +44,9 @@ class TestDeleteTodoNotFoundIntegration:
             await todo_service.delete_todo(uuid.uuid4())
 
     @pytest.mark.asyncio
-    async def test_delete_not_found_when_repository_returns_false(self, todo_service, mock_repository):
+    async def test_delete_not_found_when_repository_returns_false(
+        self, todo_service, mock_repository
+    ):
         """Test delete_todo raises error when repository returns False."""
         mock_repository.delete_to_do.return_value = False
         todo_id = uuid.uuid4()

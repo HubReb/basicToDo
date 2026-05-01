@@ -1,4 +1,5 @@
-""" Schema of Todo response of API"""
+"""Schema of Todo response of API"""
+
 from pydantic import field_validator
 
 from backend.app.schemas.api_responses.api_response import ApiResponse
@@ -7,6 +8,7 @@ from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 
 class ToDoResponse(ApiResponse):
     """Response for ToDo"""
+
     todo_entry: ToDoSchema
 
     @field_validator("todo_entry")
