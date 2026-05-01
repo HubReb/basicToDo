@@ -2,17 +2,17 @@
 
 A learning project that grew into a spec-driven modernization playground. Started as a SQLAlchemy and React learning exercise, now used to explore async architecture patterns, ORM evolution, and AI-assisted development workflows.
 ## Why this exists
-Most ToDo tutorials stop at CRUD. This repo continues past that line: how does a small full-stack project evolve when you take async I/O, type discipline, and architecture decisions seriously? What does spec-driven development look like when applied to a real (if small) codebase?
+Most ToDo tutorials stop at CRUD. This repo continues past that line: how does a small full-stack project evolve when you take async I/O, type discipline, and architecture decisions seriously? What does spec-driven modernization look like when applied to a real (if small) codebase? How easy is the application in a "best case" scenario?
 
 ### Stack
-* __Backend__ : Python 3.12+, FastAPI, async SQLAlchemy with aiosqlite, Pydantic for runtime validation, mypy for static guarantees, uv for reproducible environments.
+* __Backend__ : Python 3.14+, FastAPI, async SQLAlchemy with aiosqlite, Pydantic for runtime validation, mypy for static guarantees, uv for reproducible environments.
 * __Frontend__: TypeScript, React with React Query for server state, Vite for build tooling.
 
 ## Architecture decisions
 Key choices documented inline as the project evolves:
 * __Async-first backend__ aiosqlite + AsyncSession instead of sync SQLAlchemy. Trade-off: more complexity in session management, gain in I/O parallelism.
-* __Single ORM mapping__ Earlier versions used dual mapping (declarative + imperative) — removed in favor of a single declarative pattern after the cost-benefit analysis showed the duality served no real purpose.
-* __Soft-delete pattern__ Deletion marks records rather than removing them, with explicit restore and purge endpoints. Adds complexity but enables undo workflows.
+* __Single ORM mapping__ Earlier versions used dual mapping (declarative + imperative); removed in favor of a single declarative pattern after cost-benefit analysis.
+* __Soft-delete pattern__ Deletion marks records rather than removing them, with explicit restore and purge endpoints. Enables undo workflows.
 
 ## Functionality
 
