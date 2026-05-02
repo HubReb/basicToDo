@@ -22,7 +22,7 @@ class TestUpdateTodoRepositoryInteraction:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.update_to_do.return_value = mock_entry
 
@@ -34,10 +34,7 @@ class TestUpdateTodoRepositoryInteraction:
     async def test_update_passes_sanitized_payload(self, todo_service, mock_repository):
         """Test update_todo passes sanitized payload to repository."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(
-            title="  Test  ",
-            description="  Desc  "
-        )
+        payload = TodoUpdateScheme(title="  Test  ", description="  Desc  ")
         mock_entry = ToDoORM(
             id=todo_id,
             title="Test",
@@ -45,7 +42,7 @@ class TestUpdateTodoRepositoryInteraction:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.update_to_do.return_value = mock_entry
 

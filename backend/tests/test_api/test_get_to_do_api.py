@@ -1,4 +1,5 @@
-""" GET /todo/{todo_id} tests"""
+"""GET /todo/{todo_id} tests"""
+
 import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
@@ -7,7 +8,6 @@ from backend.app.business_logic.exceptions import (
     ToDoNotFoundError,
 )
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
-from backend.tests.test_api.test_setup_for_api_endpoins import (client, created_todo, mock_service)
 
 
 class TestGetTodo:
@@ -17,15 +17,17 @@ class TestGetTodo:
         """Test successful retrieval returns 200 and correct format."""
         # Mock service to return the todo
         todo_id = uuid4()
-        mock_service.get_todo = AsyncMock(return_value=ToDoSchema(
-            id=todo_id,
-            title=created_todo["title"],
-            description=created_todo["description"],
-            created_at=datetime.datetime.now(),
-            updated_at=None,
-            deleted=False,
-            done=False,
-        ))
+        mock_service.get_todo = AsyncMock(
+            return_value=ToDoSchema(
+                id=todo_id,
+                title=created_todo["title"],
+                description=created_todo["description"],
+                created_at=datetime.datetime.now(),
+                updated_at=None,
+                deleted=False,
+                done=False,
+            )
+        )
 
         response = client.get(f"/todo/{created_todo['id']}")
 

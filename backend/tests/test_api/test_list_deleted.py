@@ -1,12 +1,10 @@
 """Tests for GET /todo/deleted endpoint."""
+
 import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-import pytest
-
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
-from backend.tests.test_api.test_setup_for_api_endpoins import client, mock_service
 
 
 class TestListDeletedEndpoint:
@@ -47,7 +45,7 @@ class TestListDeletedEndpoint:
         assert data["total_count"] == 0
 
     def test_list_deleted_with_pagination_params(self, client, mock_service):
-        """Test listing deleted todos with limit and page params uses correct pagination."""
+        """Test deleted-todos list passes limit and page through correctly."""
         mock_service.get_deleted_todos = AsyncMock(return_value=[])
 
         response = client.get("/todo/deleted?limit=5&page=2")

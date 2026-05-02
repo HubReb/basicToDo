@@ -1,4 +1,5 @@
 """Unit tests for FieldValidator."""
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -46,7 +47,9 @@ class TestFieldValidatorRequired:
         assert result == "Trimmed"
         mock_input_sanitizer.validate.assert_called_once_with("  Trimmed  ")
 
-    def test_validate_required_empty_string_raises_error(self, validator, mock_input_sanitizer, mock_logger):
+    def test_validate_required_empty_string_raises_error(
+        self, validator, mock_input_sanitizer, mock_logger
+    ):
         """Test validate_required raises error for empty string."""
         mock_input_sanitizer.validate.return_value = ""
 
@@ -56,7 +59,9 @@ class TestFieldValidatorRequired:
         assert "title is required" in str(exc_info.value)
         mock_logger.warning.assert_called_once()
 
-    def test_validate_required_whitespace_only_raises_error(self, validator, mock_input_sanitizer, mock_logger):
+    def test_validate_required_whitespace_only_raises_error(
+        self, validator, mock_input_sanitizer, mock_logger
+    ):
         """Test validate_required raises error for whitespace-only string."""
         mock_input_sanitizer.validate.return_value = ""  # Sanitizer strips to empty
 
@@ -66,7 +71,9 @@ class TestFieldValidatorRequired:
         assert "title is required" in str(exc_info.value)
         mock_logger.warning.assert_called_once()
 
-    def test_validate_required_none_raises_error(self, validator, mock_input_sanitizer, mock_logger):
+    def test_validate_required_none_raises_error(
+        self, validator, mock_input_sanitizer, mock_logger
+    ):
         """Test validate_required raises error for None."""
         mock_input_sanitizer.validate.return_value = None
 
@@ -76,14 +83,19 @@ class TestFieldValidatorRequired:
         assert "description is required" in str(exc_info.value)
         mock_logger.warning.assert_called_once()
 
-    @pytest.mark.parametrize("field_name", [
-        "title",
-        "description",
-        "name",
-        "email",
-        "user_id",
-    ])
-    def test_validate_required_custom_field_names(self, validator, mock_input_sanitizer, mock_logger, field_name):
+    @pytest.mark.parametrize(
+        "field_name",
+        [
+            "title",
+            "description",
+            "name",
+            "email",
+            "user_id",
+        ],
+    )
+    def test_validate_required_custom_field_names(
+        self, validator, mock_input_sanitizer, mock_logger, field_name
+    ):
         """Test validate_required uses custom field names in error messages."""
         mock_input_sanitizer.validate.return_value = ""
 
@@ -92,9 +104,13 @@ class TestFieldValidatorRequired:
 
         assert field_name in str(exc_info.value)
 
-    def test_validate_required_sql_injection_propagates_error(self, validator, mock_input_sanitizer):
+    def test_validate_required_sql_injection_propagates_error(
+        self, validator, mock_input_sanitizer
+    ):
         """Test validate_required propagates SQL injection errors from sanitizer."""
-        mock_input_sanitizer.validate.side_effect = ToDoValidationError("SQL injection detected")
+        mock_input_sanitizer.validate.side_effect = ToDoValidationError(
+            "SQL injection detected"
+        )
 
         with pytest.raises(ToDoValidationError) as exc_info:
             validator.validate_required("DROP TABLE", "title")
@@ -114,7 +130,9 @@ class TestFieldValidatorOptional:
         assert result == "Valid Description"
         mock_input_sanitizer.validate.assert_called_once_with("Valid Description")
 
-    def test_validate_optional_empty_string_returns_empty(self, validator, mock_input_sanitizer):
+    def test_validate_optional_empty_string_returns_empty(
+        self, validator, mock_input_sanitizer
+    ):
         """Test validate_optional returns empty string for empty input."""
         mock_input_sanitizer.validate.return_value = ""
 
@@ -122,7 +140,9 @@ class TestFieldValidatorOptional:
 
         assert result == ""
 
-    def test_validate_optional_whitespace_only_returns_empty(self, validator, mock_input_sanitizer):
+    def test_validate_optional_whitespace_only_returns_empty(
+        self, validator, mock_input_sanitizer
+    ):
         """Test validate_optional returns empty string for whitespace-only input."""
         mock_input_sanitizer.validate.return_value = ""  # Sanitizer strips to empty
 
@@ -130,7 +150,9 @@ class TestFieldValidatorOptional:
 
         assert result == ""
 
-    def test_validate_optional_none_returns_empty(self, validator, mock_input_sanitizer):
+    def test_validate_optional_none_returns_empty(
+        self, validator, mock_input_sanitizer
+    ):
         """Test validate_optional returns empty string for None."""
         mock_input_sanitizer.validate.return_value = None
 
@@ -146,9 +168,13 @@ class TestFieldValidatorOptional:
 
         assert result == "Trimmed"
 
-    def test_validate_optional_sql_injection_propagates_error(self, validator, mock_input_sanitizer):
+    def test_validate_optional_sql_injection_propagates_error(
+        self, validator, mock_input_sanitizer
+    ):
         """Test validate_optional propagates SQL injection errors from sanitizer."""
-        mock_input_sanitizer.validate.side_effect = ToDoValidationError("SQL injection detected")
+        mock_input_sanitizer.validate.side_effect = ToDoValidationError(
+            "SQL injection detected"
+        )
 
         with pytest.raises(ToDoValidationError) as exc_info:
             validator.validate_optional("DROP TABLE")
@@ -192,14 +218,18 @@ class TestFieldValidatorGeneric:
 
         assert result == "Test"
 
-    def test_validate_required_true_empty_raises_error(self, validator, mock_input_sanitizer, mock_logger):
+    def test_validate_required_true_empty_raises_error(
+        self, validator, mock_input_sanitizer, mock_logger
+    ):
         """Test validate() with required=True raises error for empty."""
         mock_input_sanitizer.validate.return_value = ""
 
         with pytest.raises(ToDoValidationError):
             validator.validate("", field_name="title", required=True)
 
-    def test_validate_required_false_empty_returns_empty(self, validator, mock_input_sanitizer):
+    def test_validate_required_false_empty_returns_empty(
+        self, validator, mock_input_sanitizer
+    ):
         """Test validate() with required=False returns empty for empty."""
         mock_input_sanitizer.validate.return_value = ""
 
@@ -207,7 +237,9 @@ class TestFieldValidatorGeneric:
 
         assert result == ""
 
-    def test_validate_default_field_name(self, validator, mock_input_sanitizer, mock_logger):
+    def test_validate_default_field_name(
+        self, validator, mock_input_sanitizer, mock_logger
+    ):
         """Test validate() uses default field name when not provided."""
         mock_input_sanitizer.validate.return_value = ""
 
@@ -247,7 +279,9 @@ class TestFieldValidatorEdgeCases:
 
         assert result == unicode_text
 
-    def test_validate_special_characters_required(self, validator, mock_input_sanitizer):
+    def test_validate_special_characters_required(
+        self, validator, mock_input_sanitizer
+    ):
         """Test validate_required with special characters."""
         special_text = "Test@#$%&*()_+=[]{}|"
         mock_input_sanitizer.validate.return_value = special_text

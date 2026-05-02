@@ -1,9 +1,9 @@
 """Factory classes for creating test data using factory_boy."""
+
 import datetime
 import uuid
 from typing import Any
 
-import factory
 from factory import Factory, Faker, LazyFunction
 
 from backend.app.data_access.database import ToDoORM

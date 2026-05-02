@@ -1,24 +1,13 @@
 """Integration tests for ToDoEntryBuilder with real validators."""
+
 import datetime
 import uuid
 
 import pytest
 
-from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.exceptions import ToDoValidationError
-from backend.app.business_logic.validators import ValidatorFactory
-from backend.app.logger import CustomLogger
 from backend.app.data_access.database import ToDoORM
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
-
-
-@pytest.fixture
-def builder():
-    """Create ToDoEntryBuilder with real validators."""
-    logger = CustomLogger("ToDoEntryBuilderIntegrationTest")
-    uuid_validator = ValidatorFactory.create_uuid_validator(logger)
-    field_validator = ValidatorFactory.create_field_validator(logger)
-    return ToDoEntryBuilder(uuid_validator, field_validator)
 
 
 class TestToDoEntryBuilderRealWorldScenarios:
@@ -31,7 +20,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Buy groceries for dinner",
-            description="Need to buy milk, eggs, and bread"
+            description="Need to buy milk, eggs, and bread",
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -52,7 +41,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="🎉 Birthday party 🎂",
-            description="Plan birthday celebration"
+            description="Plan birthday celebration",
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -65,9 +54,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
         """Test building ToDo strips leading/trailing whitespace."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="  Meeting notes  ",
-            description="  Important points  "
+            id=test_uuid, title="  Meeting notes  ", description="  Important points  "
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -79,11 +66,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
     async def test_build_todo_with_empty_description(self, builder):
         """Test building ToDo with empty description."""
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="Quick task",
-            description=""
-        )
+        payload = ToDoCreateScheme(id=test_uuid, title="Quick task", description="")
 
         result = await builder.build_from_create_schema(payload)
 
@@ -97,13 +80,15 @@ class TestToDoEntryBuilderRealWorldScenarios:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Project tasks",
-            description="Step 1: Research\nStep 2: Design\nStep 3: Implement"
+            description="Step 1: Research\nStep 2: Design\nStep 3: Implement",
         )
 
         result = await builder.build_from_create_schema(payload)
 
         assert result.title == "Project tasks"
-        assert result.description == "Step 1: Research\nStep 2: Design\nStep 3: Implement"
+        assert (
+            result.description == "Step 1: Research\nStep 2: Design\nStep 3: Implement"
+        )
 
     @pytest.mark.asyncio
     async def test_build_todo_with_special_characters(self, builder):
@@ -112,7 +97,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Fix bug #123 (urgent!)",
-            description="Cost: $50.00 | Due: 2024-01-15"
+            description="Cost: $50.00 | Due: 2024-01-15",
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -129,6 +114,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects invalid UUID."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = "not-a-valid-uuid"
         payload.title = "Test"
@@ -144,6 +130,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects empty title."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         test_uuid = uuid.uuid4()
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = test_uuid
@@ -160,6 +147,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects whitespace-only title."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         test_uuid = uuid.uuid4()
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = test_uuid
@@ -176,9 +164,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects SQL injection in title."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="'; DROP TABLE todos; --",
-            description="Desc"
+            id=test_uuid, title="'; DROP TABLE todos; --", description="Desc"
         )
 
         with pytest.raises(ToDoValidationError) as exc_info:
@@ -193,7 +179,7 @@ class TestToDoEntryBuilderValidationIntegration:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Valid Title",
-            description="Test /* */ SELECT * FROM users"
+            description="Test /* */ SELECT * FROM users",
         )
 
         with pytest.raises(ToDoValidationError) as exc_info:
@@ -214,6 +200,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects None ID."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = None
         payload.title = "Test"
@@ -232,11 +219,7 @@ class TestToDoEntryBuilderTimestampGeneration:
     async def test_build_generates_created_at_timestamp(self, builder):
         """Test builder generates created_at timestamp."""
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="Test",
-            description="Desc"
-        )
+        payload = ToDoCreateScheme(id=test_uuid, title="Test", description="Desc")
 
         before = datetime.datetime.now(datetime.timezone.utc)
         result = await builder.build_from_create_schema(payload)
@@ -257,6 +240,7 @@ class TestToDoEntryBuilderTimestampGeneration:
 
         # Small delay to ensure different timestamp
         import asyncio
+
         await asyncio.sleep(0.01)
 
         result2 = await builder.build_from_create_schema(payload2)

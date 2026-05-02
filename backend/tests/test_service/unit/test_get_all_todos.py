@@ -1,4 +1,5 @@
 """Unit tests for ToDoService.get_all_todos() method."""
+
 import datetime
 import uuid
 
@@ -20,7 +21,7 @@ class TestGetAllTodosSuccess:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         entry2 = ToDoORM(
             id=uuid.uuid4(),
@@ -29,7 +30,7 @@ class TestGetAllTodosSuccess:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_all_to_do_entries.return_value = [entry1, entry2]
 
@@ -68,7 +69,7 @@ class TestGetAllTodosSuccess:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         mock_repository.get_all_to_do_entries.return_value = [entry]
 
@@ -132,10 +133,13 @@ class TestGetAllTodosInvalidEntries:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         invalid_entry = "invalid entry"
-        mock_repository.get_all_to_do_entries.return_value = [valid_entry, invalid_entry]
+        mock_repository.get_all_to_do_entries.return_value = [
+            valid_entry,
+            invalid_entry,
+        ]
 
         result = await todo_service.get_all_todos()
 
@@ -143,7 +147,9 @@ class TestGetAllTodosInvalidEntries:
         assert result[0].title == "Valid"
 
     @pytest.mark.asyncio
-    async def test_get_all_logs_invalid_entries(self, todo_service, mock_repository, mock_logger):
+    async def test_get_all_logs_invalid_entries(
+        self, todo_service, mock_repository, mock_logger
+    ):
         """Test get_all_todos logs warning for invalid entries."""
         valid_entry = ToDoORM(
             id=uuid.uuid4(),
@@ -152,10 +158,13 @@ class TestGetAllTodosInvalidEntries:
             created_at=datetime.datetime.now(),
             updated_at=None,
             done=False,
-            deleted=False
+            deleted=False,
         )
         invalid_entry = "invalid entry"
-        mock_repository.get_all_to_do_entries.return_value = [valid_entry, invalid_entry]
+        mock_repository.get_all_to_do_entries.return_value = [
+            valid_entry,
+            invalid_entry,
+        ]
 
         await todo_service.get_all_todos()
 
@@ -163,11 +172,16 @@ class TestGetAllTodosInvalidEntries:
         mock_logger.warning.assert_called()
 
     @pytest.mark.asyncio
-    async def test_get_all_all_invalid_returns_empty(self, todo_service, mock_repository):
+    async def test_get_all_all_invalid_returns_empty(
+        self, todo_service, mock_repository
+    ):
         """Test get_all_todos returns empty list when all entries invalid."""
         invalid_entry1 = "invalid1"
         invalid_entry2 = None
-        mock_repository.get_all_to_do_entries.return_value = [invalid_entry1, invalid_entry2]
+        mock_repository.get_all_to_do_entries.return_value = [
+            invalid_entry1,
+            invalid_entry2,
+        ]
 
         result = await todo_service.get_all_todos()
 
@@ -178,7 +192,9 @@ class TestGetAllTodosRepositoryInteraction:
     """Test get_all_todos repository interaction."""
 
     @pytest.mark.asyncio
-    async def test_get_all_calls_repository_get_all(self, todo_service, mock_repository):
+    async def test_get_all_calls_repository_get_all(
+        self, todo_service, mock_repository
+    ):
         """Test get_all_todos calls repository.get_all_to_do_entries."""
         mock_repository.get_all_to_do_entries.return_value = []
 

@@ -1,4 +1,5 @@
 """FastAPI routes for ToDo operations."""
+
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Query, Request, status
@@ -69,7 +70,9 @@ async def list_deleted_todos(
 ) -> ListToDoResponse:
     todos = await service.get_deleted_todos(limit, page)
     total_count = await service.count_deleted()
-    return ListToDoResponse(success=True, results=len(todos), total_count=total_count, todo_entries=todos)
+    return ListToDoResponse(
+        success=True, results=len(todos), total_count=total_count, todo_entries=todos
+    )
 
 
 @app.patch("/todo/{todo_id}/restore", response_model=ToDoResponse)
@@ -94,7 +97,9 @@ async def get_todo(request: Request, todo_id: UUID) -> GetToDoResponse:
 
 @app.put("/todo/{todo_id}", response_model=ToDoResponse)
 @limiter.limit("30/minute")
-async def update_todo(request: Request, todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
+async def update_todo(
+    request: Request, todo_id: UUID, payload: TodoUpdateScheme
+) -> ToDoResponse:
     try:
         todo = await service.update_todo(todo_id, payload)
         return ToDoResponse(success=True, todo_entry=todo)
@@ -129,4 +134,6 @@ async def list_todos(
 ) -> ListToDoResponse:
     todos = await service.get_all_todos(limit, page)
     total_count = await service.get_count()
-    return ListToDoResponse(success=True, results=len(todos), total_count=total_count, todo_entries=todos)
+    return ListToDoResponse(
+        success=True, results=len(todos), total_count=total_count, todo_entries=todos
+    )

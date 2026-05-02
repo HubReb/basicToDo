@@ -37,4 +37,16 @@ jobs:
           VALIDATE_TSX: false
           VALIDATE_JAVASCRIPT_ES: false
           VALIDATE_JAVASCRIPT_STANDARD: false
+          # pylint runs as its own (non-blocking) job in python-app.yml;
+          # super-linter's strict pylint duplicates that with stricter defaults.
+          VALIDATE_PYTHON_PYLINT: false
+          # jscpd flags pre-existing legitimate duplication (async/sync decorator
+          # pair, parallel list-validate-skip loops) — not a CI gate worth fighting.
+          VALIDATE_JSCPD: false
+          # super-linter v4's isort config-copy logic doesn't pick up
+          # .github/linters/.isort.cfg reliably and falls back to a non-black
+          # profile, so it disagrees with our [tool.isort] (profile=black) in
+          # pyproject.toml. Local dev + pyproject.toml enforce isort; PYTHON_BLACK
+          # in super-linter still catches formatting drift.
+          VALIDATE_PYTHON_ISORT: false
           FILTER_REGEX_EXCLUDE: .*tsconfig.*\.json

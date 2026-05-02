@@ -1,4 +1,5 @@
 """Tests for ToDoService.count_deleted()."""
+
 import pytest
 
 

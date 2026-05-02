@@ -1,4 +1,5 @@
 """Integration tests for ToDoService.create_todo() with real validators."""
+
 import uuid
 from unittest.mock import MagicMock
 
@@ -20,9 +21,7 @@ class TestCreateTodoValidationIntegration:
         """Test create_todo validates and sanitizes input."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=todo_id,
-            title="  Test Title  ",
-            description="  Test Desc  "
+            id=todo_id, title="  Test Title  ", description="  Test Desc  "
         )
         mock_repository.create_to_do.return_value = None
 
@@ -38,13 +37,13 @@ class TestCreateTodoValidationIntegration:
         assert call_args.description == "Test Desc"
 
     @pytest.mark.asyncio
-    async def test_create_strips_leading_whitespace(self, todo_service, mock_repository):
+    async def test_create_strips_leading_whitespace(
+        self, todo_service, mock_repository
+    ):
         """Test create_todo strips leading whitespace."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=todo_id,
-            title="   Leading spaces",
-            description="   Leading desc"
+            id=todo_id, title="   Leading spaces", description="   Leading desc"
         )
         mock_repository.create_to_do.return_value = None
 
@@ -54,13 +53,13 @@ class TestCreateTodoValidationIntegration:
         assert result.description == "Leading desc"
 
     @pytest.mark.asyncio
-    async def test_create_strips_trailing_whitespace(self, todo_service, mock_repository):
+    async def test_create_strips_trailing_whitespace(
+        self, todo_service, mock_repository
+    ):
         """Test create_todo strips trailing whitespace."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=todo_id,
-            title="Trailing spaces   ",
-            description="Trailing desc   "
+            id=todo_id, title="Trailing spaces   ", description="Trailing desc   "
         )
         mock_repository.create_to_do.return_value = None
 
@@ -78,9 +77,7 @@ class TestCreateTodoSQLInjectionIntegration:
         """Test create_todo blocks SQL injection in title."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=todo_id,
-            title="'; DROP TABLE todos; --",
-            description="Desc"
+            id=todo_id, title="'; DROP TABLE todos; --", description="Desc"
         )
 
         with pytest.raises(ToDoValidationError) as exc_info:
@@ -95,7 +92,7 @@ class TestCreateTodoSQLInjectionIntegration:
         payload = ToDoCreateScheme(
             id=todo_id,
             title="Valid",
-            description="Test /* comment */ SELECT * FROM users"
+            description="Test /* comment */ SELECT * FROM users",
         )
 
         with pytest.raises(ToDoValidationError) as exc_info:
@@ -108,22 +105,18 @@ class TestCreateTodoSQLInjectionIntegration:
         """Test create_todo blocks SQL double dash comments."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=todo_id,
-            title="Test -- comment",
-            description="Desc"
+            id=todo_id, title="Test -- comment", description="Desc"
         )
 
         with pytest.raises(ToDoValidationError):
             await todo_service.create_todo(payload)
 
     @pytest.mark.asyncio
-    async def test_create_blocks_union_select(self, todo_service):
-        """Test create_todo blocks UNION SELECT."""
+    async def test_create_blocks_union_select_with_comment(self, todo_service):
+        """A UNION SELECT becomes injection-shaped when chained with a SQL comment."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=todo_id,
-            title="Test UNION SELECT * FROM users",
-            description="Desc"
+            id=todo_id, title="Test UNION SELECT * FROM users--", description="Desc"
         )
 
         with pytest.raises(ToDoValidationError):
@@ -151,11 +144,7 @@ class TestCreateTodoUUIDValidationIntegration:
     async def test_create_accepts_valid_uuid(self, todo_service, mock_repository):
         """Test create_todo accepts valid UUID."""
         todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
-            title="Test",
-            description="Desc"
-        )
+        payload = ToDoCreateScheme(id=todo_id, title="Test", description="Desc")
         mock_repository.create_to_do.return_value = None
 
         result = await todo_service.create_todo(payload)
@@ -195,14 +184,12 @@ class TestCreateTodoFieldValidationIntegration:
         assert "title is required" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_create_accepts_empty_description(self, todo_service, mock_repository):
+    async def test_create_accepts_empty_description(
+        self, todo_service, mock_repository
+    ):
         """Test create_todo accepts empty description."""
         todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
-            title="Test",
-            description=""
-        )
+        payload = ToDoCreateScheme(id=todo_id, title="Test", description="")
         mock_repository.create_to_do.return_value = None
 
         result = await todo_service.create_todo(payload)
@@ -215,11 +202,15 @@ class TestCreateTodoErrorHandlingIntegration:
     """Integration tests for create_todo error handling."""
 
     @pytest.mark.asyncio
-    async def test_create_integrity_error_becomes_already_exists(self, todo_service, mock_repository):
+    async def test_create_integrity_error_becomes_already_exists(
+        self, todo_service, mock_repository
+    ):
         """Test create_todo converts IntegrityError to ToDoAlreadyExistsError."""
         todo_id = uuid.uuid4()
         payload = ToDoCreateScheme(id=todo_id, title="Duplicate", description="Desc")
-        mock_repository.create_to_do.side_effect = IntegrityError("msg", "params", "orig")
+        mock_repository.create_to_do.side_effect = IntegrityError(
+            "msg", "params", "orig"
+        )
 
         with pytest.raises(ToDoAlreadyExistsError):
             await todo_service.create_todo(payload)

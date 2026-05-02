@@ -1,10 +1,10 @@
 """Async SQLAlchemy database setup."""
-import datetime
+
 import uuid
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from sqlalchemy import Boolean, CheckConstraint, Column, String, TIMESTAMP
+from sqlalchemy import TIMESTAMP, Boolean, CheckConstraint, Column, String
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql import func

@@ -52,6 +52,10 @@ warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
+[tool.isort]
+profile = "black"
+known_first_party = ["backend"]
+
 [dependency-groups]
 dev = [
     "pytest-cov>=7.0.0",

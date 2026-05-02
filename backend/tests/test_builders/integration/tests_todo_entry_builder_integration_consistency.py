@@ -6,7 +6,6 @@ from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuil
 from backend.app.business_logic.validators import ValidatorFactory
 from backend.app.logger import CustomLogger
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
-from backend.tests.test_builders.integration.test_todo_entry_builder_integration import (builder)
 
 
 class TestToDoEntryBuilderDataConsistency:
@@ -17,9 +16,7 @@ class TestToDoEntryBuilderDataConsistency:
         """Test same payload produces consistent structure."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="Test Title",
-            description="Test Description"
+            id=test_uuid, title="Test Title", description="Test Description"
         )
 
         result1 = await builder.build_from_create_schema(payload)
@@ -40,19 +37,15 @@ class TestToDoEntryBuilderDataConsistency:
 
         builder1 = ToDoEntryBuilder(
             ValidatorFactory.create_uuid_validator(logger1),
-            ValidatorFactory.create_field_validator(logger1)
+            ValidatorFactory.create_field_validator(logger1),
         )
         builder2 = ToDoEntryBuilder(
             ValidatorFactory.create_uuid_validator(logger2),
-            ValidatorFactory.create_field_validator(logger2)
+            ValidatorFactory.create_field_validator(logger2),
         )
 
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="Test",
-            description="Desc"
-        )
+        payload = ToDoCreateScheme(id=test_uuid, title="Test", description="Desc")
 
         result1 = await builder1.build_from_create_schema(payload)
         result2 = await builder2.build_from_create_schema(payload)
@@ -69,11 +62,7 @@ class TestToDoEntryBuilderBoundaryConditions:
     async def test_build_with_single_character_title(self, builder):
         """Test builder with single character title."""
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="X",
-            description="Desc"
-        )
+        payload = ToDoCreateScheme(id=test_uuid, title="X", description="Desc")
 
         result = await builder.build_from_create_schema(payload)
 
@@ -87,9 +76,7 @@ class TestToDoEntryBuilderBoundaryConditions:
         long_desc = "b" * 5000
 
         payload = ToDoCreateScheme(
-            id=test_uuid,
-            title=long_title,
-            description=long_desc
+            id=test_uuid, title=long_title, description=long_desc
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -100,12 +87,8 @@ class TestToDoEntryBuilderBoundaryConditions:
     @pytest.mark.asyncio
     async def test_build_with_nil_uuid(self, builder):
         """Test builder with nil (all zeros) UUID."""
-        nil_uuid = uuid.UUID('00000000-0000-0000-0000-000000000000')
-        payload = ToDoCreateScheme(
-            id=nil_uuid,
-            title="Test",
-            description="Desc"
-        )
+        nil_uuid = uuid.UUID("00000000-0000-0000-0000-000000000000")
+        payload = ToDoCreateScheme(id=nil_uuid, title="Test", description="Desc")
 
         result = await builder.build_from_create_schema(payload)
 
@@ -118,7 +101,7 @@ class TestToDoEntryBuilderBoundaryConditions:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Hello 世界 🌍 @ #tags",
-            description="Symbols: €¥£ © ® ™"
+            description="Symbols: €¥£ © ® ™",
         )
 
         result = await builder.build_from_create_schema(payload)
