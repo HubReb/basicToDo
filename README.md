@@ -1,66 +1,113 @@
 # basicToDo
 
 A learning project that grew into a spec-driven modernization playground. Started as a SQLAlchemy and React learning exercise, now used to explore async architecture patterns, ORM evolution, and AI-assisted development workflows.
+
 ## Why this exists
+
 Most ToDo tutorials stop at CRUD. This repo continues past that line: how does a small full-stack project evolve when you take async I/O, type discipline, and architecture decisions seriously? What does spec-driven modernization look like when applied to a real (if small) codebase? How easy is the application in a "best case" scenario?
 
-### Stack
-* __Backend__ : Python 3.14+, FastAPI, async SQLAlchemy with aiosqlite, Pydantic for runtime validation, mypy for static guarantees, uv for reproducible environments.
-* __Frontend__: TypeScript, React with React Query for server state, Vite for build tooling.
+## Stack
+
+- **Backend**: Python 3.14+, FastAPI, async SQLAlchemy on `aiosqlite`, Pydantic v2, mypy, `slowapi` for rate limiting, `uv` for reproducible environments.
+- **Frontend**: React 19 + TypeScript, Chakra UI v3, TanStack Query v5 for server state, Vite, Vitest.
 
 ## Architecture decisions
-Key choices documented inline as the project evolves:
-* __Async-first backend__ aiosqlite + AsyncSession instead of sync SQLAlchemy. Trade-off: more complexity in session management, gain in I/O parallelism.
-* __Single ORM mapping__ Earlier versions used dual mapping (declarative + imperative); removed in favor of a single declarative pattern after cost-benefit analysis.
-* __Soft-delete pattern__ Deletion marks records rather than removing them, with explicit restore and purge endpoints. Enables undo workflows.
+
+Documented inline as the project evolves:
+
+- **Async-first backend** — `aiosqlite` + `AsyncSession` instead of sync SQLAlchemy. Trade-off: more complexity in session management, gain in I/O parallelism.
+- **Single ORM mapping** — earlier versions used dual mapping (declarative + imperative); removed in favor of a single declarative pattern after the cost/benefit analysis showed the duality served no purpose.
+- **Soft-delete pattern** — deletion marks records rather than removing them, with explicit restore and (internal) purge paths. Adds complexity but enables undo workflows.
+- **Optimistic UI on every mutation** — server state lives in TanStack Query; every mutation hook does `onMutate` snapshot → `onError` rollback → `onSettled` invalidate.
+- **Constitution-driven** — non-negotiable rules (async-only DB, ≥80% backend coverage, single source of truth, p95 < 200ms, bundle < 500 KB gzip) live in [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
+
+Architecture diagrams (rendered natively by GitHub):
+
+- [Backend architecture & request flow](documentation/backend.md)
+- [Frontend component tree & optimistic update flow](documentation/frontend.md)
 
 ## Functionality
 
-* Add, update, delete (soft) ToDo items
-* Restore deleted items
-* Inline editing on update
+- Create, update, soft-delete ToDo items
+- Mark as done
+- Restore soft-deleted items
+- Inline editing on update
+- Paginated lists with separate active / deleted views
 
-![image](images/basicAppAddToDo.png)
-![image](images/basicAppAddUpdateToDo.png)
-![image](images/basicAppDeleteToDo.png)
-
+![Add a todo](images/basicAppAddToDo.png)
+![Edit a todo](images/basicAppAddUpdateToDo.png)
+![Delete a todo](images/basicAppDeleteToDo.png)
 
 ## Setup
 
 ### Backend
 
-Requires `uv`. Install per uv documentation.
+Requires `uv` ([install docs](https://docs.astral.sh/uv/)).
+
 ```bash
 uv sync
-python -m app.main
+uv run python -m backend.app.main
 ```
 
+The server initializes the SQLite schema on first run and listens on the host/port from `backend/app/config.py` (default `http://127.0.0.1:8000`).
+
 ### Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-For production build:
+Production build:
+
 ```bash
-tsc -b && vite build
+cd frontend
+npm run build   # tsc -b && vite build
 ```
 
 ### Testing
 
-Backend uses pytest, frontend uses vitest.
 ```bash
+# Backend (pytest, async-aware)
 uv run pytest
+
+# Frontend (vitest, one-shot)
 cd frontend && npm test -- --run
+
+# Frontend type check
+cd frontend && npx tsc --noEmit
+```
+
+## Project layout
+
+```
+backend/
+  app/
+    api/             FastAPI routes + middleware
+    business_logic/  Service, builders, validators, decorators
+    data_access/     Async repository + ORM + session scope
+    schemas/         Pydantic request/response models
+    config.py        Settings (env-driven)
+    factory.py       Dependency wiring
+  tests/             pytest suites (unit + integration)
+frontend/
+  src/
+    components/      UI (todos, common, errors, ui)
+    hooks/queries/   One TanStack Query hook per endpoint
+    services/api/    todoApi + axios client (single API surface)
+    config/          QueryClient, env
+    types/           Shared TS types
+documentation/       Architecture diagrams
+specs/               Spec-Kit feature specs, plans, contracts
 ```
 
 ## Roadmap
-Active development focuses on backend refactoring and async pattern refinement. Planned next:
 
-* Mark-as-done workflow with completion timestamps
-* Subtask hierarchy
-* Reminder/deadline tracking
-* Light mode UI
+Active work focuses on backend refactoring and async pattern refinement. Planned next:
 
-__Future explorations:__ time-to-completion analysis for predictive estimation, AI-assisted ToDo suggestions.
+- Subtask hierarchy
+- Reminder / deadline tracking
+- Light mode UI
+
+**Future explorations**: time-to-completion analysis for predictive estimation, AI-assisted ToDo suggestions.
