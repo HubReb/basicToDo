@@ -135,7 +135,7 @@ sequenceDiagram
 
 ## Key Decisions
 
-- **One hook per endpoint** under `hooks/queries/`. Components never call `todoApi` directly — they go through a hook so caching, optimistic updates, and invalidation stay co-located with the mutation they belong to.
+- **One hook per endpoint** under `hooks/queries/`. Components never call `todoApi` directly — they go through a hook so caching, optimistic updates, and invalidation stay colocated with the mutation they belong to.
 - **Single API surface**: every component path that hits the network goes through `services/api/todoApi.ts`. URLs and response shapes change in one place.
 - **Optimistic UI on all mutations**: required by the project constitution. The `onMutate` / `onError` / `onSettled` triad in each mutation hook implements it consistently.
 - **Path alias `@/*`**: configured in `tsconfig` and Vite. Imports use `@/hooks/...`, `@/services/...` rather than relative paths.

@@ -4,7 +4,7 @@ A learning project that grew into a spec-driven modernization playground. Starte
 
 ## Why this exists
 
-Most ToDo tutorials stop at CRUD. This repo continues past that line: how does a small full-stack project evolve when you take async I/O, type discipline, and architecture decisions seriously? What does spec-driven modernization look like when applied to a real (if small) codebase? How easy is the application in a "best case" scenario?
+Most ToDo tutorials stop at CRUD. This repository continues past that line: how does a small full-stack project evolve when you take async I/O, type discipline, and architecture decisions seriously? What does spec-driven modernization look like when applied to a real (if small) codebase? How easy is the application in a "best case" scenario?
 
 ## Stack
 
@@ -81,7 +81,7 @@ cd frontend && npx tsc --noEmit
 
 ## Project layout
 
-```
+```text
 backend/
   app/
     api/             FastAPI routes + middleware
