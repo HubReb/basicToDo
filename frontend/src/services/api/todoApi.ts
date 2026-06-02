@@ -4,16 +4,15 @@
  * Single source of truth for all Todo API endpoints
  */
 
-import { apiClient } from './client';
+import {apiClient} from './client';
 import type {
+  DeleteTodoResponse,
   Todo,
   TodoCreateRequest,
-  TodoUpdateRequest,
-  TodoResponse,
-  GetTodoResponse,
   TodoListResponse,
-  DeleteTodoResponse,
-} from '../../types/todo';
+  TodoResponse,
+  TodoUpdateRequest,
+} from '@/types/todo';
 
 /**
  * Todo API service
@@ -27,16 +26,6 @@ export class TodoApi {
     const response = await apiClient.post<TodoResponse>('/todo', data);
     return response.todo_entry;
   }
-
-  /**
-   * Get a single todo by ID
-   * GET /todo/{todo_id}
-   */
-  async getById(todoId: string): Promise<Todo> {
-    const response = await apiClient.get<GetTodoResponse>(`/todo/${todoId}`);
-    return response.todo_entry;
-  }
-
   /**
    * Update a todo
    * PUT /todo/{todo_id}
