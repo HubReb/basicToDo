@@ -222,8 +222,6 @@ node_modules
 # Replace as required with your build location
 /build
 
-# Deal with environment files
-.env
 .env.*
 
 # We'll allow an example .env file which can be copied
@@ -248,7 +246,6 @@ vite.config.ts.timestamp-*
 
 lib-cov
 *.seed
-*.log
 *.csv
 *.dat
 *.out
@@ -264,14 +261,8 @@ tmp
 # Build
 public/css/main.css
 
-# Coverage reports
-coverage
-
-# API keys and secrets
-.env
 
 # Dependency directory
-node_modules
 bower_components
 
 # Editors
@@ -279,15 +270,18 @@ bower_components
 *.iml
 
 # OS metadata
-.DS_Store
 Thumbs.db
 
 yarn.lock
-
-dist/
 *.js
 *.js.map
 
 *.code-workspace
 
 config.json
+# Added by speckit-implement
+node_modules/
+.env*
+*.pyc
+.venv/
+*.db
