@@ -27,7 +27,7 @@ dependencies = [
     "types-ujson>=5.10.0.20250326",
     "uvicorn>=0.34.2",
     "aiosqlite>=0.20.0",
-    "pydantic-settings>=2.7.0",
+    "pydantic-settings>=2.14.2",
 ]
 [tool.setuptools_scm]
 version = "v0.1.0"
