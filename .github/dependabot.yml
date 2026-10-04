@@ -1,0 +1,18 @@
+---
+# Keeps the SHA-pinned actions in .github/workflows/ current. Dependabot
+# rewrites both the commit SHA and the trailing "# vX.Y.Z" comment.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Wait a week before proposing a fresh release, so a compromised
+    # version has time to be noticed and pulled first.
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
