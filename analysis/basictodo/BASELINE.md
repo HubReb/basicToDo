@@ -308,6 +308,30 @@ ESLint reports the same single pre-existing error in every state (`e2e/smoke.spe
 
 **Human review of the screenshot comparison:** accepted by the owner on 2026-10-05 (answer: "go"; Phase 2 exit criterion).
 
+### Phase 2 CI (draft PR #114)
+
+Measured on `plugin/uplift-basictodo/phase-2` at `7304a79` against `plugin/uplift-basictodo/base`, 2026-10-05. The workflows ran on **Node 24.21.0**, and e2e downloaded Chrome for Testing 153.0.8010.12 (chromium v1243), the same versions as the local measurements.
+
+| Workflow | Result | Duration |
+|---|---|---|
+| Frontend CI | ✅ | 29 s |
+| End-to-End Tests (Playwright 1.63) | ✅ | 75 s |
+| Python Application CI (tests, lint, coverage comment) | ✅ | 56 s |
+| CodeQL (actions / python / js-ts) | ✅ | 59 s |
+| Dependency review | ✅ | 24 s |
+| Super-Linter | ❌ | 257 s |
+
+About 4¼ minutes of wall clock (256 s), 578 s of runner time.
+
+**Exit criterion "frontend and e2e green": met ✅.**
+
+Super-Linter fails for the reasons recorded for Phase 1 above:
+- legacy files;
+- analysis documents (markdownlint, textlint);
+- jscpd on generated evidence. The F0 and F2 style captures are identical by design.
+
+Phase 2's own new Python (`baseline/frontend/bundle_modules.py`, `compare_screens.py`) is not yet black/flake8-formatted for super-linter's configuration.
+
 ## Change log
 
 _Empty. Phase 5 records each intentional behaviour change here, with its Q6 row ID._

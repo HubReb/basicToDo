@@ -220,7 +220,7 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
   - _Accepted by the owner on 2026-10-05. The owner's answer was "go", given to the question "if you accept the review and give the go, I push phase-2 and open the draft PR"._
   - _Measured 2026-10-05: none of the 8 screens differs from F0, in pixels or computed styles. D-19 changes only serialization; D-24 is masked by the unlayered `button` rule in `src/index.css`. The evidence and a positive control are in `baseline/frontend/visual-review.html`. The owner reviewed it._
 - [x] `npm audit` reports **0**.
-- [ ] `plugin/uplift-basictodo/phase-2` (branched from phase-1) is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and the frontend and e2e workflows green on it (Q11).
+- [x] `plugin/uplift-basictodo/phase-2` (branched from phase-1) is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and the frontend and e2e workflows green on it (Q11). _(Draft PR #114, label `do not merge: eval`. Frontend 29 s and e2e 75 s green on Node 24.21.0. The other workflows are recorded in `BASELINE.md`.)_
 - [x] `PLAYBOOK.md` (frontend section) is written.
 
 **Phase 2 findings (2026-10-05):**
