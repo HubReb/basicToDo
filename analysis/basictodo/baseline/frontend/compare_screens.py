@@ -16,7 +16,13 @@ from pathlib import Path
 
 from PIL import Image, ImageChops
 
-SETUP_KEYS = ("playwright", "browser", "chromium_revision", "runner_lock_sha256", "viewport")
+SETUP_KEYS = (
+    "playwright",
+    "browser",
+    "chromium_revision",
+    "runner_lock_sha256",
+    "viewport",
+)
 
 
 def compare_png(a_path, b_path, diff_path):
@@ -32,8 +38,12 @@ def compare_png(a_path, b_path, diff_path):
     overlay = Image.blend(a, Image.new("RGB", a.size, (255, 255, 255)), 0.6)
     overlay.paste(Image.new("RGB", a.size, (220, 0, 0)), mask=mask)
     overlay.save(diff_path)
-    return {"identical": False, "changed_pixels": changed,
-            "share": round(changed / (a.size[0] * a.size[1]), 6), "bbox": list(bbox)}
+    return {
+        "identical": False,
+        "changed_pixels": changed,
+        "share": round(changed / (a.size[0] * a.size[1]), 6),
+        "bbox": list(bbox),
+    }
 
 
 def compare_styles(a_path, b_path):
@@ -42,8 +52,15 @@ def compare_styles(a_path, b_path):
     for key in sorted(set(a) & set(b)):
         for prop in sorted(set(a[key]) | set(b[key])):
             if a[key].get(prop) != b[key].get(prop):
-                changes.append({"element": key, "text": a[key].get("text") or b[key].get("text"),
-                                "property": prop, "a": a[key].get(prop), "b": b[key].get(prop)})
+                changes.append(
+                    {
+                        "element": key,
+                        "text": a[key].get("text") or b[key].get("text"),
+                        "property": prop,
+                        "a": a[key].get(prop),
+                        "b": b[key].get(prop),
+                    }
+                )
     only_a = [{"element": k, "text": a[k]["text"]} for k in sorted(set(a) - set(b))]
     only_b = [{"element": k, "text": b[k]["text"]} for k in sorted(set(b) - set(a))]
     return changes, only_a, only_b
@@ -61,26 +78,46 @@ def main(a_dir, b_dir, report_dir):
     for png in sorted(a_dir.glob("*.png")):
         name = png.stem
         pixels = compare_png(png, b_dir / png.name, report_dir / f"{name}.diff.png")
-        changes, only_a, only_b = compare_styles(a_dir / f"{name}.styles.json",
-                                                 b_dir / f"{name}.styles.json")
-        screens[name] = {"pixels": pixels, "style_changes": changes,
-                         "elements_only_in_a": only_a, "elements_only_in_b": only_b}
-    report = {"setup": setup, "setup_equal": setup_equal, "dist_equal": dist_equal, "screens": screens}
+        changes, only_a, only_b = compare_styles(
+            a_dir / f"{name}.styles.json", b_dir / f"{name}.styles.json"
+        )
+        screens[name] = {
+            "pixels": pixels,
+            "style_changes": changes,
+            "elements_only_in_a": only_a,
+            "elements_only_in_b": only_b,
+        }
+    report = {
+        "setup": setup,
+        "setup_equal": setup_equal,
+        "dist_equal": dist_equal,
+        "screens": screens,
+    }
     (report_dir / "report.json").write_text(json.dumps(report, indent=1) + "\n")
 
     lines = [f"setup identical: {setup_equal}", f"dist identical: {dist_equal}", ""]
     for name, s in screens.items():
         p = s["pixels"]
-        state = "identical" if p["identical"] else f"{p.get('changed_pixels')} px ({p.get('share', 0):.4%}) bbox {p.get('bbox')}"
-        lines.append(f"{name}: {state}; style changes {len(s['style_changes'])}, "
-                     f"elements only in a {len(s['elements_only_in_a'])}, only in b {len(s['elements_only_in_b'])}")
+        state = (
+            "identical"
+            if p["identical"]
+            else f"{p.get('changed_pixels')} px ({p.get('share', 0):.4%}) bbox {p.get('bbox')}"
+        )
+        lines.append(
+            f"{name}: {state}; style changes {len(s['style_changes'])}, "
+            f"elements only in a {len(s['elements_only_in_a'])}, only in b {len(s['elements_only_in_b'])}"
+        )
     (report_dir / "report.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
     if not setup_equal:
         return 2
     differs = not dist_equal or any(
-        not s["pixels"]["identical"] or s["style_changes"] or s["elements_only_in_a"] or s["elements_only_in_b"]
-        for s in screens.values())
+        not s["pixels"]["identical"]
+        or s["style_changes"]
+        or s["elements_only_in_a"]
+        or s["elements_only_in_b"]
+        for s in screens.values()
+    )
     return 1 if differs else 0
 
 

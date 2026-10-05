@@ -41,7 +41,11 @@ def list_modules(frontend_dir, dist_dir):
             key = key.split("node_modules/", 1)[1] if pkg else key
             if pkg and pkg not in versions:
                 manifest = frontend_dir / "node_modules" / pkg / "package.json"
-                versions[pkg] = json.loads(manifest.read_text())["version"] if manifest.exists() else None
+                versions[pkg] = (
+                    json.loads(manifest.read_text())["version"]
+                    if manifest.exists()
+                    else None
+                )
             modules[key] = {
                 "package": pkg or "(app)",
                 "version": versions.get(pkg) if pkg else None,
@@ -58,14 +62,20 @@ def diff(a_path, b_path):
         if ma and mb and ma["sha256"] == mb["sha256"]:
             continue
         pkg = (ma or mb)["package"]
-        entry = by_pkg.setdefault(pkg, {"versions": set(), "changed": 0, "added": 0, "removed": 0})
-        entry["versions"].add(f"{ma['version'] if ma else '-'} -> {mb['version'] if mb else '-'}")
+        entry = by_pkg.setdefault(
+            pkg, {"versions": set(), "changed": 0, "added": 0, "removed": 0}
+        )
+        entry["versions"].add(
+            f"{ma['version'] if ma else '-'} -> {mb['version'] if mb else '-'}"
+        )
         entry["changed" if ma and mb else "added" if mb else "removed"] += 1
     unchanged_pkgs = sorted({m["package"] for m in a.values()} - set(by_pkg))
     print(f"modules: {len(a)} -> {len(b)}; packages with module changes: {len(by_pkg)}")
     for pkg, e in sorted(by_pkg.items()):
-        print(f"  {pkg:42} {', '.join(sorted(e['versions']))}: "
-              f"{e['changed']} changed, {e['added']} added, {e['removed']} removed")
+        print(
+            f"  {pkg:42} {', '.join(sorted(e['versions']))}: "
+            f"{e['changed']} changed, {e['added']} added, {e['removed']} removed"
+        )
     print(f"packages with identical modules: {len(unchanged_pkgs)}")
     print("  " + ", ".join(unchanged_pkgs))
     return 1 if by_pkg else 0
@@ -73,7 +83,9 @@ def diff(a_path, b_path):
 
 if __name__ == "__main__":
     if sys.argv[1] == "list":
-        print(json.dumps(list_modules(sys.argv[2], sys.argv[3]), indent=1, sort_keys=True))
+        print(
+            json.dumps(list_modules(sys.argv[2], sys.argv[3]), indent=1, sort_keys=True)
+        )
     elif sys.argv[1] == "diff":
         sys.exit(diff(sys.argv[2], sys.argv[3]))
     else:
