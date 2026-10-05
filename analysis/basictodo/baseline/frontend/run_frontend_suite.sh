@@ -24,6 +24,9 @@ npm ci --no-audit --no-fund > "$OUT/npm-ci.log" 2>&1
 echo "npm ci exit $?" >> "$OUT/npm-ci.log"
 npm ls --depth=0 > "$OUT/npm-ls.txt" 2>&1
 
+npx tsc -b > "$OUT/tsc.log" 2>&1
+echo "tsc -b exit $?" >> "$OUT/tsc.log"
+
 npx vitest run --reporter=default --reporter=junit --outputFile.junit="$OUT/vitest-junit.xml" \
   > "$OUT/vitest.log" 2>&1
 echo "vitest exit $?" >> "$OUT/vitest.log"
@@ -57,6 +60,7 @@ cd ..
 python3 "$HERE/../junit_table.py" "$OUT/vitest-junit.xml" > "$OUT/vitest.tsv" 2> /dev/null
 cat "$OUT/versions.txt"
 tail -n 1 "$OUT/npm-ci.log"
+tail -n 1 "$OUT/tsc.log"
 grep -E "Tests +[0-9]+" "$OUT/vitest.log"; tail -n 1 "$OUT/vitest.log"
 grep -E "dist/" "$OUT/build.log"; tail -n 1 "$OUT/build.log"
 tail -n 1 "$OUT/lint.log"

@@ -128,3 +128,49 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 - **Native `resolve.tsconfigPaths`** instead of vite-tsconfig-paths: optional, not done.
 - **The unlayered `button` rules in `src/index.css`** (a Vite template leftover) override Chakra and make the buttons barely legible. This is pre-existing and left as is; it is a candidate for a later UI pass.
 - **Visual review by the owner:** accepted on 2026-10-05.
+
+# Uplift notes: basicToDo, Phase 3 (CI pipeline)
+
+**Uplift:** GitHub Actions on node16/node20 majors with super-linter v4.10.0 → node24 majors pinned by SHA with super-linter v9.0.0; mypy and ESLint blocking.
+
+**Branch:** `plugin/uplift-basictodo/phase-3`, based on `phase-2`.
+
+**Evidence:** `analysis/basictodo/BASELINE.md` ("CI pipeline (Phase 3)") and `analysis/basictodo/baseline/ci/`.
+
+**Proof type:** local checks before CI: actionlint, zizmor, Prettier, super-linter v9 in Podman with the workflow's env, and a positive control per blocking gate. Backend and frontend are compared with the Phase 3 before state.
+
+## Commits and delta → fix mapping
+
+| Commit | Change | Deltas | How applied |
+|---|---|---|---|
+| `2ee51ba` | Every action on its node24 major, pinned to the release SHA with the version as a comment; one setup-uv step in the Lint job | D-25, D-26 | by hand, SHAs from the release tags |
+| `d2e284b` | `super-linter/super-linter` v9.0.0; removed variables dropped; linters disabled or paths excluded, each with a reason; top-level `contents: read` in `codeql.yml` and `super-linter.yml` | D-27 | by hand, iterated with the local super-linter run |
+| `f02e74d` | Workflows formatted with Prettier 3.9.8 (parsed YAML identical) | D-27 | `prettier --write` from the v9 image |
+| `fecb197` | Dependabot `codeql-action` group, as on `main` | — | copied from `main` |
+| `36765cb` | `sqlalchemy-stubs`, `sqlalchemy2-stubs` and the `[mypy]` extra removed | D-04 (Q12) | `pyproject.toml`, `uv lock` without upgrade |
+| `a268203` | Three stale `type: ignore`s removed; `repository.py` filters on `to_do_table.c.id` | D-05 (Q12) | by hand |
+| `f97dd49` | black 26.5.1 / flake8 7.3.0 on the 10 Python files changed since base | D-27 | black; F841 and targeted `noqa` by hand |
+| `a752cf3` | `catch (e)` → `catch` in `e2e/smoke.spec.ts` | — (ESLint) | by hand |
+| `4112dc5` | mypy and ESLint blocking; `tsc -b`; pylint over `backend/app` | Q9 | by hand |
+| `5c46f21` | `pull-requests: write` of dependency review moved to job level | SEC-005 | by hand |
+
+## Result
+
+| Measure | Before (`e3ffd22`) | After (`4112dc5`/`5c46f21`) |
+|---|---|---|
+| mypy | 3 errors, install-order dependent; non-blocking | **0** in two fresh venvs; **blocking** |
+| ESLint | 1 error; non-blocking | **0**; **blocking** |
+| Type check in CI | `tsc --noEmit`: 0 files checked | `tsc -b`: 32 project files |
+| pylint (report-only) | 3 modules | 15 modules |
+| super-linter | v4.10.0, red | v9.0.0, **green locally** |
+| pytest per test, golden master, frontend gates, e2e | — | identical to the before state |
+
+- Each blocking gate (mypy, ESLint, `tsc -b`, super-linter) failed on a deliberate error and passed again after the revert.
+- The Phase 3 PR's CI run and its duration are recorded after the push.
+
+## Residual and deferred
+
+- **pylint** stays report-only (`--exit-zero`, Q9). Over all of `backend/app` it rates 8.35/10. It reports `E1102 func.now is not callable` on `database.py`, a known false positive for SQLAlchemy's `func`.
+- **Disabled super-linter linters** (Biome, Prettier for TS/JS, ruff, isort, jscpd, pylint) need a repository configuration before they can be turned on.
+- **`analysis/` and `UPLIFT_NOTES.md` are excluded from super-linter.** They are modernization evidence, not product code.
+- **uv stays 0.7.16** in CI, and ESLint stays on major 9.

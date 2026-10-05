@@ -17,7 +17,7 @@ _The proven recipe. Written from the Phase 1 pilot (backend, 2026-10-05) for an 
 | `python3` is 3.14 on this machine, and `.python-version` is gitignored | Prefix every `uv` call with `UV_PYTHON=3.13`, or uv picks 3.14 |
 | Local uv is 0.7.15; CI pins 0.7.16 | Locks written by 0.7.15 pass CI's `uv sync --locked` |
 | `uv run` re-syncs the venv to the current `uv.lock` | Never run gates through `uv run` against a legacy venv after the lock has changed. Call `<venv>/bin/python` directly, or set `UV_NO_SYNC=1`. |
-| `uv sync` installs the project editable; the finder points at the checkout that was synced | In another worktree, a **script** entry point (`backend/scripts/init_db.py`) imports `backend.app` from that other checkout. `python -m …` and pytest resolve `cwd` first. Set `PYTHONPATH=$PWD` (the scripts below do), and let each process record what it loaded (`provenance.py`). Do not rely on a separate probe. |
+| `uv sync` installs the project editable; the finder points at the checkout that was synced | In another worktree, a **script** entry point (`backend/scripts/init_db.py`) imports `backend.app` from that other checkout; `python -m …` and pytest resolve `cwd` first. Set `PYTHONPATH=$PWD` (the scripts below do), and let each process record what it loaded (`provenance.py`), not a separate probe. |
 | CI sets no `DATABASE_URL`; the app then uses `backend/todo.db` under `cwd` and `init_db.py` must run first | `run_suite.sh` reproduces exactly that |
 | Not gitignored: `backend/todo.db`, `test.db`, `frontend/playwright-report/`, `frontend/test-results/` | Delete or move them after every run, or they show up in `git status` |
 | pytest's `addopts` always write `backend/htmlcov` and `backend/coverage.xml` | These two are gitignored |
@@ -214,3 +214,78 @@ Deferred on purpose, with the phase that owns each item:
 | Every app module looks "added/removed" in the bundle diff | Sourcemap paths are relative to the output directory and contain the checkout name | Key modules relative to the frontend directory |
 | F1 left 11 advisories | `npm update <direct deps>` does not reach transitive packages | Update every lock entry except Chakra's subtree |
 | Expected D-19/D-24 visuals do not appear | Serialization-only CSS changes, and an unlayered legacy rule that overrides Chakra's layers | Prove it: CSS diff, CSSOM layer probe, positive control |
+
+## CI: Actions majors, blocking gates and super-linter v9
+
+**Proven on:** GitHub Actions on node16/node20 majors with super-linter v4.10.0 → node24 majors pinned by SHA with super-linter v9.0.0.
+
+**Result:** branch `plugin/uplift-basictodo/phase-3`, commits `2ee51ba` to `5c46f21`.
+
+**Idea:** every CI change is checked locally before CI sees it:
+- actionlint, zizmor and Prettier on the workflow files;
+- super-linter itself in Podman, with the workflow's own env;
+- a gate becomes blocking only after the code passes it, and only with a positive control that shows it fails on a deliberate error.
+
+### Environment facts
+
+| Fact | Consequence |
+|---|---|
+| super-linter v9 matches `FILTER_REGEX_EXCLUDE` against **absolute** paths (`/github/workspace/…`, locally `/tmp/lint/…`) | Anchor directory excludes with `(^\|/)`, not `^` |
+| With `VALIDATE_ALL_CODEBASE: false`, super-linter lints the files changed in **commits** since `DEFAULT_BRANCH`. jscpd, Biome and Trivy scan the whole tree anyway | Uncommitted changes are invisible to a local run, so a super-linter control needs a commit. `DEFAULT_BRANCH: ${{ github.base_ref \|\| 'main' }}` keeps PRs into the uplift base linting only their own changes |
+| Workflow YAML booleans reach the container as the strings `true`/`false`; Python's YAML loader gives `True` | The local runner lowercases them; otherwise super-linter stops with FATAL "Set … to either true or false" |
+| A local run on the working tree also lints ignored files (`node_modules`, `dist`, `htmlcov`) | Lint a clean clone of HEAD, with the base branch created in it |
+| super-linter pins its own black and flake8: v4.10.0 has black 22.12.0 / flake8 6.0.0, v9.0.0 has black 26.5.1 / flake8 7.3.0. black 26 reformats black 22 output | Format with the versions of the super-linter on the branch being committed to; see the pre-commit rule below |
+| `frontend/tsconfig.json` has `"files": []` and only project references | `tsc --noEmit` on it checks 0 files and passes any type error; `tsc -b` checks both referenced projects |
+| setup-uv has no floating major tags since v8; coverage-comment has no `@v4` | Pin every `uses:` to the release commit SHA with the exact version as a comment |
+| CodeQL `init` and `analyze` must run the same version; a split Dependabot bump fails the analyze post step ("configuration file for version 3.x, but running version 4.x") | Dependabot groups `github/codeql-action` |
+| The mypy result depended on which SQLAlchemy stub package installed last (D-04) | Remove both stub packages before making mypy blocking (Q12), and prove 0 errors in two fresh venvs |
+
+### Tools
+
+| Tool | What it does |
+|---|---|
+| `baseline/ci/run_superlinter.sh <base-branch> <log> [image]` | super-linter in Podman (image pinned by digest) on a clean clone of HEAD, with the env of the workflow's super-linter step; `DEFAULT_BRANCH` becomes `<base-branch>` |
+| `baseline/ci/superlinter_findings.py <log>` | Groups a log's findings by linter and mentioned path, split into `analysis/` and everything else |
+| `uvx --from actionlint-py actionlint` | Workflow syntax and expression checks |
+| `uvx zizmor --offline .github/workflows/ .github/dependabot.yml` | Workflow security audit (pins, permissions, credentials) |
+| `podman run --rm --entrypoint sh <image> -c 'prettier --check …'` | Prettier in super-linter's own version (YAML_PRETTIER) |
+
+### Recipe
+
+1. **Before state:** CI of the previous phase, the local backend and frontend gates, and a local super-linter run of the **new** version on the unchanged branch. That run is the inventory of what the upgrade will flag.
+2. **Actions majors** as one commit: release SHAs with version comments; download-artifact and upload-artifact together; CodeQL `init` and `analyze` on the same SHA. Check: actionlint and zizmor clean, `persist-credentials: false` and the permission blocks intact.
+3. **super-linter major** as its own commit: drop removed variables; keep `DEFAULT_BRANCH` on the PR target; disable or exclude per linter, with the reason as a YAML comment next to it.
+4. **Make the code pass before making the gate blocking:** D-04/D-05 for mypy, the single ESLint error, black/flake8 in the linter's versions. Formatting goes in its own commit; prove it with identical ASTs, identical pytest tables and a 0-difference golden master.
+5. **Gates commit:** remove `continue-on-error`; fix the type-check command.
+6. **Run `run_superlinter.sh`** until it exits 0. Triage every remaining finding: fix it in files the uplift touches anyway, or disable or exclude with a reason. Anything that needs changes outside the uplift's scope stops the phase.
+7. **Positive control per blocking gate:** a deliberate error, the exact CI command, a non-zero exit, then the revert. super-linter's control is a commit on a throwaway branch that is deleted afterwards and never pushed. Also check from the parsed YAML that no step or job swallows the exit code.
+
+### Before every commit (from Phase 3 on)
+
+- **black and flake8, in the branch's super-linter versions** (v9: `uvx --python 3.13 black==26.5.1`, `uvx --from flake8==7.3.0 flake8` with `max-line-length = 120`, `extend-ignore = E203`), on every new or changed Python file, including tools under `analysis/`.
+- **Markdown:** every line of a new or changed file is at most 400 characters.
+- **Workflows:** actionlint, zizmor and Prettier as above.
+
+### Done means (Phase 3)
+
+| Check | Expected |
+|---|---|
+| Every `uses:` | pinned to a commit SHA with the exact version as a comment |
+| Top-level `permissions` | read-only in every workflow; write grants only at job level |
+| mypy in two fresh venvs synced like CI | 0 errors in both, identical freezes |
+| pytest per test, golden master, frontend gates and e2e | identical to the before state |
+| Positive controls | non-zero exit for mypy, ESLint, `tsc -b` and super-linter |
+| `run_superlinter.sh` at the tip | exit 0 |
+| Draft PR | all six workflows green, duration recorded |
+
+### Errors hit, and what resolved them
+
+| Symptom | Cause | Resolution |
+|---|---|---|
+| FATAL "Set VALIDATE_JAVASCRIPT_ES to either true or false" | YAML `false` became Python `False` | Lowercase booleans in the env file |
+| Local run lints `node_modules` and `dist` | It ran on the working tree | Clean clone of HEAD |
+| `^analysis/` excludes nothing | v9 matches absolute paths | `(^\|/)analysis/` |
+| Checkov CKV2_GHA_1 on `codeql.yml` and `super-linter.yml` | No top-level `permissions` | Top-level `contents: read` |
+| black 26 reformats files formatted with black 22 | super-linter v9 bundles black 26.5.1 | Format with the branch linter's versions |
+| flake8 E501 on a `noqa` comment carrying its own reason | The reason made the line too long | Reason on comment lines above; bare `# noqa: <code>` on the reported line |
+| zizmor clean, but the exit criterion "top-level read-only" failed for `dependency-review.yml` | `pull-requests: write` at workflow level | Moved to the job (`5c46f21`) |

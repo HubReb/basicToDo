@@ -82,7 +82,8 @@ C4Container
 
 **Ordering method: build-graph leaf-first, as for a same-stack uplift.** The graph has three independent units, and each has its own recipe: backend (Python/uv), frontend (Node/npm) and CI (workflows). The three leaf-first overrides were each evaluated against the evidence:
 
-1. **Is the test harness a prerequisite phase? No.** `DELTA_CATALOG.md` §B shows the existing pytest, vitest and Playwright suites **run unchanged on the target**. I re-ran this independently: 433 passed / 1 skipped on the target backend; frontend `tsc -b`, vitest 13/13 and build all green. The three small harness changes (D-06, D-17, D-18) are backward-compatible and land as **prerequisite steps inside** Phases 1 and 2.
+1. **Is the test harness a prerequisite phase? No.** `DELTA_CATALOG.md` §B shows the existing pytest, vitest and Playwright suites **run unchanged on the target**. I re-ran this independently: 433 passed / 1 skipped on the target backend; frontend `tsc -b`, vitest 13/13 and build all green.
+   The three small harness changes (D-06, D-17, D-18) are backward-compatible and land as **prerequisite steps inside** Phases 1 and 2.
 2. **Coordinated cuts.** Each lands as one indivisible step inside its phase:
    - **C1:** fastapi + starlette + advisory floors (Phase 1).
    - **C2:** vite 8 + plugin-react 6; Vitest 5 / jsdom 30 / jest-dom 7 behind the Node bump; TS 6 behind D-17 (Phase 2).
@@ -102,9 +103,11 @@ All migration edits happen in a git-tracked working copy at **`modernized/basict
 - **Baseline:** `a2d59f1` (2025-11-29) is the **intended baseline for this pass**. `main` on GitHub is 128 commits ahead, including the merged `002-modernize-fullstack` work. The owner has ruled `main` **a separate line of work and out of scope**; preflight and the analysis are **not** re-run against it. (`a2d59f1` is verified as an ancestor of `main`.)
 - **Repository:** everything stays in `HubReb/basicToDo`. **Nothing touches `main`.**
 - **Base branch `plugin/uplift-basictodo/base`**, created from `a2d59f1`. Git cannot hold both `plugin/uplift-basictodo` and `plugin/uplift-basictodo/phase-N` (a ref-name conflict), hence the `/base` suffix. Its first two commits:
-  1. **CI safety first.** The same SEC-005/SEC-006 fix the owner applies on `main` (for example, a cherry-pick of that commit), plus `plugin/uplift-basictodo/base` added to the `pull_request` branch filters of all six workflows. This is needed because push-triggered workflows (python-app, frontend, e2e) run the workflow files *of the pushed commit*, so a fix on `main` alone does not protect branches based on `a2d59f1`.
+  1. **CI safety first.** The same SEC-005/SEC-006 fix the owner applies on `main` (for example, a cherry-pick of that commit), plus `plugin/uplift-basictodo/base` added to the `pull_request` branch filters of all six workflows.
+     This is needed because push-triggered workflows (python-app, frontend, e2e) run the workflow files *of the pushed commit*, so a fix on `main` alone does not protect branches based on `a2d59f1`.
      - **As built (`00d0d18`, 2026-10-05):** a cherry-pick of `66f4dbe`, the fix merged to `main` in PR #100 as `04c4cfb`. It applied cleanly on `a2d59f1`. Then the six `pull_request` filters were extended.
-     - **One addition beyond the plan:** super-linter's `DEFAULT_BRANCH` is now `${{ github.base_ref || 'main' }}`, no longer a hard-coded `"main"`. super-linter v4 picks changed files with `git diff DEFAULT_BRANCH...HEAD`. Against `main`, the merge base of every phase PR would be `a2d59f1`, so each PR would lint the whole analysis commit as well. Against the PR target, it lints only the phase's own changes.
+     - **One addition beyond the plan:** super-linter's `DEFAULT_BRANCH` is now `${{ github.base_ref || 'main' }}`, no longer a hard-coded `"main"`. super-linter v4 picks changed files with `git diff DEFAULT_BRANCH...HEAD`. Against `main`, the merge base of every phase PR would be `a2d59f1`, so each PR would lint the whole analysis commit as well.
+       Against the PR target, it lints only the phase's own changes.
   2. **The analysis artifacts** from `analysis/basictodo/`. All 14 analysis files, scrubbed of absolute local paths, the hostname, the connected-server list and OS details, with the scrub diff shown to the owner before committing (Q11b).
 - **Phase branches `plugin/uplift-basictodo/phase-N`:** phase 1 branches from `base`; phase N branches from phase N−1.
 - **PRs:** each phase branch gets a **draft PR against `plugin/uplift-basictodo/base`**, labelled **"do not merge, eval"**. Because `base` is in every `pull_request` filter, all six workflows run on the phase's own state rather than on a merge with `main`.
@@ -168,7 +171,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] Playwright e2e passes 13/13 against the upgraded backend.
 - [x] `pip-audit` on the target lock reports **0** advisories in runtime dependencies. _(22 in 9 packages at `72cf484`, with the dev tools still in the runtime; 19 in 7 after the hygiene commit `ddad5ec`; 0 after the bump. The bump adds 19 runtime pins from `fastapi[standard]` 0.142, OpenTelemetry among them; see `UPLIFT_NOTES.md`.)_
 - [x] The telemetry behaviour chosen in Q3 is proven by a test that sets `OTEL_EXPORTER_OTLP_ENDPOINT` and asserts no export when "off" was chosen. _(`test_telemetry_export.py`, with a control that does export.)_
-- [x] **Once the owner gives the go to push** (§3): `plugin/uplift-basictodo/base` and `plugin/uplift-basictodo/phase-1` are pushed, and phase-1's **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval") is open (Q11). python-app and e2e are green on it, and the results of the other four workflows are recorded in `BASELINE.md`. _(Draft PR #113, 2026-10-05. GitHub rejects commas in label names, so the label is `do not merge: eval`; the title carries "(do not merge, eval)". Frontend, CodeQL and dependency review are green; Super-Linter is red, with the findings attributed in `BASELINE.md`.)_
+- [x] **Once the owner gives the go to push** (§3): `plugin/uplift-basictodo/base` and `plugin/uplift-basictodo/phase-1` are pushed, and phase-1's **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval") is open (Q11). python-app and e2e are green on it, and the results of the other four workflows are recorded in `BASELINE.md`.
+  _(Draft PR #113, 2026-10-05. GitHub rejects commas in label names, so the label is `do not merge: eval`; the title carries "(do not merge, eval)". Frontend, CodeQL and dependency review are green; Super-Linter is red, with the findings attributed in `BASELINE.md`.)_
 - [x] **CI duration measured on that PR and recorded in `BASELINE.md`** (Q10). _(About 3 minutes of wall clock, 536 s of runner time.)_
 - [x] `analysis/basictodo/PLAYBOOK.md` (backend section) is written. `DELTA_CATALOG.md` has the pilot's surprises folded in (§G). **This brief is revised if the pilot changed the picture.** _(See "Pilot findings" below.)_
 
@@ -247,25 +251,28 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 **Scope:**
 - `.github/workflows/*.yml`, except the `node-version` lines, which Phase 2 owns.
 - **Deltas:** D-25, D-26 (pin exact versions; there are no floating major tags) and D-27 (super-linter v9 under its new organisation).
-- **Security fixes in the same files.** The core of SEC-005/SEC-006 is **already applied on `base` as its first commit** (pulled forward, §3). The two items below are done in `00d0d18`; the pins are SHAs of the tags as they resolved on 2026-10-05. Phase 3 verifies them, keeps them intact through the major bumps (D-26) and keeps super-linter's `DEFAULT_BRANCH` pointed at the PR target when it moves to v9 (D-27):
+- **Security fixes in the same files.** The core of SEC-005/SEC-006 is **already applied on `base` as its first commit** (pulled forward, §3). The two items below are done in `00d0d18`; the pins are SHAs of the tags as they resolved on 2026-10-05.
+  Phase 3 verifies them, keeps them intact through the major bumps (D-26) and keeps super-linter's `DEFAULT_BRANCH` pointed at the PR target when it moves to v9 (D-27):
   - **SEC-005:** top-level `permissions: contents: read`; the coverage-comment job isolated with `pull-requests: write`; `persist-credentials: false`.
   - **SEC-006:** every `uses:` pinned to an exact version or SHA, with Dependabot configured for `github-actions`.
+- **Pulled forward by Q12:** D-04 removes `sqlalchemy-stubs`, `sqlalchemy2-stubs` and the `[mypy]` extra; this does not include D-03b. D-05 covers the mypy 2.x fixes and the stale `type: ignore`s. Both land **before** mypy becomes blocking.
 - **Gate changes per Q9:**
-  - mypy and ESLint become blocking; **(mypy: see Q12, since D-04 makes mypy nondeterministic until the stub packages are removed)**
+  - mypy and ESLint become blocking; **(mypy: after D-04 and D-05, per Q12)**
   - pylint runs over all of `backend/app`, not `app/*py`;
   - the `tsc --noEmit` step stops checking zero files.
 
 **Entry criteria:**
-- [ ] Phase 1 exit criteria are met; the Phase 1 mypy error count is known.
+- [x] Phase 1 exit criteria are met; the Phase 1 mypy error count is known. _(3, install-order dependent: `BASELINE.md`)_
 - [x] Q9 is ticked (gates accepted as recommended).
-- [ ] Phase 2 has landed its `node-version` change, or the two phases agree in writing (in this file) that Phase 3 edits around it.
+- [x] Phase 2 has landed its `node-version` change, or the two phases agree in writing (in this file) that Phase 3 edits around it. _(`d1709cb`, PR #114)_
 
 **Exit criteria:**
 - [ ] All six workflows are green on the `plugin/uplift-basictodo/phase-3` **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval"; Q11). They trigger because the base branch's first commit added it to every `pull_request` filter.
-- [ ] Every `uses:` is pinned to an exact version or SHA.
-- [ ] Top-level permissions are read-only.
-- [ ] Dependabot for `github-actions` is configured.
-- [ ] The gates behave as decided in Q9.
+- [x] Every `uses:` is pinned to an exact version or SHA. _(All 29 `uses:` lines: release commit SHA plus the exact version as a comment; `2ee51ba`, `d2e284b`.)_
+- [x] Top-level permissions are read-only. _(All six workflows: `contents: read`; write grants only at job level. `d2e284b` for `codeql.yml` and `super-linter.yml`, `5c46f21` for `dependency-review.yml`.)_
+- [x] Dependabot for `github-actions` is configured. _(Since `00d0d18`; the `codeql-action` group from `main` added in `fecb197`.)_
+- [ ] The gates behave as decided in Q9. _(Locally proven by a positive control per blocking gate, `BASELINE.md`; the CI job log is checked after the push.)_
+- [x] **Q12:** mypy reports **0 errors in two independently synced fresh venvs**, with both stub packages and the `[mypy]` extra gone. _(`36765cb`, `a268203`; at the tip `4112dc5` in two fresh venvs synced like CI, identical freezes: `BASELINE.md`.)_
 - [ ] **The CI duration is measured and recorded in `BASELINE.md`.** This closes the "don't know" from Check 0.
 
 **Relative scale:** **S**. CI is 0.30 KSLOC of YAML, index 0.77, 14%.
@@ -290,8 +297,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
   - the DB fixtures in `backend/tests/conftest.py`;
   - `pyproject.toml`.
 - **One authoritative** SQLAlchemy `DeclarativeBase` + `Mapped[]` model for `toDo`. It replaces the declarative `ToDoORM`, the imperative `to_do_table` and the imperative mapping onto the `ToDoEntryData` dataclass (TD-5).
-- **`sqlalchemy.Uuid`** replaces `sqlalchemy_utils.UUIDType` (D-03b; storage verified identical in both directions on SQLite). `sqlalchemy-utils` and both stub packages are removed (D-04).
-- **Housekeeping deltas:** D-05 (mypy cleanup), D-13 and D-14.
+- **`sqlalchemy.Uuid`** replaces `sqlalchemy_utils.UUIDType` (D-03b; storage verified identical in both directions on SQLite). `sqlalchemy-utils` is removed. Both stub packages are already gone in Phase 3 (D-04, moved there by Q12).
+- **Housekeeping deltas:** D-13 and D-14. D-05 (mypy cleanup) moved to Phase 3 (Q12).
 - **Alembic** is initialised with a baseline revision that reproduces the current DDL exactly (CHECK constraints, index).
 - `init_db.py`'s import root is normalised to `backend.app.*`.
 - **SQLAlchemy stays capped `<2.1`** (Q4). Cut C3 (2.1) is deferred to a later step. The `sqlalchemy.Uuid` swap **stays in scope**, because it is what makes 2.1 possible later.
@@ -337,7 +344,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - **The keep-or-fix decisions in Q6** are applied as ordinary reviewed changes in `modernized/basictodo-uplifted/`. No modernize command performs intentional behaviour change, which is exactly why each change is gated on a recorded decision.
 
 **Scope (as decided in §7):**
-- **Fix** (Q6): 6.1 blocklist removed; 6.2 API-level length and control-character validation; 6.3 consistent status codes; 6.4 pagination bounds, newest-first order and `total`, with the UI showing newest first; 6.5 done-plus-edit; 6.6 UTC timestamps and a refreshed `updated_at`, **including the data migration for existing rows**; 6.7 no placeholder description; 6.9 delete toast after server confirmation.
+- **Fix** (Q6): 6.1 blocklist removed; 6.2 API-level length and control-character validation; 6.3 consistent status codes; 6.4 pagination bounds, newest-first order and `total`, with the UI showing newest first; 6.5 done-plus-edit; 6.6 UTC timestamps and a refreshed `updated_at`, **including the data migration for existing rows**;
+  6.7 no placeholder description; 6.9 delete toast after server confirmation.
 - **Keep, pinned by characterization tests** (Q6): 6.8 lax `done` coercion; 6.10 last-write-wins and nil UUID accepted.
 - **P0 unchanged** (Q7): client-supplied ids (RULE-008) and soft delete without purge or restore (RULE-031). **Soft-delete semantics are documented** in the README and API docs.
 - **Security** (Q8): authentication and multi-user are **out of scope**. All other recommended fixes are in scope:
@@ -433,8 +441,12 @@ These are the **P0 rules** from `BUSINESS_RULES.md`. basicToDo moves no money an
 
 | Rule | Behaviour that must stay equivalent | Contract tests (minimum) | Confidence | Blocker? |
 |---|---|---|---|---|
-| **RULE-008**: a ToDo id is a client-supplied UUID and must be unique; a duplicate is rejected as a conflict (409) | `POST /todo` requires a client-supplied UUID `id`: missing or non-UUID gives 422. Re-using an existing id, **including the id of a soft-deleted todo**, gives **409 "ToDo already exists"**. | (a) create with a new UUID → 200 and the same id echoed; (b) same id again → 409; (c) delete, then re-create the same id → 409; (d) missing or malformed id → 422 | High | **No.** Q7: keep client-supplied ids (decided). |
-| **RULE-031**: delete is a soft delete; the row is kept and flagged deleted, and cannot be restored | `DELETE /todo/{id}` sets `deleted=true` and keeps the row. A second delete → 404. The deleted todo is invisible to list, get and update (RULE-010). There is no restore path. | (a) delete → 200 and the row still exists with `deleted=1`; (b) delete again → 404; (c) GET, PUT and list exclude it; (d) row count unchanged after delete | High | **No.** Q7: keep soft delete, no purge or restore; document it (decided). |
+| **RULE-008**: a ToDo id is a client-supplied UUID and must be unique; a duplicate is rejected as a conflict (409) | `POST /todo` requires a client-supplied UUID `id`: missing or non-UUID gives 422. Re-using an existing id, **including the id of a soft-deleted todo**, gives **409 "ToDo already exists"**. | (a)–(d), listed below the table | High | **No.** Q7: keep client-supplied ids (decided). |
+| **RULE-031**: delete is a soft delete; the row is kept and flagged deleted, and cannot be restored | `DELETE /todo/{id}` sets `deleted=true` and keeps the row. A second delete → 404. The deleted todo is invisible to list, get and update (RULE-010). There is no restore path. | (a)–(d), listed below the table | High | **No.** Q7: keep soft delete, no purge or restore; document it (decided). |
+
+**Contract tests (minimum):**
+- **RULE-008:** (a) create with a new UUID → 200 and the same id echoed; (b) same id again → 409; (c) delete, then re-create the same id → 409; (d) missing or malformed id → 422.
+- **RULE-031:** (a) delete → 200 and the row still exists with `deleted=1`; (b) delete again → 404; (c) GET, PUT and list exclude it; (d) row count unchanged after delete.
 
 Neither P0 rule is below High confidence, so **no phase is blocked on SME confirmation of the contract**. Q7 decided to keep both rules unchanged in this pass. The only addition is documentation of RULE-031.
 
@@ -449,8 +461,10 @@ Neither P0 rule is below High confidence, so **no phase is blocked on SME confir
 | 1 Backend (pilot) | **Yes**: an HTTP golden master on the legacy lock, including error paths, headers and quirks | **Yes**: the P0 tests for RULE-008/031 | **Yes**: the same pytest suite and golden-master replay on legacy vs target servers | — | — | Code is unchanged and dependencies move, so the risk is silent behavioural drift from the libraries. Only a differential test catches that. |
 | 2 Frontend | Yes: bundle, test and audit baseline | — | **Yes**: vitest, `tsc -b`, build and e2e on F0 → F1 → F2 | — | **Yes**: screenshot review of the 4 flows | The deltas are build-tooling and visual (Lightning CSS, Chakra). The suites prove function; only eyes prove appearance. |
 | 3 CI | — | — | Run old and new workflows on the same commit (a PR branch) | — | Yes: review the permission and pinning diff | Workflow changes can only be validated by running them. Least privilege is a review question. |
-| 4 Data layer | **Yes**: repository- and builder-layer tests, the DDL snapshot, the sample DB | **Yes**: P0 | **Yes**: the full suite and golden master vs the Phase 1 target baseline; the legacy DB in both directions | **Yes**: UUID and timestamp round-trips through the new model | — | This touches persisted data, so equivalence of *storage* matters as much as of behaviour. Property tests cover the value space a fixed fixture misses. |
+| 4 Data layer | **Yes**: repository- and builder-layer tests, the DDL snapshot, the sample DB | **Yes**: P0 | **Yes**: the full suite and golden master vs the Phase 1 target baseline; the legacy DB in both directions | **Yes**: UUID and timestamp round-trips through the new model | — | Storage equivalence (note below the table) |
 | 5 Hardening + fixes | **Yes**: every Q6 fix flips its named test; every keep stays pinned | **Yes**: OpenAPI diff, P0 | — (behaviour changes on purpose) | Optional: fuzz the validation boundaries (length, control characters) | **Yes**: confirm the visible changes in §4 with the owner | Intentional change needs proof that *only* the decided behaviours changed. |
+
+**Phase 4, why:** This touches persisted data, so equivalence of *storage* matters as much as of behaviour. Property tests cover the value space a fixed fixture misses.
 
 ## 7. Open Questions
 
@@ -521,18 +535,22 @@ Neither P0 rule is below High confidence, so **no phase is blocked on SME confir
     - Phase PRs **against the base branch**, with the base branch added to the `pull_request` triggers: chosen.
     - For the base branch: **push the branch only, no PR**.
     - _"Do not push anything yet. The repository is public and the CI findings SEC-005/SEC-006 still apply on main. I will fix those on main first."_
-  - _Superseded:_ _"keep everything in HubReb/basicToDo. Push each phase to its own branch (plugin/uplift-basictodo/phase-N) and open a draft PR against main that is never merged, labelled "do not merge, eval". This triggers all six workflows; main stays untouched."_ Superseded because `main` diverged by 128 commits on the very files Phases 1–3 change. Draft PRs against `main` would very likely conflict, which means no PR workflows run, and CI would test a mix with `main` rather than the phase.
+  - _Superseded:_ _"keep everything in HubReb/basicToDo. Push each phase to its own branch (plugin/uplift-basictodo/phase-N) and open a draft PR against main that is never merged, labelled "do not merge, eval". This triggers all six workflows; main stays untouched."_ Superseded because `main` diverged by 128 commits on the very files Phases 1–3 change.
+    Draft PRs against `main` would very likely conflict, which means no PR workflows run, and CI would test a mix with `main` rather than the phase.
   - _Superseded first answer:_ _"Do not target main. Use a separate branch plugin/uplift-basictodo, one PR per phase against that branch."_
   - Applied in §3 (baseline and delivery path) and in each phase's criteria.
   - [x] **Q11b: content of the analysis-artifacts commit.**
-    - **Decision:** _"Commit analysis/basictodo/: PREFLIGHT.md, ASSESSMENT.md, ARCHITECTURE.mmd, TOPOLOGY.html, topology.json, extract_topology.py, call-graph.mmd, data-lineage.mmd, critical-path.mmd, BUSINESS_RULES.md, DATA_OBJECTS.md, rules_workflow_result.json, DELTA_CATALOG.md, MODERNIZATION_BRIEF.md. Before committing, scrub all files: absolute local paths (/home/..., /tmp/claude-*, ~/.cache, ~/.claude), the hostname, the list of connected MCP servers in PREFLIGHT.md Check 5, and OS details. Replace with neutral placeholders such as <workspace>. Show me the scrub diff before the commit."_
+    - **Decision:** _"Commit analysis/basictodo/: PREFLIGHT.md, ASSESSMENT.md, ARCHITECTURE.mmd, TOPOLOGY.html, topology.json, extract_topology.py, call-graph.mmd, data-lineage.mmd, critical-path.mmd, BUSINESS_RULES.md, DATA_OBJECTS.md, rules_workflow_result.json, DELTA_CATALOG.md, MODERNIZATION_BRIEF.md.
+      Before committing, scrub all files: absolute local paths (/home/..., /tmp/claude-*, ~/.cache, ~/.claude), the hostname, the list of connected MCP servers in PREFLIGHT.md Check 5, and OS details. Replace with neutral placeholders such as <workspace>. Show me the scrub diff before the commit."_
     - The scrub is applied to a staging copy. The working files in `analysis/basictodo/` stay unscrubbed for local use.
 
-- [ ] **Q12: mypy gate vs D-04 (raised by the Phase 1 pilot, 2026-10-05).** Q9 makes mypy blocking in Phase 3. While both SQLAlchemy stub packages are installed, the mypy result depends on install order (D-04, `DELTA_CATALOG.md` §G), so a blocking gate would fail at random. The options:
+- [x] **Q12: mypy gate vs D-04 (raised by the Phase 1 pilot, 2026-10-05).** Q9 makes mypy blocking in Phase 3. While both SQLAlchemy stub packages are installed, the mypy result depends on install order (D-04, `DELTA_CATALOG.md` §G), so a blocking gate would fail at random. The options:
     - (a) pull the stub removal (D-04, without the D-03b `Uuid` swap) into Phase 3, before mypy becomes blocking (recommended; it is a dev-only manifest change);
     - (b) keep mypy non-blocking until Phase 4 has removed the stubs;
     - (c) pin the install order some other way (not recommended; fragile).
-    - **Decision:** _open_
+    - **Decision (2026-10-05):** _"Q12: option (a), extended: pull D-04 (stub removal, without D-03b) AND D-05 (mypy fixes, stale ignores) into Phase 3, before mypy becomes blocking. Exit check: mypy reports 0 errors in two independently synced fresh venvs. Check first whether the mypy config references the SQLAlchemy mypy plugin from the [mypy] extra."_
+    - **Plugin check, done 2026-10-05:** no. `[tool.mypy]` in `pyproject.toml` has no `plugins` entry, and there is no `mypy.ini` or `setup.cfg`. Neither `sqlalchemy.ext.mypy.plugin` nor `sqlmypy` is referenced anywhere. The `sqlalchemy[mypy]` extra only pulls in `mypy`, which is also a direct dev dependency.
+      So dropping the extra and both stub packages removes no plugin configuration; mypy then uses SQLAlchemy 2.0's inline types.
 
 ## 8. Approval Block
 
@@ -542,8 +560,12 @@ Approval covers: Phase 1 only
 
 Approved by: the owner    Date: 2026-10-05
 Approval covers: Phase 2
+
+Approved by: the owner    Date: 2026-10-05
+Approval covers: Phase 3
 ```
 
 - **Phase 1** was approved on 2026-10-03 and executed on 2026-10-05: draft PR #113 is open, the exit criteria are met, `PLAYBOOK.md` is written, and the brief is revised with the pilot findings.
 - **Phase 2** was approved on 2026-10-05, after the pilot. Decision, verbatim: _"1. go"_, in answer to "Freigabe für Phase 2".
-- **Phases 3–5** still need their own approval, and Q12 must be decided before Phase 3.
+- **Phase 3** was approved on 2026-10-05 after Phase 2 (PR #114) and the decision on Q12. Decision, verbatim: _"Phase 3: go (Phase 3 only)."_
+- **Phases 4–5** still need their own approval.

@@ -1,0 +1,383 @@
+image: ghcr.io/super-linter/super-linter@sha256:496fe2e10c487771d42eede90cacfc767324db5ac9ddc9f3b2f490afa0a1db73
+env from workflow:
+  VALIDATE_ALL_CODEBASE=false
+  DEFAULT_BRANCH=plugin/uplift-basictodo/base
+  VALIDATE_TYPESCRIPT_ES=false
+  VALIDATE_TSX=false
+  VALIDATE_JAVASCRIPT_ES=false
+  VALIDATE_BIOME_FORMAT=false
+  VALIDATE_BIOME_LINT=false
+  VALIDATE_TYPESCRIPT_PRETTIER=false
+  VALIDATE_JAVASCRIPT_PRETTIER=false
+  VALIDATE_JSX_PRETTIER=false
+  VALIDATE_PYTHON_PYLINT=false
+  VALIDATE_JSCPD=false
+  VALIDATE_PYTHON_ISORT=false
+  VALIDATE_PYTHON_RUFF=false
+  VALIDATE_PYTHON_RUFF_FORMAT=false
+  FILTER_REGEX_EXCLUDE=(.*tsconfig.*\.json|(^|/)analysis/|(^|/)UPLIFT_NOTES\.md$|(^|/)uv\.lock$|(^|/)package-lock\.json$)
+linted commit: 9272b59 against plugin/uplift-basictodo/base (bd2a0b9)
+2026-10-05 19:07:14 [INFO]   --------------------------------------------------------------------------------
+
+                              /@@#///////@@/(@//@%/(@.@(       @@
+                          @@//////////////////////////////#*  @@@
+                        @////@//(///////////@@@@@///@//@/@**//@@(
+                      @///////@///////////////@@@@    (           @,
+                     @/(&/@////////////////////                     @
+                    @////////////////////////@@                      @
+                  @%////////(//////////%/////&@            @@       *,@           ______________
+             @@@@@/@/#/////(&//////////////////                       .@         /              \
+        *@@@@@.    .%///(//@//////////////////&.   .@@,                 @%      / Don't mind me  \
+      @@%           .&@&&/@.@//&/////(//////////    @@@@@@@@@         .. &@    / I'm just looking \
+    @@%               @@@@@   @&/////////////////#   @/       V  @@/ ,@@@ @   <  for some trash... |
+@@@%                   @@@@        .%@@@@//////#@ @   @@         @     .,.     \__________________/
+                                          @@@/@(  (@@@@% @/\      %
+                                           @@@@(    .     .@@/\   #
+                                             @                  %@%
+
+--------------------------------------------------------------------------------
+2026-10-05 19:07:15 [INFO]   ---------------------------------------------
+2026-10-05 19:07:15 [INFO]    Super-linter
+2026-10-05 19:07:15 [INFO]    - Image Creation Date: 2026-10-01T14:41:33Z
+2026-10-05 19:07:15 [INFO]    - Image Revision: 2da136927bd4a73596db63044b504547c62cb854
+2026-10-05 19:07:15 [INFO]    - Image Version: 9.0.0
+2026-10-05 19:07:15 [INFO]   ---------------------------------------------
+2026-10-05 19:07:15 [INFO]   ---------------------------------------------
+2026-10-05 19:07:15 [INFO]    Super-Linter source code can be found at:
+2026-10-05 19:07:15 [INFO]    - https://github.com/super-linter/super-linter
+2026-10-05 19:07:15 [INFO]   ---------------------------------------------
+2026-10-05 19:07:15 [INFO]   - Validating changed files in code base...
+2026-10-05 19:07:15 [INFO]   This version of Super-linter includes the following tools:
+[ANSIBLE] ansible-lint: 26.8.0
+[ARM] arm-ttk: 0.27
+[BASH] shellcheck: 0.11.0
+[BASH_EXEC] bash-exec: Version command not supported
+[BIOME_FORMAT] biome: 2.5.14
+[BIOME_LINT] biome: 2.5.14
+[CHECKOV] checkov: 3.3.19
+[CLANG_FORMAT] clang-format: 22.1.3
+[CLOJURE] clj-kondo: v2026.08.04
+[CLOUDFORMATION] cfn-lint: 1.56.3
+[COFFEESCRIPT] coffeelint: 5.2.11
+[CPP] cpplint: 2.0.2
+[CSHARP] dotnet: 10.0.401
+[CSS] stylelint: 17.15.0
+[CSS_PRETTIER] prettier: 3.9.8
+[DART] dart: 3.13.4
+[DOCKERFILE_HADOLINT] hadolint: 2.15.1
+[DOTNET_SLN_FORMAT_ANALYZERS] dotnet: 10.0.401
+[DOTNET_SLN_FORMAT_STYLE] dotnet: 10.0.401
+[DOTNET_SLN_FORMAT_WHITESPACE] dotnet: 10.0.401
+[EDITORCONFIG] editorconfig-checker: v4.0.2
+[ENV] dotenv-linter: 4.0.0
+[GITHUB_ACTIONS] actionlint: 1.7.12
+[GITHUB_ACTIONS_ZIZMOR] zizmor: 1.30.1
+[GITLEAKS] gitleaks: v8.30.1
+[GIT_COMMITLINT] commitlint: @commitlint/cli@21.2.3
+[GIT_MERGE_CONFLICT_MARKERS] git-merge-conflict-markers: 1.0.0
+[GOOGLE_JAVA_FORMAT] google-java-format: 1.36.1
+[GO] golangci-lint: 2.13.2
+[GO_MODULES] golangci-lint: 2.13.2
+[GO_RELEASER] goreleaser: 2.18.2
+[GRAPHQL_PRETTIER] prettier: 3.9.8
+[GROOVY] npm-groovy-lint: 18.0.0
+[HTML] htmlhint: 1.9.2
+[HTML_PRETTIER] prettier: 3.9.8
+[JAVASCRIPT_ES] eslint: v9.39.4
+[JAVASCRIPT_PRETTIER] prettier: 3.9.8
+[JAVA] checkstyle: 14.1.0
+[JSCPD] jscpd: 5.3.0
+[JSONC] eslint: v9.39.4
+[JSONC_PRETTIER] prettier: 3.9.8
+[JSON] eslint: v9.39.4
+[JSON_PRETTIER] prettier: 3.9.8
+[JSX] eslint: v9.39.4
+[JSX_PRETTIER] prettier: 3.9.8
+[KOTLIN] ktlint: 1.8.0
+[KUBERNETES_KUBECONFORM] kubeconform: v0.8.0
+[LATEX] chktex: v1.7.10
+[LUA] lua: 5.4.8
+[MARKDOWN] markdownlint: 0.49.1
+[MARKDOWN_PRETTIER] prettier: 3.9.8
+[NATURAL_LANGUAGE] textlint: v15.8.0
+[OPENAPI] spectral: 6.16.3
+[PERL] perl: (v5.42.2)
+[PHP_BUILTIN] php: 8.5.11
+[PHP_PHPCS] phpcs: 4.0.4
+[PHP_PHPSTAN] phpstan: 2.2.16
+[PHP_PSALM] psalm: 6.18.1@79465b8dc674127f442ae31ea114c11bc4dd7ed6
+[POWERSHELL] pwsh: 7.6.6
+[PRE_COMMIT] pre-commit: 4.6.2
+[PROTOBUF] protolint: 0.57.0(6da4902)
+[PYTHON_BLACK] black: 26.5.1
+[PYTHON_FLAKE8] flake8: 7.3.0
+[PYTHON_ISORT] isort: 9.0.1
+[PYTHON_MYPY] mypy: 2.3.1
+[PYTHON_PYLINT] pylint: 4.0.8
+[PYTHON_RUFF] ruff: 0.16.8
+[PYTHON_RUFF_FORMAT] ruff: 0.16.8
+[RENOVATE] renovate-config-validator: 44.114.1
+[RUBY] rubocop: 1.91.0
+[RUST_2015] rustfmt: 1.9.0
+[RUST_2018] rustfmt: 1.9.0
+[RUST_2021] rustfmt: 1.9.0
+[RUST_2024] rustfmt: 1.9.0
+[RUST_CLIPPY] clippy: 0.1.96
+[R] R: 4.6.0
+[SCALAFMT] scalafmt: 3.11.5
+[SHELL_SHFMT] shfmt: v3.14.1
+[SNAKEMAKE_LINT] snakemake: 9.27.0
+[SNAKEMAKE_SNAKEFMT] snakefmt: 2.0.3
+[SPELL_CODESPELL] codespell: 2.4.3
+[SQLFLUFF] sqlfluff: 4.3.0
+[STATES] asl-validator: 4.0.0
+[TERRAFORM_FMT] terraform: 1.16.3
+[TERRAFORM_TFLINT] tflint: 0.64.0
+[TERRAGRUNT] terragrunt: v1.1.4
+[TRIVY] trivy: 0.74.0
+[TSX] eslint: v9.39.4
+[TYPESCRIPT_ES] eslint: v9.39.4
+[TYPESCRIPT_PRETTIER] prettier: 3.9.8
+[VUE] eslint: v9.39.4
+[VUE_PRETTIER] prettier: 3.9.8
+[XML] xmllint: 21309
+[YAML] yamllint: 1.38.0
+[YAML_PRETTIER] prettier: 3.9.8
+2026-10-05 19:07:15 [INFO]   The default branch for this repository is set to: plugin/uplift-basictodo/base
+2026-10-05 19:07:15 [INFO]   RUN_LOCAL has been set to: true. Bypassing GitHub Actions variables...
+2026-10-05 19:07:15 [INFO]   Initialized GITHUB_SHA to: 9272b59f2993331341037ede83cecc5b860d97bb
+2026-10-05 19:07:15 [INFO]   --------------------------------------------
+2026-10-05 19:07:15 [INFO]   Validating the configuration
+.git
+2026-10-05 19:07:16 [WARN]   Git commit message validation with commitlint is enabled, but no commitlint configuration file is available. Disabling commitlint. To suppress this message, either disable Git commit validation by setting VALIDATE_GIT_COMMITLINT to false in your Super-linter configuration, or provide a commitlint configuration file.
+2026-10-05 19:07:19 [INFO]   Building the list of files and directories to check
+2026-10-05 19:07:20 [INFO]   Successfully gathered list of files...
+2026-10-05 19:07:54 [INFO]   ----------------------------------------------
+2026-10-05 19:07:54 [INFO]   ----------------------------------------------
+2026-10-05 19:07:54 [NOTICE]   Successfully linted CHECKOV
+2026-10-05 19:07:54 [INFO]   Stdout contents for CHECKOV:
+------
+terraform_plan scan results:
+
+Passed checks: 0, Failed checks: 0, Skipped checks: 0, Parsing errors: 2
+
+github_actions scan results:
+
+Passed checks: 232, Failed checks: 0, Skipped checks: 0
+------
+2026-10-05 19:07:54 [NOTICE]   Successfully linted GITHUB_ACTIONS
+2026-10-05 19:07:54 [NOTICE]   Successfully linted GITHUB_ACTIONS_ZIZMOR
+2026-10-05 19:07:54 [INFO]   Stdout contents for GITHUB_ACTIONS_ZIZMOR:
+------
+No findings to report. Good job! (13 suppressed)
+------
+2026-10-05 19:07:54 [INFO]   Stderr contents for GITHUB_ACTIONS_ZIZMOR:
+------
+ INFO zizmor: 🌈 zizmor v1.30.1
+ WARN audit: zizmor: zizmor is running in offline mode by default; some audits and auto-fixes will not be available. see https://docs.zizmor.sh/usage/#operating-modes for details
+ INFO audit: zizmor: 🌈 completed /tmp/lint/.github/dependabot.yml
+ INFO audit: zizmor: 🌈 completed /tmp/lint/.github/workflows/codeql.yml
+ INFO audit: zizmor: 🌈 completed /tmp/lint/.github/workflows/dependency-review.yml
+ INFO audit: zizmor: 🌈 completed /tmp/lint/.github/workflows/e2e.yml
+ INFO audit: zizmor: 🌈 completed /tmp/lint/.github/workflows/frontend.yml
+ INFO audit: zizmor: 🌈 completed /tmp/lint/.github/workflows/python-app.yml
+ INFO audit: zizmor: 🌈 completed /tmp/lint/.github/workflows/super-linter.yml
+------
+2026-10-05 19:07:54 [NOTICE]   Successfully linted GITLEAKS
+2026-10-05 19:07:54 [INFO]   Stderr contents for GITLEAKS:
+------
+7:07PM INF scanned ~889 bytes (889 bytes) in 9.45ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~5098 bytes (5.10 KB) in 32.3ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~1832 bytes (1.83 KB) in 3.61ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~3511 bytes (3.51 KB) in 24.4ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~1904 bytes (1.90 KB) in 7.78ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~1354 bytes (1.35 KB) in 7.45ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~3770 bytes (3.77 KB) in 7.47ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~312 bytes (312 bytes) in 10.2ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~168 bytes (168 bytes) in 5.41ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~1975 bytes (1.98 KB) in 22.8ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~417 bytes (417 bytes) in 21.6ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~2154 bytes (2.15 KB) in 18.7ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~7605 bytes (7.61 KB) in 30.6ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~1469 bytes (1.47 KB) in 12.4ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~3061 bytes (3.06 KB) in 16.1ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~4481 bytes (4.48 KB) in 28.1ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~4246 bytes (4.25 KB) in 19.1ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~3087 bytes (3.09 KB) in 7.57ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~3805 bytes (3.81 KB) in 12.7ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~3129 bytes (3.13 KB) in 13.3ms
+7:07PM INF no leaks found
+7:07PM INF scanned ~3310 bytes (3.31 KB) in 9.04ms
+7:07PM INF no leaks found
+------
+2026-10-05 19:07:54 [NOTICE]   Successfully linted GIT_MERGE_CONFLICT_MARKERS
+2026-10-05 19:07:54 [INFO]   Stdout contents for GIT_MERGE_CONFLICT_MARKERS:
+------
+No merge conflicts found in /tmp/lint/.github/dependabot.yml /tmp/lint/.github/workflows/codeql.yml /tmp/lint/backend/app/business_logic/decorators.py /tmp/lint/backend/app/data_access/database.py /tmp/lint/.github/workflows/dependency-review.yml /tmp/lint/frontend/package.json /tmp/lint/backend/app/data_access/repository.py /tmp/lint/backend/app/main.py /tmp/lint/frontend/src/test/setup.ts /tmp/lint/.github/workflows/e2e.yml /tmp/lint/backend/app/models/todo.py /tmp/lint/pyproject.toml /tmp/lint/backend/tests/test_api/test_p0_contracts.py /tmp/lint/.github/workflows/frontend.yml /tmp/lint/backend/tests/test_api/test_telemetry_export.py /tmp/lint/backend/tests/test_builders/integration/test_todo_entry_builder_integration_consistency.py /tmp/lint/.github/workflows/python-app.yml /tmp/lint/backend/tests/test_builders/unit/test_tode_entry_builder_edge_cases.py /tmp/lint/backend/app/api/api.py /tmp/lint/.github/workflows/super-linter.yml /tmp/lint/frontend/e2e/smoke.spec.ts
+------
+2026-10-05 19:07:55 [NOTICE]   Successfully linted JSON
+2026-10-05 19:07:55 [NOTICE]   Successfully linted JSON_PRETTIER
+2026-10-05 19:07:55 [INFO]   Stdout contents for JSON_PRETTIER:
+------
+Checking formatting...
+All matched files use Prettier code style!
+------
+2026-10-05 19:07:55 [NOTICE]   Successfully linted PRE_COMMIT
+2026-10-05 19:07:55 [ERROR]   Errors found in PYTHON_BLACK
+2026-10-05 19:07:55 [ERROR]   Stdout contents for PYTHON_BLACK:
+------
+--- /tmp/lint/backend/app/main.py	2026-10-05 19:07:14.582342+00:00
++++ /tmp/lint/backend/app/main.py	2026-10-05 19:07:21.762427+00:00
+@@ -7,6 +7,6 @@
+ from backend.app.data_access.database import Base, engine
+ 
+ if __name__ == "__main__":
+     Base.metadata.create_all(bind=engine)
+     uvicorn.run("backend.app.api.api:app", host="0.0.0.0", port=8000, reload=True)
+-SUPERLINTER_CONTROL = 'black wants double quotes'
++SUPERLINTER_CONTROL = "black wants double quotes"
+------
+2026-10-05 19:07:55 [ERROR]   Stderr contents for PYTHON_BLACK:
+------
+would reformat /tmp/lint/backend/app/main.py
+
+Oh no! 💥 💔 💥
+1 file would be reformatted, 9 files would be left unchanged.
+------
+2026-10-05 19:07:55 [NOTICE]   Successfully linted PYTHON_FLAKE8
+2026-10-05 19:07:55 [NOTICE]   Successfully linted PYTHON_MYPY
+2026-10-05 19:07:55 [INFO]   Stdout contents for PYTHON_MYPY:
+------
+Success: no issues found in 10 source files
+------
+2026-10-05 19:07:55 [NOTICE]   Successfully linted SPELL_CODESPELL
+2026-10-05 19:07:55 [NOTICE]   Successfully linted TRIVY
+2026-10-05 19:07:55 [INFO]   Stdout contents for TRIVY:
+------
+
+Report Summary
+
+┌───────────────────────────────────────────────────────────────┬──────┬─────────────────┬───────────────────┬─────────┐
+│                            Target                             │ Type │ Vulnerabilities │ Misconfigurations │ Secrets │
+├───────────────────────────────────────────────────────────────┼──────┼─────────────────┼───────────────────┼─────────┤
+│ analysis/basictodo/baseline/frontend/runner/package-lock.json │ npm  │        0        │         -         │    -    │
+├───────────────────────────────────────────────────────────────┼──────┼─────────────────┼───────────────────┼─────────┤
+│ frontend/package-lock.json                                    │ npm  │        0        │         -         │    -    │
+├───────────────────────────────────────────────────────────────┼──────┼─────────────────┼───────────────────┼─────────┤
+│ uv.lock                                                       │  uv  │        0        │         -         │    -    │
+└───────────────────────────────────────────────────────────────┴──────┴─────────────────┴───────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+------
+2026-10-05 19:07:55 [INFO]   Stderr contents for TRIVY:
+------
+2026-10-05T19:07:21Z	INFO	Loaded	file_path="/action/lib/.automation/trivy.yaml"
+2026-10-05T19:07:21Z	INFO	[vulndb] Need to update DB
+2026-10-05T19:07:21Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-10-05T19:07:21Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+143.25 KiB / 121.13 MiB [>___________________________________________________________] 0.12% ? p/s ?207.25 KiB / 121.13 MiB [>___________________________________________________________] 0.17% ? p/s ?287.25 KiB / 121.13 MiB [>___________________________________________________________] 0.23% ? p/s ?335.25 KiB / 121.13 MiB [>__________________________________________] 0.27% 320.11 KiB p/s ETA 6m26s431.25 KiB / 121.13 MiB [>__________________________________________] 0.35% 320.11 KiB p/s ETA 6m26s527.25 KiB / 121.13 MiB [>__________________________________________] 0.43% 320.11 KiB p/s ETA 6m25s575.25 KiB / 121.13 MiB [>__________________________________________] 0.46% 325.25 KiB p/s ETA 6m19s623.25 KiB / 121.13 MiB [>__________________________________________] 0.50% 325.25 KiB p/s ETA 6m19s655.25 KiB / 121.13 MiB [>__________________________________________] 0.53% 325.25 KiB p/s ETA 6m19s687.25 KiB / 121.13 MiB [>__________________________________________] 0.55% 316.31 KiB p/s ETA 6m29s703.25 KiB / 121.13 MiB [>__________________________________________] 0.57% 316.31 KiB p/s ETA 6m29s735.25 KiB / 121.13 MiB [>__________________________________________] 0.59% 316.31 KiB p/s ETA 6m29s767.25 KiB / 121.13 MiB [>__________________________________________] 0.62% 304.51 KiB p/s ETA 6m44s783.25 KiB / 121.13 MiB [>__________________________________________] 0.63% 304.51 KiB p/s ETA 6m44s815.25 KiB / 121.13 MiB [>__________________________________________] 0.66% 304.51 KiB p/s ETA 6m44s831.25 KiB / 121.13 MiB [>___________________________________________] 0.67% 291.75 KiB p/s ETA 7m2s879.25 KiB / 121.13 MiB [>___________________________________________] 0.71% 291.75 KiB p/s ETA 7m2s911.25 KiB / 121.13 MiB [>___________________________________________] 0.73% 291.75 KiB p/s ETA 7m2s943.25 KiB / 121.13 MiB [>__________________________________________] 0.76% 284.97 KiB p/s ETA 7m11s975.25 KiB / 121.13 MiB [>__________________________________________] 0.79% 284.97 KiB p/s ETA 7m11s1007.25 KiB / 121.13 MiB [>_________________________________________] 0.81% 284.97 KiB p/s ETA 7m11s1023.25 KiB / 121.13 MiB [>_________________________________________] 0.82% 275.19 KiB p/s ETA 7m27s1.01 MiB / 121.13 MiB [>____________________________________________] 0.84% 275.19 KiB p/s ETA 7m26s1.01 MiB / 121.13 MiB [>____________________________________________] 0.84% 275.19 KiB p/s ETA 7m26s1.05 MiB / 121.13 MiB [>____________________________________________] 0.86% 262.60 KiB p/s ETA 7m48s1.08 MiB / 121.13 MiB [>____________________________________________] 0.89% 262.60 KiB p/s ETA 7m48s1.11 MiB / 121.13 MiB [>____________________________________________] 0.92% 262.60 KiB p/s ETA 7m48s1.11 MiB / 121.13 MiB [>_____________________________________________] 0.92% 252.54 KiB p/s ETA 8m6s1.14 MiB / 121.13 MiB [>_____________________________________________] 0.94% 252.54 KiB p/s ETA 8m6s1.14 MiB / 121.13 MiB [>_____________________________________________] 0.94% 252.54 KiB p/s ETA 8m6s1.17 MiB / 121.13 MiB [>____________________________________________] 0.97% 243.12 KiB p/s ETA 8m25s1.17 MiB / 121.13 MiB [>____________________________________________] 0.97% 243.12 KiB p/s ETA 8m25s1.20 MiB / 121.13 MiB [>____________________________________________] 0.99% 243.12 KiB p/s ETA 8m25s1.20 MiB / 121.13 MiB [>____________________________________________] 0.99% 230.88 KiB p/s ETA 8m51s1.20 MiB / 121.13 MiB [>____________________________________________] 0.99% 230.88 KiB p/s ETA 8m51s1.23 MiB / 121.13 MiB [>____________________________________________] 1.02% 230.88 KiB p/s ETA 8m51s1.23 MiB / 121.13 MiB [>____________________________________________] 1.02% 219.42 KiB p/s ETA 9m19s1.23 MiB / 121.13 MiB [>____________________________________________] 1.02% 219.42 KiB p/s ETA 9m19s1.23 MiB / 121.13 MiB [>____________________________________________] 1.02% 219.42 KiB p/s ETA 9m19s1.23 MiB / 121.13 MiB [>____________________________________________] 1.02% 205.27 KiB p/s ETA 9m58s1.26 MiB / 121.13 MiB [>____________________________________________] 1.04% 205.27 KiB p/s ETA 9m57s1.26 MiB / 121.13 MiB [>____________________________________________] 1.04% 205.27 KiB p/s ETA 9m57s1.30 MiB / 121.13 MiB [>___________________________________________] 1.07% 198.90 KiB p/s ETA 10m16s1.30 MiB / 121.13 MiB [>___________________________________________] 1.07% 198.90 KiB p/s ETA 10m16s1.33 MiB / 121.13 MiB [>___________________________________________] 1.10% 198.90 KiB p/s ETA 10m16s1.33 MiB / 121.13 MiB [>___________________________________________] 1.10% 189.51 KiB p/s ETA 10m47s1.33 MiB / 121.13 MiB [>___________________________________________] 1.10% 189.51 KiB p/s ETA 10m47s1.36 MiB / 121.13 MiB [>___________________________________________] 1.12% 189.51 KiB p/s ETA 10m47s1.37 MiB / 121.13 MiB [>___________________________________________] 1.13% 182.44 KiB p/s ETA 11m12s1.37 MiB / 121.13 MiB [>___________________________________________] 1.13% 182.44 KiB p/s ETA 11m12s1.39 MiB / 121.13 MiB [>___________________________________________] 1.15% 182.44 KiB p/s ETA 11m12s1.41 MiB / 121.13 MiB [>___________________________________________] 1.16% 174.11 KiB p/s ETA 11m44s1.42 MiB / 121.13 MiB [>___________________________________________] 1.17% 174.11 KiB p/s ETA 11m44s1.44 MiB / 121.13 MiB [>___________________________________________] 1.19% 174.11 KiB p/s ETA 11m43s1.45 MiB / 121.13 MiB [>____________________________________________] 1.20% 168.05 KiB p/s ETA 12m9s1.50 MiB / 121.13 MiB [>____________________________________________] 1.24% 168.05 KiB p/s ETA 12m8s1.53 MiB / 121.13 MiB [>____________________________________________] 1.26% 168.05 KiB p/s ETA 12m8s1.58 MiB / 121.13 MiB [>___________________________________________] 1.30% 170.96 KiB p/s ETA 11m56s1.62 MiB / 121.13 MiB [>___________________________________________] 1.34% 170.96 KiB p/s ETA 11m55s1.67 MiB / 121.13 MiB [>___________________________________________] 1.38% 170.96 KiB p/s ETA 11m55s1.76 MiB / 121.13 MiB [>___________________________________________] 1.46% 180.58 KiB p/s ETA 11m16s1.84 MiB / 121.13 MiB [>___________________________________________] 1.52% 180.58 KiB p/s ETA 11m16s1.91 MiB / 121.13 MiB [>___________________________________________] 1.57% 180.58 KiB p/s ETA 11m16s1.98 MiB / 121.13 MiB [>___________________________________________] 1.64% 193.00 KiB p/s ETA 10m32s2.08 MiB / 121.13 MiB [>___________________________________________] 1.72% 193.00 KiB p/s ETA 10m31s2.17 MiB / 121.13 MiB [>___________________________________________] 1.79% 193.00 KiB p/s ETA 10m31s2.25 MiB / 121.13 MiB [>____________________________________________] 1.86% 209.79 KiB p/s ETA 9m40s2.33 MiB / 121.13 MiB [>____________________________________________] 1.92% 209.79 KiB p/s ETA 9m39s2.41 MiB / 121.13 MiB [>____________________________________________] 1.99% 209.79 KiB p/s ETA 9m39s2.51 MiB / 121.13 MiB [>____________________________________________] 2.08% 225.51 KiB p/s ETA 8m58s2.61 MiB / 121.13 MiB [>____________________________________________] 2.15% 225.51 KiB p/s ETA 8m58s2.72 MiB / 121.13 MiB [->___________________________________________] 2.24% 225.51 KiB p/s ETA 8m57s2.86 MiB / 121.13 MiB [->____________________________________________] 2.36% 248.84 KiB p/s ETA 8m6s3.16 MiB / 121.13 MiB [->____________________________________________] 2.61% 248.84 KiB p/s ETA 8m5s3.83 MiB / 121.13 MiB [->____________________________________________] 3.16% 248.84 KiB p/s ETA 8m2s4.58 MiB / 121.13 MiB [->___________________________________________] 3.78% 421.97 KiB p/s ETA 4m42s6.26 MiB / 121.13 MiB [-->__________________________________________] 5.17% 421.97 KiB p/s ETA 4m38s8.76 MiB / 121.13 MiB [--->_________________________________________] 7.24% 421.97 KiB p/s ETA 4m32s11.23 MiB / 121.13 MiB [---->_________________________________________] 9.27% 1.10 MiB p/s ETA 1m39s13.73 MiB / 121.13 MiB [----->_______________________________________] 11.34% 1.10 MiB p/s ETA 1m37s16.20 MiB / 121.13 MiB [------>______________________________________] 13.38% 1.10 MiB p/s ETA 1m35s18.67 MiB / 121.13 MiB [------->_______________________________________] 15.41% 1.83 MiB p/s ETA 55s21.17 MiB / 121.13 MiB [-------->______________________________________] 17.48% 1.83 MiB p/s ETA 54s23.64 MiB / 121.13 MiB [--------->_____________________________________] 19.52% 1.83 MiB p/s ETA 53s26.08 MiB / 121.13 MiB [---------->____________________________________] 21.53% 2.51 MiB p/s ETA 37s28.58 MiB / 121.13 MiB [----------->___________________________________] 23.59% 2.51 MiB p/s ETA 36s30.83 MiB / 121.13 MiB [----------->___________________________________] 25.45% 2.51 MiB p/s ETA 36s33.23 MiB / 121.13 MiB [------------>__________________________________] 27.44% 3.12 MiB p/s ETA 28s35.73 MiB / 121.13 MiB [------------->_________________________________] 29.50% 3.12 MiB p/s ETA 27s38.20 MiB / 121.13 MiB [-------------->________________________________] 31.54% 3.12 MiB p/s ETA 26s40.70 MiB / 121.13 MiB [--------------->_______________________________] 33.60% 3.72 MiB p/s ETA 21s43.17 MiB / 121.13 MiB [---------------->______________________________] 35.64% 3.72 MiB p/s ETA 20s45.67 MiB / 121.13 MiB [----------------->_____________________________] 37.71% 3.72 MiB p/s ETA 20s48.01 MiB / 121.13 MiB [------------------>____________________________] 39.64% 4.25 MiB p/s ETA 17s50.61 MiB / 121.13 MiB [------------------->___________________________] 41.78% 4.25 MiB p/s ETA 16s53.08 MiB / 121.13 MiB [-------------------->__________________________] 43.82% 4.25 MiB p/s ETA 16s55.58 MiB / 121.13 MiB [--------------------->_________________________] 45.88% 4.80 MiB p/s ETA 13s58.05 MiB / 121.13 MiB [---------------------->________________________] 47.92% 4.80 MiB p/s ETA 13s60.55 MiB / 121.13 MiB [----------------------->_______________________] 49.99% 4.80 MiB p/s ETA 12s62.95 MiB / 121.13 MiB [------------------------>______________________] 51.97% 5.29 MiB p/s ETA 11s64.73 MiB / 121.13 MiB [------------------------->_____________________] 53.44% 5.29 MiB p/s ETA 10s66.45 MiB / 121.13 MiB [------------------------->_____________________] 54.86% 5.29 MiB p/s ETA 10s68.95 MiB / 121.13 MiB [--------------------------->____________________] 56.93% 5.59 MiB p/s ETA 9s71.42 MiB / 121.13 MiB [---------------------------->___________________] 58.96% 5.59 MiB p/s ETA 8s73.92 MiB / 121.13 MiB [----------------------------->__________________] 61.03% 5.59 MiB p/s ETA 8s76.51 MiB / 121.13 MiB [------------------------------>_________________] 63.17% 6.03 MiB p/s ETA 7s78.89 MiB / 121.13 MiB [------------------------------->________________] 65.13% 6.03 MiB p/s ETA 7s81.37 MiB / 121.13 MiB [-------------------------------->_______________] 67.18% 6.03 MiB p/s ETA 6s83.89 MiB / 121.13 MiB [--------------------------------->______________] 69.26% 6.45 MiB p/s ETA 5s86.36 MiB / 121.13 MiB [---------------------------------->_____________] 71.30% 6.45 MiB p/s ETA 5s88.76 MiB / 121.13 MiB [----------------------------------->____________] 73.28% 6.45 MiB p/s ETA 5s91.23 MiB / 121.13 MiB [------------------------------------>___________] 75.32% 6.82 MiB p/s ETA 4s93.67 MiB / 121.13 MiB [------------------------------------->__________] 77.33% 6.82 MiB p/s ETA 4s96.23 MiB / 121.13 MiB [-------------------------------------->_________] 79.45% 6.82 MiB p/s ETA 3s98.70 MiB / 121.13 MiB [--------------------------------------->________] 81.49% 7.18 MiB p/s ETA 3s101.20 MiB / 121.13 MiB [--------------------------------------->_______] 83.55% 7.18 MiB p/s ETA 2s103.64 MiB / 121.13 MiB [---------------------------------------->______] 85.56% 7.18 MiB p/s ETA 2s106.11 MiB / 121.13 MiB [----------------------------------------->_____] 87.60% 7.52 MiB p/s ETA 1s108.61 MiB / 121.13 MiB [------------------------------------------>____] 89.67% 7.52 MiB p/s ETA 1s111.08 MiB / 121.13 MiB [------------------------------------------->___] 91.70% 7.52 MiB p/s ETA 1s113.58 MiB / 121.13 MiB [-------------------------------------------->__] 93.77% 7.84 MiB p/s ETA 0s116.08 MiB / 121.13 MiB [--------------------------------------------->_] 95.83% 7.84 MiB p/s ETA 0s118.55 MiB / 121.13 MiB [--------------------------------------------->_] 97.87% 7.84 MiB p/s ETA 0s121.01 MiB / 121.13 MiB [---------------------------------------------->] 99.91% 8.13 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 8.13 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 8.13 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 7.62 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 7.62 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 7.62 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 7.13 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 7.13 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 7.13 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 6.67 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 6.67 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 6.67 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 6.24 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 6.24 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 6.24 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.83 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.83 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.83 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.46 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.46 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.46 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.11 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.11 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [--------------------------------------------->] 100.00% 5.11 MiB p/s ETA 0s121.13 MiB / 121.13 MiB [-------------------------------------------------] 100.00% 4.13 MiB p/s 30s2026-10-05T19:07:52Z	INFO	[vulndb] Artifact successfully downloaded	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-05T19:07:52Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-05T19:07:52Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-10-05T19:07:52Z	INFO	[checks-client] Need to update the checks bundle
+2026-10-05T19:07:52Z	INFO	[checks-client] Downloading the checks bundle...
+234.65 KiB / 234.65 KiB [------------------------------------------------------] 100.00% ? p/s 100ms2026-10-05T19:07:53Z	INFO	[secret] Secret scanning is enabled
+2026-10-05T19:07:53Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln,misconfig' to disable secret scanning
+2026-10-05T19:07:53Z	INFO	[secret] Please see https://trivy.dev/docs/v0.74/guide/scanner/secret#recommendation for faster secret detection
+2026-10-05T19:07:54Z	INFO	[npm] Run "npm install" to collect the license information of packages	dir="analysis/basictodo/baseline/frontend/runner/node_modules"
+2026-10-05T19:07:54Z	INFO	[npm] Run "npm install" to collect the license information of packages	dir="frontend/node_modules"
+2026-10-05T19:07:54Z	INFO	Suppressing dependencies for development and testing. To display them, try the '--include-dev-deps' flag.
+2026-10-05T19:07:54Z	INFO	Number of language-specific files	num=3
+2026-10-05T19:07:54Z	INFO	[npm] Detecting vulnerabilities...
+2026-10-05T19:07:54Z	INFO	[uv] Detecting vulnerabilities...
+2026-10-05T19:07:54Z	INFO	Detected config files	num=0
+
+📣 Notices:
+  - Version 0.75.0 of Trivy is now available, current version is 0.74.0
+
+To suppress version checks, run Trivy scans with the --skip-version-check flag
+------
+2026-10-05 19:07:55 [NOTICE]   Successfully linted YAML
+2026-10-05 19:07:55 [INFO]   Stdout contents for YAML:
+------
+/tmp/lint/.github/workflows/codeql.yml:12:1: [warning] missing document start "---" (document-start)
+/tmp/lint/.github/workflows/codeql.yml:32:81: [warning] line too long (111 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:33:81: [warning] line too long (85 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:55:81: [warning] line too long (181 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:58:81: [warning] line too long (95 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:59:81: [warning] line too long (119 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:60:81: [warning] line too long (164 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:61:81: [warning] line too long (118 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:62:81: [warning] line too long (184 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:69:81: [warning] line too long (82 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:70:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:77:81: [warning] line too long (90 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:81:81: [warning] line too long (90 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:82:81: [warning] line too long (89 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:83:81: [warning] line too long (92 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:85:81: [warning] line too long (234 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:88:81: [warning] line too long (81 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:89:81: [warning] line too long (82 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:90:81: [warning] line too long (82 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:93:81: [warning] line too long (118 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:98:81: [warning] line too long (84 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/codeql.yml:105:81: [warning] line too long (93 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:3:81: [warning] line too long (88 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:4:81: [warning] line too long (84 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:5:81: [warning] line too long (93 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:9:81: [warning] line too long (181 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:10:1: [warning] missing document start "---" (document-start)
+/tmp/lint/.github/workflows/dependency-review.yml:15:81: [warning] line too long (98 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:23:81: [warning] line too long (142 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:35:81: [warning] line too long (96 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/dependency-review.yml:36:81: [warning] line too long (140 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/e2e.yml:25:81: [warning] line too long (84 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/e2e.yml:30:81: [warning] line too long (83 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/e2e.yml:39:81: [warning] line too long (82 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/e2e.yml:63:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/e2e.yml:71:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/frontend.yml:24:81: [warning] line too long (82 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/frontend.yml:58:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:25:81: [warning] line too long (84 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:30:81: [warning] line too long (83 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:56:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:63:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:70:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:77:81: [warning] line too long (87 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:102:81: [warning] line too long (89 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:107:81: [warning] line too long (106 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:122:81: [warning] line too long (83 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/python-app.yml:128:81: [warning] line too long (84 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/super-linter.yml:1:81: [warning] line too long (108 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/super-linter.yml:7:1: [warning] missing document start "---" (document-start)
+/tmp/lint/.github/workflows/super-linter.yml:31:81: [warning] line too long (98 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/super-linter.yml:35:81: [warning] line too long (89 > 80 characters) (line-length)
+/tmp/lint/.github/workflows/super-linter.yml:54:81: [warning] line too long (84 > 80 characters) (line-length)
+------
+2026-10-05 19:07:55 [NOTICE]   Successfully linted YAML_PRETTIER
+2026-10-05 19:07:55 [INFO]   Stdout contents for YAML_PRETTIER:
+------
+Checking formatting...
+All matched files use Prettier code style!
+------
+2026-10-05 19:07:55 [ERROR]   Super-linter detected linting errors
+super-linter exit 2

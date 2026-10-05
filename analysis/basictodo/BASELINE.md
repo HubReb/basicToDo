@@ -66,6 +66,8 @@ This file is the **equivalence target**. The uplift has to reproduce every resul
 
 The error count therefore says nothing about equivalence until Phase 4 removes both stub packages. Here, and in CI, it is recorded but not compared.
 
+**Superseded in Phase 3 (Q12):** D-04 removed both stub packages there, and D-05 fixed the remaining errors. mypy reports 0 errors in fresh venvs and is a blocking gate; see "CI pipeline (Phase 3)".
+
 ## Playwright e2e
 
 **13 / 13 passed, 0 flaky, 0 retries.** The run took 17.8 s, under `CI=true`, against the legacy-lock backend started by the config's own `webServer` (`uv run python -m backend.app.main`, with `UV_PROJECT_ENVIRONMENT` pointing at the legacy venv).
@@ -334,6 +336,99 @@ Super-Linter fails for the reasons recorded for Phase 1 above:
 - jscpd on generated evidence. The F0 and F2 style captures are identical by design.
 
 Phase 2's own new Python (`baseline/frontend/bundle_modules.py`, `compare_screens.py`) is not yet black/flake8-formatted for super-linter's configuration.
+
+## CI pipeline (Phase 3)
+
+_Recorded 2026-10-05 for Phase 3 (brief §3). Branch `plugin/uplift-basictodo/phase-3`, cut from the `phase-2` tip `e3ffd22`._
+
+**Before state (`e3ffd22`, venv `target-lock`, clean tree):**
+- pytest: 456 passed, 1 skipped, identical per test to `pytest-target-lock.tsv`;
+- mypy: 3 errors, install-order dependent (D-04, see "mypy" above);
+- CI: draft PR #114, see "Phase 2 CI" above;
+- super-linter **v9.0.0**, run locally (Podman, image pinned by digest) with the old v4 configuration as far as v9 accepts it: 20 linters report findings. The list is in `baseline/ci/superlinter-v9-inventory-e3ffd22.txt`.
+
+**Commits:**
+
+| Commit | Subject |
+|---|---|
+| `2ee51ba` | ci: actions on their node24 majors, exact pins (D-25, D-26) |
+| `d2e284b` | ci: super-linter v9 (D-27) |
+| `f02e74d` | style(ci): format the workflows with Prettier (super-linter v9) |
+| `fecb197` | ci: Dependabot codeql-action group, as on main (#108) |
+| `36765cb` | build: drop the SQLAlchemy stub packages and the [mypy] extra (D-04) |
+| `a268203` | fix(types): mypy clean without the SQLAlchemy stubs (D-05) |
+| `f97dd49` | style: black 26.5.1 and flake8 7.3.0 for the Python files changed since base |
+| `a752cf3` | test(e2e): drop the unused catch binding (ESLint) |
+| `4112dc5` | ci: gates per Q9 |
+| `5c46f21` | ci: dependency review gets pull-requests: write at job level (SEC-005) |
+
+The commits from D-04 to `a752cf3` were each checked before they were committed, on the change on top of its parent. The table below and "Behaviour at the tip" are measured on committed, clean trees.
+
+### mypy and the Q12 exit check
+
+| State | venvs | mypy |
+|---|---|---|
+| Before (`e3ffd22`), both stub packages installed | `target-lock` | 3 errors; 3 or 5 depending on install order (D-04) |
+| D-04: both stub packages and the `[mypy]` extra removed | two fresh venvs | 5 errors in each, the same 5: three stale `type: ignore`s and two instance-only attribute accesses (`repository.py`) |
+| D-05 | two fresh venvs | 0 in each |
+| **Tip `4112dc5`** | **two fresh venvs, each synced with CI's `uv sync --locked --all-extras --dev`** | **0 in each** ("no issues found in 35 source files"); `uv pip freeze` identical; mypy 2.4.0, SQLAlchemy 2.0.54, no stub package |
+
+The mypy configuration references no SQLAlchemy plugin (checked before D-04, per Q12). The `[mypy]` extra only pulled in mypy, a direct dev dependency anyway. D-05 replaces the two instance-only accesses with `to_do_table.c.id`; the generated SQL text and bind parameters are identical.
+
+### Behaviour at the tip
+
+Measured on `4112dc5` (clean tree, venv synced as above). `5c46f21` changes only `dependency-review.yml`.
+- **pytest:** 456 passed, 1 skipped, coverage 83.98 %. Identical per test to `pytest-target-lock.tsv` (457 rows, 0 changed). Provenance: `baseline/provenance-pytest-4112dc5.json`; nothing loaded from outside the tree.
+- **Golden master:** 0 of 83 responses differ from the Phase 3 before-capture (`e3ffd22`) and from the committed Phase 1 target capture `target-lock.json` (`0df26b9`). Capture: `baseline/target-lock-4112dc5.json`.
+- **Frontend on Node 24.21.0:** `npm ci`; `tsc -b` exit 0; vitest 13/13, identical per test to F2; `dist/` byte-identical to F2; ESLint 0 errors; `npm audit` 0; e2e 13/13.
+
+### Gates (Q9)
+
+| Gate | Before | After (`4112dc5`) |
+|---|---|---|
+| mypy | `continue-on-error: true` | **blocking**, 0 errors |
+| ESLint | `continue-on-error: true`, 1 error (`e2e/smoke.spec.ts:89`) | **blocking**, 0 errors |
+| Type check | `npx tsc --noEmit` on `tsconfig.json`, which has `"files": []` and only references: **0 project files** checked | **`npx tsc -b`**: builds `tsconfig.app.json` (31 project files) and `tsconfig.node.json` (1) |
+| pylint | `cd backend && pylint app/*py`: 3 modules | `pylint backend/app`: 15 modules; still `--exit-zero` (report-only) |
+
+No pylint configuration exists, so changing the working directory changes nothing but the scope.
+
+**Positive control per blocking gate.** Each gate got a deliberate error and was run with the command its CI step runs. Logs: `baseline/ci/positive-controls.txt` and `baseline/ci/superlinter-control-9272b59.txt`.
+
+| Gate | Deliberate error | Command | Exit | Reported | Revert |
+|---|---|---|---|---|---|
+| mypy | `MYPY_CONTROL: int = "a"` appended to `backend/app/config.py`, uncommitted | `uv run mypy backend/app/` | **1** | `config.py:28: error: Incompatible types in assignment … [assignment]` | `git checkout --`; `git status` clean; exit 0 |
+| ESLint | `const eslintControl = 1;` appended to `frontend/src/App.tsx`, uncommitted | `cd frontend && npm run lint` | **1** | `28:7 error 'eslintControl' is assigned a value but never used @typescript-eslint/no-unused-vars` | as above; exit 0 |
+| `tsc -b` | `export const tscControl: number = "a";` appended to `frontend/src/App.tsx`, uncommitted | `cd frontend && npx tsc -b` | **2** | `src/App.tsx(28,14): error TS2322: Type 'string' is not assignable to type 'number'.` | as above; exit 0 |
+
+With the same deliberate type error, the **old** step `npx tsc --noEmit` exits **0**.
+
+**super-linter v9.** With `VALIDATE_ALL_CODEBASE=false`, super-linter only sees committed changes, so this control is a commit on a throwaway branch:
+- **Error:** `SUPERLINTER_CONTROL = 'black wants double quotes'` appended to `backend/app/main.py`, which is already black-clean and in the diff. Committed as `9272b59` on `tmp/superlinter-control`, off `4112dc5`.
+- **Command:** `run_superlinter.sh plugin/uplift-basictodo/base`, with the workflow's env: `VALIDATE_ALL_CODEBASE=false`, `DEFAULT_BRANCH=plugin/uplift-basictodo/base` (its value on a PR into base).
+- **Exit 2.** Only PYTHON_BLACK fails (`would reformat /tmp/lint/backend/app/main.py`); the other 14 linters pass.
+- **Revert:** `git branch -D tmp/superlinter-control`. Afterwards `git branch --list 'tmp/*'`, `git branch -r --list 'origin/tmp/*'` and `git ls-remote --heads origin 'tmp/*'` (exit 0) are all empty. The branch was never pushed. The phase-3 tip lints green (below).
+
+A failing command only turns the workflow red if the step does not swallow it. Parsed from the YAML at `4112dc5`: neither the mypy step, the type-check step nor the ESLint step, nor their jobs, carries `continue-on-error`. The only `continue-on-error` left in the workflows is `false`, on the pytest step.
+
+### super-linter v9 (D-27)
+
+Configured as on `main` (decision "Konfig wie main"), with the reasons as YAML comments in `super-linter.yml`. Findings of the before-run and how they were resolved:
+
+| Linter (before-run findings) | Resolution |
+|---|---|
+| PYTHON_BLACK, PYTHON_FLAKE8 (the uplift's legacy and new Python files) | **Fixed** in `f97dd49` with black 26.5.1 and flake8 7.3.0 |
+| PYTHON_MYPY (`repository.py`) | **Fixed** by D-04/D-05 |
+| CHECKOV CKV2_GHA_1 (`codeql.yml`, `super-linter.yml`: no top-level permissions) | **Fixed** in `d2e284b`: top-level `contents: read` |
+| YAML_PRETTIER (workflows) | **Fixed** in `f02e74d` (Prettier 3.9.8 from the image; parsed YAML identical) |
+| PYTHON_PYLINT, JSCPD, PYTHON_ISORT | **Disabled, as on `main`:** pylint runs as its own report-only job; jscpd scans the whole codebase and flags pre-existing duplication; the repository has no isort configuration |
+| PYTHON_RUFF, PYTHON_RUFF_FORMAT | **Disabled:** no ruff configuration; ruff's formatter conflicts with black. black and flake8 stay the Python style gates |
+| BIOME_FORMAT, BIOME_LINT, TYPESCRIPT_PRETTIER (and the JS/JSX/TS ES and Prettier linters) | **Disabled:** the frontend is linted by its own ESLint configuration, now a blocking gate in `frontend.yml`; the repository has no Biome or Prettier configuration |
+| MARKDOWN, MARKDOWN_PRETTIER, NATURAL_LANGUAGE, JSON_PRETTIER, HTML_PRETTIER, SHELL_SHFMT, SPELL_CODESPELL | **Excluded by path:** all their findings are in `analysis/` (modernization evidence and tools) or `UPLIFT_NOTES.md`, plus codespell on `uv.lock`. `FILTER_REGEX_EXCLUDE` covers these and both lockfiles. super-linter matches absolute paths, hence `(^\|/)` |
+
+**Result at `5c46f21`:** exit 0, 15 linters run and pass (`baseline/ci/superlinter-5c46f21.txt`). black and mypy each see exactly the 10 Python files changed since base, and no file under `analysis/` or `UPLIFT_NOTES.md` is linted. Trivy scans the whole tree, including the screenshot runner's lockfile under `analysis/`, and reports 0 findings.
+
+Tools: `baseline/ci/run_superlinter.sh <base-branch> <log> [image]` runs super-linter in Podman on a clean clone of HEAD, with the env read from the workflow file. `baseline/ci/superlinter_findings.py <log>` groups a log's findings by linter and mentioned path.
 
 ## Change log
 
