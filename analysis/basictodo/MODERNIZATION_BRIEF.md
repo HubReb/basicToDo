@@ -103,12 +103,15 @@ All migration edits happen in a git-tracked working copy at **`modernized/basict
 - **Repository:** everything stays in `HubReb/basicToDo`. **Nothing touches `main`.**
 - **Base branch `plugin/uplift-basictodo/base`**, created from `a2d59f1`. Git cannot hold both `plugin/uplift-basictodo` and `plugin/uplift-basictodo/phase-N` (a ref-name conflict), hence the `/base` suffix. Its first two commits:
   1. **CI safety first.** The same SEC-005/SEC-006 fix the owner applies on `main` (for example, a cherry-pick of that commit), plus `plugin/uplift-basictodo/base` added to the `pull_request` branch filters of all six workflows. This is needed because push-triggered workflows (python-app, frontend, e2e) run the workflow files *of the pushed commit*, so a fix on `main` alone does not protect branches based on `a2d59f1`.
+     - **As built (`00d0d18`, 2026-10-05):** a cherry-pick of `66f4dbe`, the fix merged to `main` in PR #100 as `04c4cfb`. It applied cleanly on `a2d59f1`. Then the six `pull_request` filters were extended.
+     - **One addition beyond the plan:** super-linter's `DEFAULT_BRANCH` is now `${{ github.base_ref || 'main' }}`, no longer a hard-coded `"main"`. super-linter v4 picks changed files with `git diff DEFAULT_BRANCH...HEAD`. Against `main`, the merge base of every phase PR would be `a2d59f1`, so each PR would lint the whole analysis commit as well. Against the PR target, it lints only the phase's own changes.
   2. **The analysis artifacts** from `analysis/basictodo/`. All 14 analysis files, scrubbed of absolute local paths, the hostname, the connected-server list and OS details, with the scrub diff shown to the owner before committing (Q11b).
 - **Phase branches `plugin/uplift-basictodo/phase-N`:** phase 1 branches from `base`; phase N branches from phase N−1.
 - **PRs:** each phase branch gets a **draft PR against `plugin/uplift-basictodo/base`**, labelled **"do not merge, eval"**. Because `base` is in every `pull_request` filter, all six workflows run on the phase's own state rather than on a merge with `main`.
   - The base branch itself is only pushed; it gets no PR.
   - Phases chain, so each PR's diff against `base` is cumulative. Each PR description therefore links the per-phase compare view (`phase-(N-1)...phase-N`).
 - **No push until the owner gives the go.** The repository is public, and the owner first fixes SEC-005/SEC-006 on `main`. Until then, every commit stays local.
+  - **Status 2026-10-05:** the fix is on `main` via PR #100 (merged 2026-10-05). All six PR workflows passed, including the isolated coverage-comment job. The owner gave the go to push `base`.
 - `legacy/basictodo` has no remote configured. The working copy therefore needs `HubReb/basicToDo` as its remote (Phase 1 entry criteria).
 
 ```mermaid
@@ -228,7 +231,7 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 **Scope:**
 - `.github/workflows/*.yml`, except the `node-version` lines, which Phase 2 owns.
 - **Deltas:** D-25, D-26 (pin exact versions; there are no floating major tags) and D-27 (super-linter v9 under its new organisation).
-- **Security fixes in the same files.** The core of SEC-005/SEC-006 is **already applied on `base` as its first commit** (pulled forward, §3). Phase 3 verifies it and completes the rest:
+- **Security fixes in the same files.** The core of SEC-005/SEC-006 is **already applied on `base` as its first commit** (pulled forward, §3). The two items below are done in `00d0d18`; the pins are SHAs of the tags as they resolved on 2026-10-05. Phase 3 verifies them, keeps them intact through the major bumps (D-26) and keeps super-linter's `DEFAULT_BRANCH` pointed at the PR target when it moves to v9 (D-27):
   - **SEC-005:** top-level `permissions: contents: read`; the coverage-comment job isolated with `pull-requests: write`; `persist-credentials: false`.
   - **SEC-006:** every `uses:` pinned to an exact version or SHA, with Dependabot configured for `github-actions`.
 - **Gate changes per Q9:**
