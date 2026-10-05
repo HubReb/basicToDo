@@ -192,7 +192,35 @@ In both cases `backend.app` loads from the working copy.
 
 ## CI (Q10)
 
-_Pending: measured on the phase-1 draft PR._
+Measured on draft PR #113 (`plugin/uplift-basictodo/phase-1` at `e445972` → `plugin/uplift-basictodo/base`), 2026-10-05. This closes the "don't know" from preflight Check 0.
+
+**Pipeline duration:** about **3 minutes** of wall clock (180 s from the first run created to the last job finished), with 536 s of runner time across 10 jobs. The longest jobs are Super-Linter (176 s) and Playwright (104 s).
+
+| Workflow | Job | Result | Duration |
+|---|---|---|---|
+| Python Application CI | Backend Tests & Quality Checks | ✅ | 36 s |
+| | Lint the python code | ✅ | 25 s |
+| | Comment coverage on PR | ✅ (comment posted) | 19 s |
+| End-to-End Tests | Playwright E2E Tests | ✅ | 104 s |
+| Frontend CI | Frontend Build & Lint | ✅ | 37 s |
+| CodeQL Advanced | Analyze (actions / python / javascript-typescript) | ✅ ✅ ✅ | 35 / 51 / 41 s |
+| Dependency review | dependency-review | ✅ | 12 s |
+| Lint Code Base | run-lint (super-linter v4.10.0) | ❌ | 176 s |
+
+The push to `phase-1` ran the three push-triggered workflows as well: Python 39 s, Frontend 123 s, E2E 141 s, all green.
+
+**Exit criterion:** python-app and e2e are green ✅. The other four workflows are recorded here.
+
+**Super-Linter, attributed.** `DEFAULT_BRANCH` resolved to `plugin/uplift-basictodo/base`, so only the files changed in phase-1 were linted, as intended. Six linters reported errors. They fall into three groups:
+
+| Source | Files | Findings |
+|---|---|---|
+| **Pre-existing in legacy files**, surfaced because phase-1 touches or renames them | `backend/app/api/api.py`, `backend/app/business_logic/decorators.py`, and the two renamed builder tests (content unchanged) | black (multi-name import, single quotes, missing final newline), flake8 W292, isort (super-linter's default profile; the repo has no isort config at `a2d59f1`), jscpd (the async/sync wrapper pair in `decorators.py`). None of these is on a line phase-1 changed. |
+| **Phase-1 code** | `test_p0_contracts.py`, `test_telemetry_export.py`, and `baseline/{golden_master,junit_table,provenance,pytest_provenance}.py` | black (line wrapping), flake8 E501 in `golden_master.py` (11 lines over 120), isort in `test_p0_contracts.py` (the same default-profile ordering the existing tests use) |
+| **Analysis documents** | `DELTA_CATALOG.md`, `MODERNIZATION_BRIEF.md`, `PLAYBOOK.md`, `PREFLIGHT.md`, `BASELINE.md`; `legacy-vs-target.diff.txt` | markdownlint (MD013 line length ×18, MD049 ×6, MD007 ×4, MD040 ×1), textlint terminology ("id" → "ID", "repo" → "repository", …), jscpd on the generated diff text |
+
+On `main`, the owner has since disabled pylint, jscpd and isort in super-linter for the same reasons. The base branch keeps the `a2d59f1` configuration, and Phase 3 owns the linter setup.
+
 
 ## Change log
 

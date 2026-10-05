@@ -168,8 +168,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] Playwright e2e passes 13/13 against the upgraded backend.
 - [x] `pip-audit` on the target lock reports **0** advisories in runtime dependencies. _(22 in 9 packages at `72cf484`, with the dev tools still in the runtime; 19 in 7 after the hygiene commit `ddad5ec`; 0 after the bump. The bump adds 19 runtime pins from `fastapi[standard]` 0.142, OpenTelemetry among them; see `UPLIFT_NOTES.md`.)_
 - [x] The telemetry behaviour chosen in Q3 is proven by a test that sets `OTEL_EXPORTER_OTLP_ENDPOINT` and asserts no export when "off" was chosen. _(`test_telemetry_export.py`, with a control that does export.)_
-- [ ] **Once the owner gives the go to push** (§3): `plugin/uplift-basictodo/base` and `plugin/uplift-basictodo/phase-1` are pushed, and phase-1's **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval") is open (Q11). python-app and e2e are green on it, and the results of the other four workflows are recorded in `BASELINE.md`.
-- [ ] **CI duration measured on that PR and recorded in `BASELINE.md`** (Q10).
+- [x] **Once the owner gives the go to push** (§3): `plugin/uplift-basictodo/base` and `plugin/uplift-basictodo/phase-1` are pushed, and phase-1's **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval") is open (Q11). python-app and e2e are green on it, and the results of the other four workflows are recorded in `BASELINE.md`. _(Draft PR #113, 2026-10-05. GitHub rejects commas in label names, so the label is `do not merge: eval`; the title carries "(do not merge, eval)". Frontend, CodeQL and dependency review are green; Super-Linter is red, with the findings attributed in `BASELINE.md`.)_
+- [x] **CI duration measured on that PR and recorded in `BASELINE.md`** (Q10). _(About 3 minutes of wall clock, 536 s of runner time.)_
 - [x] `analysis/basictodo/PLAYBOOK.md` (backend section) is written. `DELTA_CATALOG.md` has the pilot's surprises folded in (§G). **This brief is revised if the pilot changed the picture.** _(See "Pilot findings" below.)_
 
 **Pilot findings (2026-10-05) that revise this brief:**
