@@ -1,0 +1,3336 @@
+{
+ "provenance": [
+  {
+   "process": "uvicorn server",
+   "tree": "0df26b9",
+   "tree_has_uncommitted_changes": false,
+   "python": "3.13.15",
+   "venv": "../.envs/target-lock",
+   "fastapi": "0.142.2",
+   "starlette": "1.7.0",
+   "app_modules_loaded": 33,
+   "app_modules_outside_tree": [],
+   "backend.app": "backend/app/__init__.py",
+   "modules": {
+    "backend": "backend/__init__.py",
+    "backend.app": "backend/app/__init__.py",
+    "backend.app.api": "backend/app/api/__init__.py",
+    "backend.app.api.api": "backend/app/api/api.py",
+    "backend.app.business_logic": "backend/app/business_logic/__init__.py",
+    "backend.app.business_logic.builders": "backend/app/business_logic/builders/__init__.py",
+    "backend.app.business_logic.builders.builder_interface": "backend/app/business_logic/builders/builder_interface.py",
+    "backend.app.business_logic.builders.todo_entry_builder": "backend/app/business_logic/builders/todo_entry_builder.py",
+    "backend.app.business_logic.decorators": "backend/app/business_logic/decorators.py",
+    "backend.app.business_logic.exceptions": "backend/app/business_logic/exceptions.py",
+    "backend.app.business_logic.todo_service": "backend/app/business_logic/todo_service.py",
+    "backend.app.business_logic.validators": "backend/app/business_logic/validators/__init__.py",
+    "backend.app.business_logic.validators.field_validator": "backend/app/business_logic/validators/field_validator.py",
+    "backend.app.business_logic.validators.input_sanitizer": "backend/app/business_logic/validators/input_sanitizer.py",
+    "backend.app.business_logic.validators.uuid_validator": "backend/app/business_logic/validators/uuid_validator.py",
+    "backend.app.business_logic.validators.validator_factory": "backend/app/business_logic/validators/validator_factory.py",
+    "backend.app.business_logic.validators.validator_interface": "backend/app/business_logic/validators/validator_interface.py",
+    "backend.app.data_access": "backend/app/data_access/__init__.py",
+    "backend.app.data_access.database": "backend/app/data_access/database.py",
+    "backend.app.data_access.repository": "backend/app/data_access/repository.py",
+    "backend.app.factory": "backend/app/factory.py",
+    "backend.app.logger": "backend/app/logger.py",
+    "backend.app.models": "backend/app/models/__init__.py",
+    "backend.app.models.todo": "backend/app/models/todo.py",
+    "backend.app.schemas": "backend/app/schemas/__init__.py",
+    "backend.app.schemas.api_responses.api_response": "backend/app/schemas/api_responses/api_response.py",
+    "backend.app.schemas.api_responses.delete_to_do_response": "backend/app/schemas/api_responses/delete_to_do_response.py",
+    "backend.app.schemas.api_responses.get_list_to_do_response": "backend/app/schemas/api_responses/get_list_to_do_response.py",
+    "backend.app.schemas.api_responses.get_to_do_response": "backend/app/schemas/api_responses/get_to_do_response.py",
+    "backend.app.schemas.api_responses.to_do_response": "backend/app/schemas/api_responses/to_do_response.py",
+    "backend.app.schemas.data_schemes.create_todo_schema": "backend/app/schemas/data_schemes/create_todo_schema.py",
+    "backend.app.schemas.data_schemes.todo_schema": "backend/app/schemas/data_schemes/todo_schema.py",
+    "backend.app.schemas.data_schemes.update_todo_schema": "backend/app/schemas/data_schemes/update_todo_schema.py"
+   }
+  },
+  {
+   "process": "init_db.py",
+   "tree": "0df26b9",
+   "tree_has_uncommitted_changes": false,
+   "python": "3.13.15",
+   "venv": "../.envs/target-lock",
+   "fastapi": "0.142.2",
+   "starlette": "1.7.0",
+   "app_modules_loaded": 8,
+   "app_modules_outside_tree": [],
+   "backend.app": "backend/app/__init__.py",
+   "modules": {
+    "app": "backend/app/__init__.py",
+    "app.data_access": "backend/app/data_access/__init__.py",
+    "app.data_access.database": "backend/app/data_access/database.py",
+    "app.logger": "backend/app/logger.py",
+    "backend": "backend/__init__.py",
+    "backend.app": "backend/app/__init__.py",
+    "backend.app.models": "backend/app/models/__init__.py",
+    "backend.app.models.todo": "backend/app/models/todo.py"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "label": "GET root",
+   "request": {
+    "method": "GET",
+    "path": "/",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "15"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"status\":\"ok\"}"
+  },
+  {
+   "label": "HEAD root",
+   "request": {
+    "method": "HEAD",
+    "path": "/",
+    "headers": {},
+    "body": null
+   },
+   "status": 405,
+   "reason": "Method Not Allowed",
+   "headers": [
+    [
+     "allow",
+     "GET"
+    ],
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": ""
+  },
+  {
+   "label": "POST create ok",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"11111111-2222-3333-4444-555555555555\", \"title\": \" Wash \", \"description\": \"d\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "254"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"Wash\",\"description\":\"d\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "POST create ok 2",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"11111111-2222-3333-4444-666666666666\", \"title\": \"Second\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "257"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "POST duplicate id",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"11111111-2222-3333-4444-555555555555\", \"title\": \"Dup\"}"
+   },
+   "status": 409,
+   "reason": "Conflict",
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo already exists\"}"
+  },
+  {
+   "label": "POST missing id",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"title\": \"x\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "96"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"id\"],\"msg\":\"Field required\",\"input\":{\"title\":\"x\"}}]}"
+  },
+  {
+   "label": "POST malformed id",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"nope\", \"title\": \"x\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "195"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"body\",\"id\"],\"msg\":\"Input should be a valid UUID, invalid character: found `n` at 1\",\"input\":\"nope\",\"ctx\":{\"error\":\"invalid character: found `n` at 1\"}}]}"
+  },
+  {
+   "label": "POST empty id",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"\", \"title\": \"x\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "247"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"body\",\"id\"],\"msg\":\"Input should be a valid UUID, invalid length: expected length 32 for simple format, found 0\",\"input\":\"\",\"ctx\":{\"error\":\"invalid length: expected length 32 for simple format, found 0\"}}]}"
+  },
+  {
+   "label": "POST null id",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": null, \"title\": \"x\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "126"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"uuid_type\",\"loc\":[\"body\",\"id\"],\"msg\":\"UUID input should be a string, bytes or UUID object\",\"input\":null}]}"
+  },
+  {
+   "label": "POST whitespace title",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"22222222-2222-3333-4444-555555555555\", \"title\": \"   \"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "136"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"title\"],\"msg\":\"Value error, title must not be null.\",\"input\":\"   \",\"ctx\":{\"error\":{}}}]}"
+  },
+  {
+   "label": "POST title int",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"33333333-2222-3333-4444-555555555555\", \"title\": 123}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "109"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",\"title\"],\"msg\":\"Input should be a valid string\",\"input\":123}]}"
+  },
+  {
+   "label": "POST title missing",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"33333333-2222-3333-4444-666666666666\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "131"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"title\"],\"msg\":\"Field required\",\"input\":{\"id\":\"33333333-2222-3333-4444-666666666666\"}}]}"
+  },
+  {
+   "label": "POST title 255 chars",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"11111111-2222-3333-4444-777777777777\", \"title\": \"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "506"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "POST title 256 chars",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"33333333-2222-3333-4444-777777777777\", \"title\": \"tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\"}"
+   },
+   "status": 409,
+   "reason": "Conflict",
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo already exists\"}"
+  },
+  {
+   "label": "POST description 256 chars",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"33333333-2222-3333-4444-888888888888\", \"title\": \"ok\", \"description\": \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\"}"
+   },
+   "status": 409,
+   "reason": "Conflict",
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo already exists\"}"
+  },
+  {
+   "label": "POST invalid json",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{bad"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "158"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"json_invalid\",\"loc\":[\"body\",1],\"msg\":\"JSON decode error\",\"input\":{},\"ctx\":{\"error\":\"Expecting property name enclosed in double quotes\"}}]}"
+  },
+  {
+   "label": "POST text/plain body",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "text/plain"
+    },
+    "body": "{\"id\":\"44444444-2222-3333-4444-555555555555\",\"title\":\"x\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "212"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"model_attributes_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid dictionary or object to extract fields from\",\"input\":\"{\\\"id\\\":\\\"44444444-2222-3333-4444-555555555555\\\",\\\"title\\\":\\\"x\\\"}\"}]}"
+  },
+  {
+   "label": "POST no body",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {},
+    "body": null
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "82"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "label": "POST SQL keyword title",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"55555555-2222-3333-4444-555555555555\", \"title\": \"a; drop table\"}"
+   },
+   "status": 400,
+   "reason": "Bad Request",
+   "headers": [
+    [
+     "content-length",
+     "24"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"Bad request\"}"
+  },
+  {
+   "label": "POST quirk 'Todo to delete' (blocklist)",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"55555555-2222-3333-4444-666666666666\", \"title\": \"Todo to delete\"}"
+   },
+   "status": 400,
+   "reason": "Bad Request",
+   "headers": [
+    [
+     "content-length",
+     "24"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"Bad request\"}"
+  },
+  {
+   "label": "POST unknown extra field",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"11111111-2222-3333-4444-888888888888\", \"title\": \"Extra\", \"foo\": 1}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "POST uppercase id",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"AAAAAAAA-2222-3333-4444-555555555555\", \"title\": \"Upper\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"aaaaaaaa-2222-3333-4444-555555555555\",\"title\":\"Upper\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "PUT done='yes'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"yes\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done='on'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"on\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done='1'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"1\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done=1",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": 1}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done='true'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"true\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done='TRUE'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"TRUE\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done='y'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"y\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done='t'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"t\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done=1.0",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": 1.0}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "256"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":true}}"
+  },
+  {
+   "label": "PUT done='false'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"false\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "257"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "PUT done=0",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": 0}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "257"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "PUT done='off'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"off\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "257"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "PUT done='no'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"no\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "257"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "PUT done='maybe'",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": \"maybe\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "141"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"bool_parsing\",\"loc\":[\"body\",\"done\"],\"msg\":\"Input should be a valid boolean, unable to interpret input\",\"input\":\"maybe\"}]}"
+  },
+  {
+   "label": "PUT done=2",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": 2}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "135"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"bool_parsing\",\"loc\":[\"body\",\"done\"],\"msg\":\"Input should be a valid boolean, unable to interpret input\",\"input\":2}]}"
+  },
+  {
+   "label": "PUT done=None",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": null}"
+   },
+   "status": 500,
+   "reason": "Internal Server Error",
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "Internal Server Error"
+  },
+  {
+   "label": "PUT done=[]",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": []}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "106"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"bool_type\",\"loc\":[\"body\",\"done\"],\"msg\":\"Input should be a valid boolean\",\"input\":[]}]}"
+  },
+  {
+   "label": "PUT done={}",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-666666666666",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"done\": {}}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "106"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"bool_type\",\"loc\":[\"body\",\"done\"],\"msg\":\"Input should be a valid boolean\",\"input\":{}}]}"
+  },
+  {
+   "label": "PUT title update",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"title\": \"New\", \"description\": \"x\"}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "253"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "PUT empty object",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{}"
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "253"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "PUT whitespace title",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"title\": \"   \"}"
+   },
+   "status": 400,
+   "reason": "Bad Request",
+   "headers": [
+    [
+     "content-length",
+     "24"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"Bad request\"}"
+  },
+  {
+   "label": "PUT unknown id",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/99999999-2222-3333-4444-555555555555",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"title\": \"New\"}"
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "PUT malformed path id",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/xyz",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"title\": \"New\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "199"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"path\",\"todo_id\"],\"msg\":\"Input should be a valid UUID, invalid character: found `x` at 1\",\"input\":\"xyz\",\"ctx\":{\"error\":\"invalid character: found `x` at 1\"}}]}"
+  },
+  {
+   "label": "GET one",
+   "request": {
+    "method": "GET",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "253"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "GET one uppercase id",
+   "request": {
+    "method": "GET",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "253"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "GET one urn id",
+   "request": {
+    "method": "GET",
+    "path": "/todo/urn:uuid:11111111-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "253"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "GET one hex id without dashes",
+   "request": {
+    "method": "GET",
+    "path": "/todo/11111111222233334444555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "253"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entry.created_at": "local",
+    "todo_entry.updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}}"
+  },
+  {
+   "label": "GET one unknown id",
+   "request": {
+    "method": "GET",
+    "path": "/todo/99999999-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "GET one malformed id",
+   "request": {
+    "method": "GET",
+    "path": "/todo/not-a-uuid",
+    "headers": {},
+    "body": null
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "206"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"path\",\"todo_id\"],\"msg\":\"Input should be a valid UUID, invalid character: found `n` at 1\",\"input\":\"not-a-uuid\",\"ctx\":{\"error\":\"invalid character: found `n` at 1\"}}]}"
+  },
+  {
+   "label": "GET list",
+   "request": {
+    "method": "GET",
+    "path": "/todo",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "1268"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc",
+    "todo_entries[2].created_at": "local",
+    "todo_entries[2].updated_at": "utc",
+    "todo_entries[3].created_at": "local",
+    "todo_entries[3].updated_at": "utc",
+    "todo_entries[4].created_at": "local",
+    "todo_entries[4].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":5,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"aaaaaaaa-2222-3333-4444-555555555555\",\"title\":\"Upper\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET list limit=abc",
+   "request": {
+    "method": "GET",
+    "path": "/todo?limit=abc",
+    "headers": {},
+    "body": null
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "151"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"query\",\"limit\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"abc\"}]}"
+  },
+  {
+   "label": "GET list limit=-1",
+   "request": {
+    "method": "GET",
+    "path": "/todo?limit=-1&page=1",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "1268"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc",
+    "todo_entries[2].created_at": "local",
+    "todo_entries[2].updated_at": "utc",
+    "todo_entries[3].created_at": "local",
+    "todo_entries[3].updated_at": "utc",
+    "todo_entries[4].created_at": "local",
+    "todo_entries[4].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":5,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"aaaaaaaa-2222-3333-4444-555555555555\",\"title\":\"Upper\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET list page=0",
+   "request": {
+    "method": "GET",
+    "path": "/todo?limit=10&page=0",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "1268"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc",
+    "todo_entries[2].created_at": "local",
+    "todo_entries[2].updated_at": "utc",
+    "todo_entries[3].created_at": "local",
+    "todo_entries[3].updated_at": "utc",
+    "todo_entries[4].created_at": "local",
+    "todo_entries[4].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":5,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"aaaaaaaa-2222-3333-4444-555555555555\",\"title\":\"Upper\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET list limit=1.5",
+   "request": {
+    "method": "GET",
+    "path": "/todo?limit=1.5",
+    "headers": {},
+    "body": null
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "151"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"query\",\"limit\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"1.5\"}]}"
+  },
+  {
+   "label": "GET list limit=' 2 '",
+   "request": {
+    "method": "GET",
+    "path": "/todo?limit=%202%20",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "457"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":2,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET list limit=2 page=2",
+   "request": {
+    "method": "GET",
+    "path": "/todo?limit=2&page=2",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "709"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":2,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET list trailing slash (307)",
+   "request": {
+    "method": "GET",
+    "path": "/todo/",
+    "headers": {},
+    "body": null
+   },
+   "status": 307,
+   "reason": "Temporary Redirect",
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "location",
+     "http://127.0.0.1:18765/todo"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": ""
+  },
+  {
+   "label": "PATCH todo (405)",
+   "request": {
+    "method": "PATCH",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{}"
+   },
+   "status": 405,
+   "reason": "Method Not Allowed",
+   "headers": [
+    [
+     "allow",
+     "GET"
+    ],
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"Method Not Allowed\"}"
+  },
+  {
+   "label": "DELETE collection (405)",
+   "request": {
+    "method": "DELETE",
+    "path": "/todo",
+    "headers": {},
+    "body": null
+   },
+   "status": 405,
+   "reason": "Method Not Allowed",
+   "headers": [
+    [
+     "allow",
+     "POST"
+    ],
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"Method Not Allowed\"}"
+  },
+  {
+   "label": "GET unknown route",
+   "request": {
+    "method": "GET",
+    "path": "/nope",
+    "headers": {},
+    "body": null
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "22"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"Not Found\"}"
+  },
+  {
+   "label": "OPTIONS preflight allowed",
+   "request": {
+    "method": "OPTIONS",
+    "path": "/todo",
+    "headers": {
+     "Origin": "http://localhost:5173",
+     "Access-Control-Request-Method": "PUT",
+     "Access-Control-Request-Headers": "content-type"
+    },
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "access-control-allow-headers",
+     "content-type"
+    ],
+    [
+     "access-control-allow-methods",
+     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY"
+    ],
+    [
+     "access-control-allow-origin",
+     "http://localhost:5173"
+    ],
+    [
+     "access-control-max-age",
+     "600"
+    ],
+    [
+     "content-length",
+     "2"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "OK"
+  },
+  {
+   "label": "OPTIONS preflight allowed DELETE",
+   "request": {
+    "method": "OPTIONS",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {
+     "Origin": "http://localhost:5173",
+     "Access-Control-Request-Method": "DELETE"
+    },
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "access-control-allow-methods",
+     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY"
+    ],
+    [
+     "access-control-allow-origin",
+     "http://localhost:5173"
+    ],
+    [
+     "access-control-max-age",
+     "600"
+    ],
+    [
+     "content-length",
+     "2"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "OK"
+  },
+  {
+   "label": "OPTIONS preflight disallowed origin",
+   "request": {
+    "method": "OPTIONS",
+    "path": "/todo",
+    "headers": {
+     "Origin": "http://evil.example",
+     "Access-Control-Request-Method": "PUT"
+    },
+    "body": null
+   },
+   "status": 400,
+   "reason": "Bad Request",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "access-control-allow-methods",
+     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY"
+    ],
+    [
+     "access-control-max-age",
+     "600"
+    ],
+    [
+     "content-length",
+     "22"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "Disallowed CORS origin"
+  },
+  {
+   "label": "OPTIONS preflight 127.0.0.1 origin",
+   "request": {
+    "method": "OPTIONS",
+    "path": "/todo",
+    "headers": {
+     "Origin": "http://127.0.0.1:5173",
+     "Access-Control-Request-Method": "GET"
+    },
+    "body": null
+   },
+   "status": 400,
+   "reason": "Bad Request",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "access-control-allow-methods",
+     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY"
+    ],
+    [
+     "access-control-max-age",
+     "600"
+    ],
+    [
+     "content-length",
+     "22"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "Disallowed CORS origin"
+  },
+  {
+   "label": "GET list CORS allowed",
+   "request": {
+    "method": "GET",
+    "path": "/todo",
+    "headers": {
+     "Origin": "http://localhost:5173"
+    },
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "access-control-allow-origin",
+     "http://localhost:5173"
+    ],
+    [
+     "content-length",
+     "1268"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc",
+    "todo_entries[2].created_at": "local",
+    "todo_entries[2].updated_at": "utc",
+    "todo_entries[3].created_at": "local",
+    "todo_entries[3].updated_at": "utc",
+    "todo_entries[4].created_at": "local",
+    "todo_entries[4].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":5,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"aaaaaaaa-2222-3333-4444-555555555555\",\"title\":\"Upper\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET list CORS disallowed",
+   "request": {
+    "method": "GET",
+    "path": "/todo",
+    "headers": {
+     "Origin": "http://evil.example"
+    },
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "content-length",
+     "1268"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc",
+    "todo_entries[2].created_at": "local",
+    "todo_entries[2].updated_at": "utc",
+    "todo_entries[3].created_at": "local",
+    "todo_entries[3].updated_at": "utc",
+    "todo_entries[4].created_at": "local",
+    "todo_entries[4].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":5,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-555555555555\",\"title\":\"New\",\"description\":\"x\",\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"aaaaaaaa-2222-3333-4444-555555555555\",\"title\":\"Upper\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET 404 CORS allowed",
+   "request": {
+    "method": "GET",
+    "path": "/todo/99999999-2222-3333-4444-555555555555",
+    "headers": {
+     "Origin": "http://localhost:5173"
+    },
+    "body": null
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "access-control-allow-origin",
+     "http://localhost:5173"
+    ],
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "POST 422 CORS allowed",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json",
+     "Origin": "http://localhost:5173"
+    },
+    "body": "{\"title\": \"x\"}"
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "access-control-allow-credentials",
+     "true"
+    ],
+    [
+     "access-control-allow-origin",
+     "http://localhost:5173"
+    ],
+    [
+     "content-length",
+     "96"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"id\"],\"msg\":\"Field required\",\"input\":{\"title\":\"x\"}}]}"
+  },
+  {
+   "label": "DELETE ok",
+   "request": {
+    "method": "DELETE",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "74"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"success\":true,\"data\":null,\"message\":\"Deleted successfully\",\"error\":null}"
+  },
+  {
+   "label": "DELETE again (404)",
+   "request": {
+    "method": "DELETE",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "DELETE malformed id",
+   "request": {
+    "method": "DELETE",
+    "path": "/todo/zzz",
+    "headers": {},
+    "body": null
+   },
+   "status": 422,
+   "reason": "Unprocessable Content",
+   "headers": [
+    [
+     "content-length",
+     "199"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"path\",\"todo_id\"],\"msg\":\"Input should be a valid UUID, invalid character: found `z` at 1\",\"input\":\"zzz\",\"ctx\":{\"error\":\"invalid character: found `z` at 1\"}}]}"
+  },
+  {
+   "label": "DELETE unknown id",
+   "request": {
+    "method": "DELETE",
+    "path": "/todo/99999999-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "GET deleted",
+   "request": {
+    "method": "GET",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {},
+    "body": null
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "PUT deleted",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"title\": \"Back\"}"
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "PUT deleted restore attempt",
+   "request": {
+    "method": "PUT",
+    "path": "/todo/11111111-2222-3333-4444-555555555555",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"deleted\": false}"
+   },
+   "status": 404,
+   "reason": "Not Found",
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo not found\"}"
+  },
+  {
+   "label": "POST re-create deleted id (409)",
+   "request": {
+    "method": "POST",
+    "path": "/todo",
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "body": "{\"id\": \"11111111-2222-3333-4444-555555555555\", \"title\": \"Again\"}"
+   },
+   "status": 409,
+   "reason": "Conflict",
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"detail\":\"ToDo already exists\"}"
+  },
+  {
+   "label": "GET list after delete",
+   "request": {
+    "method": "GET",
+    "path": "/todo?limit=100",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "1084"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {
+    "todo_entries[0].created_at": "local",
+    "todo_entries[0].updated_at": "utc",
+    "todo_entries[1].created_at": "local",
+    "todo_entries[1].updated_at": "utc",
+    "todo_entries[2].created_at": "local",
+    "todo_entries[2].updated_at": "utc",
+    "todo_entries[3].created_at": "local",
+    "todo_entries[3].updated_at": "utc"
+   },
+   "body": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":4,\"todo_entries\":[{\"id\":\"11111111-2222-3333-4444-666666666666\",\"title\":\"Second\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-777777777777\",\"title\":\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"11111111-2222-3333-4444-888888888888\",\"title\":\"Extra\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false},{\"id\":\"aaaaaaaa-2222-3333-4444-555555555555\",\"title\":\"Upper\",\"description\":null,\"created_at\":\"YYYY-MM-DDThh:mm:ss.ffffff\",\"updated_at\":\"YYYY-MM-DDThh:mm:ss\",\"deleted\":false,\"done\":false}]}"
+  },
+  {
+   "label": "GET openapi.json",
+   "request": {
+    "method": "GET",
+    "path": "/openapi.json",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "7045"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"ToDo API\",\"version\":\"0.1.0\"},\"paths\":{\"/\":{\"get\":{\"summary\":\"Health Check\",\"description\":\"Health check endpoint for testing.\",\"operationId\":\"health_check__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"additionalProperties\":{\"type\":\"string\"},\"type\":\"object\",\"title\":\"Response Health Check  Get\"}}}}}}},\"/todo\":{\"post\":{\"summary\":\"Create Todo\",\"operationId\":\"create_todo_todo_post\",\"requestBody\":{\"required\":true,\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ToDoCreateScheme\"}}}},\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ToDoResponse\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}},\"get\":{\"summary\":\"List Todos\",\"operationId\":\"list_todos_todo_get\",\"parameters\":[{\"name\":\"limit\",\"in\":\"query\",\"required\":false,\"schema\":{\"type\":\"integer\",\"default\":10,\"title\":\"Limit\"}},{\"name\":\"page\",\"in\":\"query\",\"required\":false,\"schema\":{\"type\":\"integer\",\"default\":1,\"title\":\"Page\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ListToDoResponse\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/todo/{todo_id}\":{\"get\":{\"summary\":\"Get Todo\",\"operationId\":\"get_todo_todo__todo_id__get\",\"parameters\":[{\"name\":\"todo_id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\",\"title\":\"Todo Id\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/GetToDoResponse\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}},\"put\":{\"summary\":\"Update Todo\",\"operationId\":\"update_todo_todo__todo_id__put\",\"parameters\":[{\"name\":\"todo_id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\",\"title\":\"Todo Id\"}}],\"requestBody\":{\"required\":true,\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/TodoUpdateScheme\"}}}},\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ToDoResponse\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}},\"delete\":{\"summary\":\"Delete Todo\",\"operationId\":\"delete_todo_todo__todo_id__delete\",\"parameters\":[{\"name\":\"todo_id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\",\"title\":\"Todo Id\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/DeleteToDoResponse\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}}},\"components\":{\"schemas\":{\"DeleteToDoResponse\":{\"properties\":{\"success\":{\"type\":\"boolean\",\"title\":\"Success\"},\"data\":{\"anyOf\":[{\"additionalProperties\":true,\"type\":\"object\"},{\"type\":\"null\"}],\"title\":\"Data\"},\"message\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Message\"},\"error\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Error\"}},\"type\":\"object\",\"required\":[\"success\"],\"title\":\"DeleteToDoResponse\",\"description\":\"Response to delete user request\"},\"GetToDoResponse\":{\"properties\":{\"success\":{\"type\":\"boolean\",\"title\":\"Success\"},\"data\":{\"anyOf\":[{\"additionalProperties\":true,\"type\":\"object\"},{\"type\":\"null\"}],\"title\":\"Data\"},\"message\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Message\"},\"error\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Error\"},\"todo_entry\":{\"$ref\":\"#/components/schemas/ToDoSchema\"}},\"type\":\"object\",\"required\":[\"success\",\"todo_entry\"],\"title\":\"GetToDoResponse\",\"description\":\"Response to get ToDo request.\"},\"HTTPValidationError\":{\"properties\":{\"detail\":{\"items\":{\"$ref\":\"#/components/schemas/ValidationError\"},\"type\":\"array\",\"title\":\"Detail\"}},\"type\":\"object\",\"title\":\"HTTPValidationError\"},\"ListToDoResponse\":{\"properties\":{\"success\":{\"type\":\"boolean\",\"title\":\"Success\"},\"data\":{\"anyOf\":[{\"additionalProperties\":true,\"type\":\"object\"},{\"type\":\"null\"}],\"title\":\"Data\"},\"message\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Message\"},\"error\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Error\"},\"results\":{\"anyOf\":[{\"type\":\"integer\"},{\"type\":\"null\"}],\"title\":\"Results\",\"default\":0},\"todo_entries\":{\"items\":{\"$ref\":\"#/components/schemas/ToDoSchema\"},\"type\":\"array\",\"title\":\"Todo Entries\"}},\"type\":\"object\",\"required\":[\"success\",\"todo_entries\"],\"title\":\"ListToDoResponse\",\"description\":\"List of ToDos\"},\"ToDoCreateScheme\":{\"properties\":{\"id\":{\"type\":\"string\",\"format\":\"uuid\",\"title\":\"Id\"},\"title\":{\"type\":\"string\",\"title\":\"Title\"},\"description\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Description\"}},\"type\":\"object\",\"required\":[\"id\",\"title\"],\"title\":\"ToDoCreateScheme\"},\"ToDoResponse\":{\"properties\":{\"success\":{\"type\":\"boolean\",\"title\":\"Success\"},\"data\":{\"anyOf\":[{\"additionalProperties\":true,\"type\":\"object\"},{\"type\":\"null\"}],\"title\":\"Data\"},\"message\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Message\"},\"error\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Error\"},\"todo_entry\":{\"$ref\":\"#/components/schemas/ToDoSchema\"}},\"type\":\"object\",\"required\":[\"success\",\"todo_entry\"],\"title\":\"ToDoResponse\",\"description\":\"Response for ToDo\"},\"ToDoSchema\":{\"properties\":{\"id\":{\"type\":\"string\",\"format\":\"uuid\",\"title\":\"Id\"},\"title\":{\"type\":\"string\",\"title\":\"Title\",\"description\":\"The title of the ToDo to be shown.\",\"examples\":[\"Wash dishes\"]},\"description\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Description\",\"description\":\"The full description of the ToDo\",\"examples\":[\"Read the book until page 223.\"]},\"created_at\":{\"type\":\"string\",\"format\":\"date-time\",\"title\":\"Created At\"},\"updated_at\":{\"anyOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}],\"title\":\"Updated At\"},\"deleted\":{\"type\":\"boolean\",\"title\":\"Deleted\",\"default\":false},\"done\":{\"type\":\"boolean\",\"title\":\"Done\",\"default\":false}},\"type\":\"object\",\"required\":[\"id\",\"title\",\"created_at\"],\"title\":\"ToDoSchema\",\"description\":\"The todo schema class.\"},\"TodoUpdateScheme\":{\"properties\":{\"title\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Title\"},\"description\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"title\":\"Description\"},\"done\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}],\"title\":\"Done\"}},\"type\":\"object\",\"title\":\"TodoUpdateScheme\"},\"ValidationError\":{\"properties\":{\"loc\":{\"items\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"integer\"}]},\"type\":\"array\",\"title\":\"Location\"},\"msg\":{\"type\":\"string\",\"title\":\"Message\"},\"type\":{\"type\":\"string\",\"title\":\"Error Type\"},\"input\":{\"title\":\"Input\"},\"ctx\":{\"type\":\"object\",\"title\":\"Context\"}},\"type\":\"object\",\"required\":[\"loc\",\"msg\",\"type\"],\"title\":\"ValidationError\"}}}}"
+  },
+  {
+   "label": "GET docs",
+   "request": {
+    "method": "GET",
+    "path": "/docs",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "1007"
+    ],
+    [
+     "content-type",
+     "text/html; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <link type=\"text/css\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css\">\n    <link rel=\"shortcut icon\" href=\"https://fastapi.tiangolo.com/img/favicon.png\">\n    <title>ToDo API - Swagger UI</title>\n    </head>\n    <body>\n    <div id=\"swagger-ui\">\n    </div>\n    <script src=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>\n    <!-- `SwaggerUIBundle` is now available on the page -->\n    <script>\n    const ui = SwaggerUIBundle({\n        url: '/openapi.json',\n    \"dom_id\": \"#swagger-ui\",\n\"layout\": \"BaseLayout\",\n\"deepLinking\": true,\n\"showExtensions\": true,\n\"showCommonExtensions\": true,\noauth2RedirectUrl: window.location.origin + '/docs/oauth2-redirect',\n    presets: [\n        SwaggerUIBundle.presets.apis,\n        SwaggerUIBundle.SwaggerUIStandalonePreset\n        ],\n    })\n    </script>\n    </body>\n    </html>\n    "
+  },
+  {
+   "label": "GET redoc",
+   "request": {
+    "method": "GET",
+    "path": "/redoc",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "889"
+    ],
+    [
+     "content-type",
+     "text/html; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <title>ToDo API - ReDoc</title>\n    <!-- needed for adaptive design -->\n    <meta charset=\"utf-8\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    \n    <link href=\"https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700\" rel=\"stylesheet\">\n    \n    <link rel=\"shortcut icon\" href=\"https://fastapi.tiangolo.com/img/favicon.png\">\n    <!--\n    ReDoc doesn't change outer page styles\n    -->\n    <style>\n      body {\n        margin: 0;\n        padding: 0;\n      }\n    </style>\n    </head>\n    <body>\n    <noscript>\n        ReDoc requires Javascript to function. Please enable it to browse the documentation.\n    </noscript>\n    <redoc spec-url=\"/openapi.json\"></redoc>\n    <script src=\"https://cdn.jsdelivr.net/npm/redoc@2/bundles/redoc.standalone.js\"> </script>\n    </body>\n    </html>\n    "
+  },
+  {
+   "label": "GET docs oauth2-redirect",
+   "request": {
+    "method": "GET",
+    "path": "/docs/oauth2-redirect",
+    "headers": {},
+    "body": null
+   },
+   "status": 200,
+   "reason": "OK",
+   "headers": [
+    [
+     "content-length",
+     "3012"
+    ],
+    [
+     "content-type",
+     "text/html; charset=utf-8"
+    ],
+    [
+     "date",
+     "Www, DD Mmm YYYY hh:mm:ss GMT"
+    ],
+    [
+     "server",
+     "uvicorn"
+    ],
+    [
+     "vary",
+     "Origin"
+    ]
+   ],
+   "timestamp_basis": {},
+   "body": "\n    <!doctype html>\n    <html lang=\"en-US\">\n    <head>\n        <title>Swagger UI: OAuth2 Redirect</title>\n    </head>\n    <body>\n    <script>\n        'use strict';\n        function run () {\n            var oauth2 = window.opener.swaggerUIRedirectOauth2;\n            var sentState = oauth2.state;\n            var redirectUrl = oauth2.redirectUrl;\n            var isValid, qp, arr;\n\n            if (/code|token|error/.test(window.location.hash)) {\n                qp = window.location.hash.substring(1).replace('?', '&');\n            } else {\n                qp = location.search.substring(1);\n            }\n\n            arr = qp.split(\"&\");\n            arr.forEach(function (v,i,_arr) { _arr[i] = '\"' + v.replace('=', '\":\"') + '\"';});\n            qp = qp ? JSON.parse('{' + arr.join() + '}',\n                    function (key, value) {\n                        return key === \"\" ? value : decodeURIComponent(value);\n                    }\n            ) : {};\n\n            isValid = qp.state === sentState;\n\n            if ((\n              oauth2.auth.schema.get(\"flow\") === \"accessCode\" ||\n              oauth2.auth.schema.get(\"flow\") === \"authorizationCode\" ||\n              oauth2.auth.schema.get(\"flow\") === \"authorization_code\"\n            ) && !oauth2.auth.code) {\n                if (!isValid) {\n                    oauth2.errCb({\n                        authId: oauth2.auth.name,\n                        source: \"auth\",\n                        level: \"warning\",\n                        message: \"Authorization may be unsafe, passed state was changed in server. The passed state wasn't returned from auth server.\"\n                    });\n                }\n\n                if (qp.code) {\n                    delete oauth2.state;\n                    oauth2.auth.code = qp.code;\n                    oauth2.callback({auth: oauth2.auth, redirectUrl: redirectUrl});\n                } else {\n                    let oauthErrorMsg;\n                    if (qp.error) {\n                        oauthErrorMsg = \"[\"+qp.error+\"]: \" +\n                            (qp.error_description ? qp.error_description+ \". \" : \"no accessCode received from the server. \") +\n                            (qp.error_uri ? \"More info: \"+qp.error_uri : \"\");\n                    }\n\n                    oauth2.errCb({\n                        authId: oauth2.auth.name,\n                        source: \"auth\",\n                        level: \"error\",\n                        message: oauthErrorMsg || \"[Authorization failed]: no accessCode received from the server.\"\n                    });\n                }\n            } else {\n                oauth2.callback({auth: oauth2.auth, token: qp, isValid: isValid, redirectUrl: redirectUrl});\n            }\n            window.close();\n        }\n\n        if (document.readyState !== 'loading') {\n            run();\n        } else {\n            document.addEventListener('DOMContentLoaded', function () {\n                run();\n            });\n        }\n    </script>\n    </body>\n    </html>\n        "
+  }
+ ]
+}

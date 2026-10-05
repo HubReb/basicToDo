@@ -1,0 +1,178 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 2 visual review</title>
+<style>
+:root { --bg:#fff; --fg:#1d1d1f; --muted:#5f6368; --line:#d9d9de; --ok:#1a7f37; --diff:#b42318; --code:#f4f4f6; }
+@media (prefers-color-scheme: dark) { :root { --bg:#16161a; --fg:#ececf1; --muted:#a0a0ab; --line:#33333b; --ok:#4ac26b; --diff:#ff7b72; --code:#22222a; } }
+body { margin:0; padding:24px 16px 64px; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; }
+main { max-width:1200px; margin:0 auto; }
+h1 { font-size:1.6rem; margin:0 0 4px; } h2 { margin-top:40px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+.meta, figcaption { color:var(--muted); font-size:.9rem; }
+.pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:760px) { .pair { grid-template-columns:1fr; } }
+figure { margin:0; } img { width:100%; height:auto; border:1px solid var(--line); }
+.state.ok { color:var(--ok); font-weight:600; } .state.diff { color:var(--diff); font-weight:600; }
+pre, code { background:var(--code); } pre { padding:12px; overflow:auto; font-size:.8rem; max-height:480px; }
+table { border-collapse:collapse; width:100%; font-size:.85rem; } td, th { border:1px solid var(--line); padding:4px 6px; text-align:left; vertical-align:top; }
+.summary { border-left:4px solid var(--ok); padding:8px 12px; background:var(--code); }
+</style></head><body><main>
+<h1>Phase 2 visual review: F0 → F2</h1>
+<p class="meta">basicToDo frontend · F0 = legacy dependencies at <code>75e0fff</code> · F2 = <code>e0fc04c</code> · captured with Playwright 1.63.0, chromium 153.0.8010.12 (revision 1243), 1280x800@1x, runner lock <code>7cb5e363a037c762…</code> · F0 and F2 setups identical: True</p>
+<div class="summary"><strong>Result:</strong> all 8 screens are pixel-identical between F0 and F2, and the computed styles of every rendered element are identical. The built CSS differs (D-19), and the Chakra outline recipe differs (D-24), but neither changes a computed value in this app. The evidence follows the screens. A positive control shows that the capture detects even a one-line CSS change.</div>
+<h2>Screens</h2>
+<section class="screen"><h3>Review: empty list <code>01-list-empty</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/01-list-empty.png" alt="F0 01-list-empty" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/01-list-empty.png" alt="F2 01-list-empty" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section><section class="screen"><h3>Capture: title typed <code>02-create-typed</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/02-create-typed.png" alt="F0 02-create-typed" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/02-create-typed.png" alt="F2 02-create-typed" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section><section class="screen"><h3>Capture: created, toast <code>03-create-done</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/03-create-done.png" alt="F0 03-create-done" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/03-create-done.png" alt="F2 03-create-done" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section><section class="screen"><h3>Review: four todos <code>04-list-several</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/04-list-several.png" alt="F0 04-list-several" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/04-list-several.png" alt="F2 04-list-several" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section><section class="screen"><h3>Rename: edit form open <code>05-edit-open</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/05-edit-open.png" alt="F0 05-edit-open" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/05-edit-open.png" alt="F2 05-edit-open" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section><section class="screen"><h3>Rename: saved, toast <code>06-edit-saved</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/06-edit-saved.png" alt="F0 06-edit-saved" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/06-edit-saved.png" alt="F2 06-edit-saved" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section><section class="screen"><h3>Delete: deleted, toast <code>07-delete-done</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/07-delete-done.png" alt="F0 07-delete-done" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/07-delete-done.png" alt="F2 07-delete-done" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section><section class="screen"><h3>Capture: validation error <code>08-validation-error</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="F0/08-validation-error.png" alt="F0 08-validation-error" loading="lazy"><figcaption>F0 (Vite 6.4, Chakra 3.28)</figcaption></figure>
+<figure><img src="F2/08-validation-error.png" alt="F2 08-validation-error" loading="lazy"><figcaption>F2 (Vite 8.3, Chakra 3.37)</figcaption></figure></div></section>
+<h2>Evidence: D-19 (Vite 8, Lightning CSS)</h2>
+<p>The built stylesheet changes from <code>index-DPFTD5Gq.css</code> (1.59 kB) to <code>index-vagjFkSK.css</code> (1.69 kB). The diff below is normalized with prettier 3.9.9 from the runner. Every change preserves the computed value in Chromium:</p>
+<ul>
+<li><strong>Reordered declarations</strong> inside the same rules (<code>:root</code>, <code>[data-scope="dialog"]</code>, <code>a</code>, <code>button</code>, <code>#root</code>, <code>.logo</code>, the <code>animation</code> shorthand). The values are the same, and no rule sets the same property twice.</li>
+<li><code>transparent</code> → <code>#0000</code>: the same colour.</li>
+<li><code>color-scheme: light dark</code> lowering: Lightning CSS adds <code>--lightningcss-light</code>/<code>--lightningcss-dark</code> and a media query. These variables only matter to <code>light-dark()</code>, which this CSS does not use.</li>
+<li>Vendor prefixes: <code>-webkit-text-decoration</code> is added, and the <code>-moz-</code>/<code>-webkit-</code>/<code>-ms-</code> placeholder rules become <code>::placeholder</code>. In Chromium, <code>::-webkit-input-placeholder</code> is an alias.</li>
+<li><code>optimizeLegibility</code> → <code>optimizelegibility</code>: keywords are case-insensitive.</li>
+</ul>
+<pre>--- F0 dist/assets/index-DPFTD5Gq.css (prettier 3.9.9)
++++ F2 dist/assets/index-vagjFkSK.css (prettier 3.9.9)
+@@ -1,23 +1,32 @@
+ :root {
+-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+-  line-height: 1.5;
+-  font-weight: 400;
++  --lightningcss-light: initial;
++  --lightningcss-dark: ;
+   color-scheme: light dark;
+   color: #ffffffde;
+-  background-color: #242424;
+   font-synthesis: none;
+-  text-rendering: optimizeLegibility;
++  text-rendering: optimizelegibility;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
++  background-color: #242424;
++  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
++  font-weight: 400;
++  line-height: 1.5;
++}
++@media (prefers-color-scheme: dark) {
++  :root {
++    --lightningcss-light: ;
++    --lightningcss-dark: initial;
++  }
+ }
+ [data-scope=&quot;dialog&quot;] {
+-  background: #1a1a1a !important;
+   --bg-currentcolor: #1a1a1a !important;
++  background: #1a1a1a !important;
+ }
+ a {
+-  font-weight: 500;
+   color: #646cff;
++  -webkit-text-decoration: inherit;
+   text-decoration: inherit;
++  font-weight: 500;
+ }
+ a:hover {
+   color: #535bf2;
+@@ -27,16 +36,16 @@
+   line-height: 1.1;
+ }
+ button {
++  cursor: pointer;
++  color: #fff;
++  background-color: #1a1a1a;
++  border: 1px solid #0000;
+   border-radius: 8px;
+-  border: 1px solid transparent;
+   padding: 0.6em 1.2em;
++  font-family: inherit;
+   font-size: 1em;
+   font-weight: 500;
+-  font-family: inherit;
+-  background-color: #1a1a1a;
+-  cursor: pointer;
+   transition: border-color 0.25s;
+-  color: #fff;
+ }
+ button:hover {
+   border-color: #646cff;
+@@ -49,15 +58,11 @@
+   color: #888;
+   opacity: 1;
+ }
+-input::-moz-placeholder {
+-  color: #888;
+-  opacity: 1;
+-}
+-input::-webkit-input-placeholder {
++input::placeholder {
+   color: #888;
+   opacity: 1;
+ }
+-input::-ms-input-placeholder {
++input::placeholder {
+   color: #888;
+   opacity: 1;
+ }
+@@ -74,15 +79,15 @@
+   }
+ }
+ #root {
++  text-align: left;
+   max-width: 1280px;
+   margin: 0 auto;
+   padding: 2rem;
+-  text-align: left;
+ }
+ .logo {
++  will-change: filter;
+   height: 6em;
+   padding: 1.5em;
+-  will-change: filter;
+   transition: filter 0.3s;
+ }
+ .logo:hover {
+@@ -101,7 +106,7 @@
+ }
+ @media (prefers-reduced-motion: no-preference) {
+   a:nth-of-type(2) .logo {
+-    animation: logo-spin infinite 20s linear;
++    animation: 20s linear infinite logo-spin;
+   }
+ }
+ .card {
+</pre>
+<h2>Evidence: D-24 (Chakra 3.28 → 3.37, outline variant)</h2>
+<p><code>TodoEditForm.tsx:105</code> renders <code>&lt;Button variant="outline"&gt;Cancel&lt;/Button&gt;</code>. The button recipe changed in <code>@chakra-ui/react/dist/esm/theme/recipes/button.js</code>:</p>
+<pre>3.28.0  outline: { borderWidth: "1px", borderColor: "colorPalette.muted", color: "colorPalette.fg", … }
+3.37.0  outline: { borderWidth: "1px", "--outline-color-legacy": "colors.colorPalette.muted",
+                    "--outline-color": "colors.colorPalette.border",
+                    borderColor: "var(--outline-color, var(--outline-color-legacy))", color: "colorPalette.fg", … }</pre>
+<p>Chakra 3 emits its styles in cascade layers. The app's global <code>src/index.css</code> has an <strong>unlayered</strong> <code>button { border: 1px solid transparent; color: #fff; background-color: … }</code> rule, and unlayered rules beat every layer. The CSSOM probe on the running F2 build lists every rule that matches the Cancel button (<code>probe_layers.mjs</code> → <code>F2/d24-cascade-probe.json</code>). The computed border colour is <code>rgba(0, 0, 0, 0)</code>.</p>
+<table><tr><th>Layer</th><th>Selector</th><th>Declarations</th></tr><tr><td>(unlayered)</td><td><code>button</code></td><td><code>border-color: rgba(0, 0, 0, 0); border: 1px solid rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); color: rgb(255, 255, 255); background-color: rgb(26, 26, 26)</code></td></tr><tr><td>(unlayered)</td><td><code>button</code></td><td><code>background-color: rgb(249, 249, 249)</code></td></tr><tr><td>reset</td><td><code>*, ::before, ::after, ::backdrop</code></td><td><code>border-color: var(--global-color-border, currentColor)</code></td></tr><tr><td>reset</td><td><code>button, [type=&quot;button&quot;], [type=&quot;reset&quot;], [type=&quot;submit&quot;]</code></td><td><code>background-color: transparent</code></td></tr><tr><td>reset</td><td><code>button, input, optgroup, select, textarea</code></td><td><code>color: inherit</code></td></tr><tr><td>recipes</td><td><code>.css-1r661dj</code></td><td><code>border-color: var(--outline-color, var(--outline-color-legacy)); color: var(--chakra-colors-color-palette-fg)</code></td></tr></table>
+<p>The new recipe rule (layer <code>recipes</code>) is present in F2, but the unlayered legacy rule overrides it, so the token change is invisible here. The same mechanism produces the pre-existing quirk visible in every screen: Chakra buttons render white text on <code>#f9f9f9</code>.</p>
+<h2>Positive control</h2>
+<p>A one-line addition to the F2 stylesheet (<code>body{letter-spacing:.5px}</code>) was captured with the same setup and compared with F2. Every screen differed (and the stylesheet was then restored; its hash matches the build again):</p>
+<ul><li><code>01-list-empty</code>: 3068 px (0.300%)</li><li><code>02-create-typed</code>: 3068 px (0.300%)</li><li><code>03-create-done</code>: 4073 px (0.398%)</li><li><code>04-list-several</code>: 4815 px (0.470%)</li><li><code>05-edit-open</code>: 4815 px (0.470%)</li><li><code>06-edit-saved</code>: 7668 px (0.749%)</li><li><code>07-delete-done</code>: 6829 px (0.667%)</li><li><code>08-validation-error</code>: 5826 px (0.569%)</li></ul>
+</main></body></html>

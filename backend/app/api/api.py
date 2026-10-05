@@ -17,7 +17,9 @@ from backend.app.schemas.api_responses.to_do_response import ToDoResponse
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
-app = FastAPI(title="ToDo API")
+# FastAPI >= 0.142 would start exporting OpenTelemetry data as soon as an
+# OTEL_EXPORTER_OTLP_* variable is set; keep the legacy behaviour (no export).
+app = FastAPI(title="ToDo API", telemetry={"auto_configure": False})
 
 # Configure CORS to allow frontend access
 app.add_middleware(

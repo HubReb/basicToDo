@@ -1,0 +1,9 @@
+{
+  "name": "basictodo-screens-runner",
+  "private": true,
+  "description": "Fixed Playwright + Chromium used to capture F0, F1 and F2 screenshots, independent of frontend/node_modules.",
+  "dependencies": {
+    "playwright": "1.63.0",
+    "prettier": "3.9.9"
+  }
+}
