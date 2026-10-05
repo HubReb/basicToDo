@@ -40,7 +40,6 @@ jobs:
 
       - name: Run MyPy type checking
         run: uv run mypy backend/app/
-        continue-on-error: true
 
       - name: Run tests with coverage
         run: |
@@ -130,6 +129,6 @@ jobs:
         with:
           python-version: "3.13"
       - name: run linter
-        run: |
-          cd backend
-          uv run pylint app/*py --exit-zero
+        # The whole backend package, not only its top-level modules; still
+        # report-only (--exit-zero), per Q9 in the modernization brief.
+        run: uv run pylint backend/app --exit-zero

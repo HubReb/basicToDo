@@ -33,15 +33,16 @@ jobs:
           npm ci
 
       - name: Run TypeScript type checking
+        # tsconfig.json only references tsconfig.app.json and tsconfig.node.json
+        # ("files": []), so --noEmit on it checks nothing; -b checks both.
         run: |
           cd frontend
-          npx tsc --noEmit
+          npx tsc -b
 
       - name: Run ESLint
         run: |
           cd frontend
           npm run lint
-        continue-on-error: true
 
       - name: Run unit tests
         run: |
