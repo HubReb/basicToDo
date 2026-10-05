@@ -14,5 +14,5 @@ class ToDoEntryData:
     description: str
     created_at: datetime | None
     updated_at: datetime | None
-    deleted: Mapped[bool] = mapped_column(default=False, name='deleted')
+    deleted: Mapped[bool] = mapped_column(default=False, name="deleted")
     done: bool = False

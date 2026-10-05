@@ -9,6 +9,7 @@ process-global, with the exporter pointed at a local sink that records
 every request it receives. The control case shows that a plain FastAPI()
 does export in the same setup, so an empty sink means something.
 """
+
 import http.server
 import importlib.util
 import os
