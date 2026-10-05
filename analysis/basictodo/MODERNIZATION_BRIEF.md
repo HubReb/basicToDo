@@ -267,13 +267,13 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] Phase 2 has landed its `node-version` change, or the two phases agree in writing (in this file) that Phase 3 edits around it. _(`d1709cb`, PR #114)_
 
 **Exit criteria:**
-- [ ] All six workflows are green on the `plugin/uplift-basictodo/phase-3` **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval"; Q11). They trigger because the base branch's first commit added it to every `pull_request` filter.
+- [x] All six workflows are green on the `plugin/uplift-basictodo/phase-3` **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval"; Q11). They trigger because the base branch's first commit added it to every `pull_request` filter. _(PR #115 at `5dadbcd`, Super-Linter included: `BASELINE.md`, "Phase 3 CI".)_
 - [x] Every `uses:` is pinned to an exact version or SHA. _(All 29 `uses:` lines: release commit SHA plus the exact version as a comment; `2ee51ba`, `d2e284b`.)_
 - [x] Top-level permissions are read-only. _(All six workflows: `contents: read`; write grants only at job level. `d2e284b` for `codeql.yml` and `super-linter.yml`, `5c46f21` for `dependency-review.yml`.)_
 - [x] Dependabot for `github-actions` is configured. _(Since `00d0d18`; the `codeql-action` group from `main` added in `fecb197`.)_
-- [ ] The gates behave as decided in Q9. _(Locally proven by a positive control per blocking gate, `BASELINE.md`; the CI job log is checked after the push.)_
+- [x] The gates behave as decided in Q9. _(Positive control per blocking gate, locally; on PR #115 the job log shows mypy and ESLint running clean with no `continue-on-error` left, where #114 swallowed their exit 1: `BASELINE.md`, `baseline/ci/ci-gates-pr114-pr115.txt`.)_
 - [x] **Q12:** mypy reports **0 errors in two independently synced fresh venvs**, with both stub packages and the `[mypy]` extra gone. _(`36765cb`, `a268203`; at the tip `4112dc5` in two fresh venvs synced like CI, identical freezes: `BASELINE.md`.)_
-- [ ] **The CI duration is measured and recorded in `BASELINE.md`.** This closes the "don't know" from Check 0.
+- [x] **The CI duration is measured and recorded in `BASELINE.md`.** This closes the "don't know" from Check 0. _(PR #115: 151 s wall clock, 474 s runner time.)_
 
 **Relative scale:** **S**. CI is 0.30 KSLOC of YAML, index 0.77, 14%.
 
@@ -322,7 +322,7 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [ ] **The legacy sample DB opens, reads and writes under the new model, and stays readable by legacy code** (both directions).
 - [ ] The full suite and the golden master show **zero diffs** against the Phase 1 target baseline.
 - [ ] The P0 contract tests are green.
-- [ ] mypy reports 0 errors with the stubs removed.
+- [ ] mypy reports 0 errors with the stubs removed. _(Pulled into Phase 3 by Q12 and met there; Phase 4 must keep it at 0.)_
 - [ ] `pyproject.toml` keeps `sqlalchemy>=2.0.54,<2.1`; the suite is green with `sqlalchemy-utils` removed, and `pip-audit` reports 0.
 - [ ] `plugin/uplift-basictodo/phase-4` is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and python-app and e2e green on it (Q11).
 

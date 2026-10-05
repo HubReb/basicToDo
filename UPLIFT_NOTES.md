@@ -162,11 +162,12 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | ESLint | 1 error; non-blocking | **0**; **blocking** |
 | Type check in CI | `tsc --noEmit`: 0 files checked | `tsc -b`: 32 project files |
 | pylint (report-only) | 3 modules | 15 modules |
-| super-linter | v4.10.0, red | v9.0.0, **green locally** |
+| super-linter | v4.10.0, red | v9.0.0, **green** locally and on PR #115 |
 | pytest per test, golden master, frontend gates, e2e | — | identical to the before state |
+| CI on the draft PR | #114: 5 of 6 green, Node 20 deprecation warning in all 10 jobs | **#115: 6 of 6 green**, no Node 20 warning; 151 s wall clock, 474 s runner time |
 
 - Each blocking gate (mypy, ESLint, `tsc -b`, super-linter) failed on a deliberate error and passed again after the revert.
-- The Phase 3 PR's CI run and its duration are recorded after the push.
+- On PR #115 the mypy and ESLint steps run clean, and nothing swallows their exit code any more. On #114 both exited 1 and were still reported as success (`baseline/ci/ci-gates-pr114-pr115.txt`).
 
 ## Residual and deferred
 
@@ -174,3 +175,4 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 - **Disabled super-linter linters** (Biome, Prettier for TS/JS, ruff, isort, jscpd, pylint) need a repository configuration before they can be turned on.
 - **`analysis/` and `UPLIFT_NOTES.md` are excluded from super-linter.** They are modernization evidence, not product code.
 - **uv stays 0.7.16** in CI, and ESLint stays on major 9.
+- **The super-linter image is pinned by tag, not by digest.** The action at the pinned SHA references `ghcr.io/super-linter/super-linter:v9.0.0`, a mutable tag. On PR #115 it resolved to the image the local runs used. A digest pin would need `uses: docker://ghcr.io/super-linter/super-linter@sha256:…`, which is not part of this phase.

@@ -430,6 +430,39 @@ Configured as on `main` (decision "Konfig wie main"), with the reasons as YAML c
 
 Tools: `baseline/ci/run_superlinter.sh <base-branch> <log> [image]` runs super-linter in Podman on a clean clone of HEAD, with the env read from the workflow file. `baseline/ci/superlinter_findings.py <log>` groups a log's findings by linter and mentioned path.
 
+### Phase 3 CI (draft PR #115)
+
+Measured on `plugin/uplift-basictodo/phase-3` at `5dadbcd` against `plugin/uplift-basictodo/base`, 2026-10-05. Runtimes: Node 24.21.0, CPython 3.13.15, Chrome for Testing 153.0.8010.12 (chromium v1243), as in the local measurements.
+
+| Workflow | Result | Duration |
+|---|---|---|
+| Dependency review | ✅ no vulnerabilities, license or Scorecard issues | 22 s |
+| Frontend CI (`tsc -b`, ESLint, vitest, build) | ✅ | 39 s |
+| Python Application CI (tests, lint, coverage comment) | ✅ 456 passed, 1 skipped, coverage 83.98 % | 55 s |
+| CodeQL (actions / python / js-ts) | ✅ | 56 s |
+| End-to-End Tests | ✅ 13/13 | 75 s |
+| Super-Linter v9.0.0 | ✅ 15 linters pass | 151 s |
+
+**Pipeline duration:** about 2½ minutes of wall clock (151 s from the runs created to the last job finished), 474 s of runner time across 10 jobs. Phase 1 (#113): 180 s and 536 s; Phase 2 (#114): 256 s and 578 s. The push to `phase-3` also ran Python (30 s), Frontend (35 s) and E2E (83 s), all green.
+
+**Exit criteria "all six workflows green" and "CI duration recorded": met ✅.**
+
+**Gates (Q9) in the job log** (`baseline/ci/ci-gates-pr114-pr115.txt`, extracted from both PRs' job logs, workspace paths made relative):
+- **mypy:** `uv run mypy backend/app/` prints `Success: no issues found in 35 source files`. On #114 the same step printed `Found 3 errors in 2 files` and `Process completed with exit code 1`, and the Actions API still reported the step as success because of `continue-on-error: true`.
+- **ESLint:** `npm run lint` reports no problem. On #114 it reported the `smoke.spec.ts:89` error and exit code 1, also reported as success.
+- **Type check:** the step now runs `npx tsc -b`; on #114 it ran `npx tsc --noEmit`, which checks no file.
+- All steps run under `bash -e`, and the only `continue-on-error` left in the six workflows is `false`, on the pytest step. A non-zero exit of mypy, `tsc -b` or ESLint therefore fails its job and the workflow, as the local positive controls showed for each command.
+
+**Exit criterion "gates behave as decided in Q9": met ✅** (YAML, job log, positive controls).
+
+**Further observations:**
+- **No Node 20 deprecation warning** in any of the 10 jobs. On #114 (at `e3ffd22`), all 10 jobs warned "Node.js 20 is deprecated", for checkout, setup-python, setup-node, setup-uv, upload/download-artifact, the CodeQL actions and dependency-review.
+- **super-linter:** `DEFAULT_BRANCH` resolved to `origin/plugin/uplift-basictodo/base`. The same 15 linters as in the local run ran and passed. The action at the pinned SHA references its image by tag (`ghcr.io/super-linter/super-linter:v9.0.0`). CI pulled the index `sha256:7620fb6f…`, whose linux/amd64 manifest is `sha256:496fe2e1…`, the image the local runs used.
+- **Two warnings, both cache races in the e2e job:** jobs that run in parallel try to save the same cache key. The e2e job lost both races, so it reports "Unable to reserve cache … another job may be creating this cache":
+  - for the setup-uv cache, as a warning (the backend job saved that key);
+  - for the npm cache of setup-node, as info only (the frontend job saved that key).
+- **Coverage comment:** posted. Diff coverage is not available because the cumulative diff against `base` is too large for GitHub's API (300-file limit), as on #114.
+
 ## Change log
 
 _Empty. Phase 5 records each intentional behaviour change here, with its Q6 row ID._

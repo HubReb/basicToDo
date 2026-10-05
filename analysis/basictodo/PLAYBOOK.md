@@ -277,6 +277,7 @@ Deferred on purpose, with the phase that owns each item:
 | Positive controls | non-zero exit for mypy, ESLint, `tsc -b` and super-linter |
 | `run_superlinter.sh` at the tip | exit 0 |
 | Draft PR | all six workflows green, duration recorded |
+| Gate steps in the job log | the command's own output is clean. Don't rely on the step conclusion: the Actions API reports a step with `continue-on-error: true` as success even when its command exits 1 (#114) |
 
 ### Errors hit, and what resolved them
 
