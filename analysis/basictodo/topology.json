@@ -1,0 +1,1653 @@
+{
+  "system": "basicToDo",
+  "root": {
+    "id": "sys",
+    "name": "basicToDo",
+    "kind": "system",
+    "children": [
+      {
+        "id": "dom:fe-shell",
+        "name": "F1 \u00b7 App shell & shared UI",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "frontend/index.html",
+            "name": "index.html",
+            "kind": "screen",
+            "language": "html",
+            "loc": 13,
+            "file": "frontend/index.html",
+            "testRefs": 3
+          },
+          {
+            "id": "frontend/src/App.css",
+            "name": "App.css",
+            "kind": "module",
+            "language": "css",
+            "loc": 37,
+            "file": "frontend/src/App.css",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/App.tsx",
+            "name": "App.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 25,
+            "file": "frontend/src/App.tsx",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/components/Header.tsx",
+            "name": "Header.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 25,
+            "file": "frontend/src/components/Header.tsx",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/components/common/LoadingOverlay.tsx",
+            "name": "LoadingOverlay.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 19,
+            "file": "frontend/src/components/common/LoadingOverlay.tsx",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/components/common/Spinner.tsx",
+            "name": "Spinner.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 11,
+            "file": "frontend/src/components/common/Spinner.tsx",
+            "testRefs": 1
+          },
+          {
+            "id": "frontend/src/components/errors/ErrorBoundary.tsx",
+            "name": "ErrorBoundary.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 46,
+            "file": "frontend/src/components/errors/ErrorBoundary.tsx",
+            "testRefs": 1
+          },
+          {
+            "id": "frontend/src/components/errors/ErrorMessage.tsx",
+            "name": "ErrorMessage.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 13,
+            "file": "frontend/src/components/errors/ErrorMessage.tsx",
+            "testRefs": 1
+          },
+          {
+            "id": "frontend/src/components/ui/toaster.tsx",
+            "name": "toaster.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 36,
+            "file": "frontend/src/components/ui/toaster.tsx",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/config/queryClient.ts",
+            "name": "queryClient.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 14,
+            "file": "frontend/src/config/queryClient.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/hooks/useToast.ts",
+            "name": "useToast.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 23,
+            "file": "frontend/src/hooks/useToast.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/index.css",
+            "name": "index.css",
+            "kind": "module",
+            "language": "css",
+            "loc": 75,
+            "file": "frontend/src/index.css",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/lib/toaster.ts",
+            "name": "toaster.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 5,
+            "file": "frontend/src/lib/toaster.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/main.tsx",
+            "name": "main.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 9,
+            "file": "frontend/src/main.tsx",
+            "testRefs": 0
+          }
+        ]
+      },
+      {
+        "id": "dom:fe-todo-ui",
+        "name": "F2 \u00b7 Todo feature UI",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "frontend/src/components/todos/TodoDeleteButton.tsx",
+            "name": "TodoDeleteButton.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 40,
+            "file": "frontend/src/components/todos/TodoDeleteButton.tsx",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/components/todos/TodoEditForm.tsx",
+            "name": "TodoEditForm.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 96,
+            "file": "frontend/src/components/todos/TodoEditForm.tsx",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/components/todos/TodoForm.tsx",
+            "name": "TodoForm.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 89,
+            "file": "frontend/src/components/todos/TodoForm.tsx",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/components/todos/TodoItem.tsx",
+            "name": "TodoItem.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 35,
+            "file": "frontend/src/components/todos/TodoItem.tsx",
+            "testRefs": 1
+          },
+          {
+            "id": "frontend/src/components/todos/TodoList.tsx",
+            "name": "TodoList.tsx",
+            "kind": "screen",
+            "language": "typescript",
+            "loc": 43,
+            "file": "frontend/src/components/todos/TodoList.tsx",
+            "testRefs": 1
+          }
+        ]
+      },
+      {
+        "id": "dom:fe-hooks",
+        "name": "F3 \u00b7 Server-state hooks",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "frontend/src/hooks/queries/useCreateTodo.ts",
+            "name": "useCreateTodo.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 39,
+            "file": "frontend/src/hooks/queries/useCreateTodo.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/hooks/queries/useDeleteTodo.ts",
+            "name": "useDeleteTodo.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 30,
+            "file": "frontend/src/hooks/queries/useDeleteTodo.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/hooks/queries/useTodoList.ts",
+            "name": "useTodoList.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 8,
+            "file": "frontend/src/hooks/queries/useTodoList.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/hooks/queries/useUpdateTodo.ts",
+            "name": "useUpdateTodo.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 38,
+            "file": "frontend/src/hooks/queries/useUpdateTodo.ts",
+            "testRefs": 0
+          }
+        ]
+      },
+      {
+        "id": "dom:fe-api",
+        "name": "F4 \u00b7 API client & contract types",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "frontend/src/config/env.ts",
+            "name": "env.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 12,
+            "file": "frontend/src/config/env.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/services/api/client.ts",
+            "name": "client.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 95,
+            "file": "frontend/src/services/api/client.ts",
+            "testRefs": 0
+          },
+          {
+            "id": "frontend/src/services/api/todoApi.ts",
+            "name": "todoApi.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 33,
+            "file": "frontend/src/services/api/todoApi.ts",
+            "testRefs": 1
+          },
+          {
+            "id": "frontend/src/types/todo.ts",
+            "name": "todo.ts",
+            "kind": "module",
+            "language": "typescript",
+            "loc": 38,
+            "file": "frontend/src/types/todo.ts",
+            "testRefs": 0
+          }
+        ]
+      },
+      {
+        "id": "dom:be-boot",
+        "name": "B1 \u00b7 Bootstrap & composition root",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "backend/app/factory.py",
+            "name": "factory.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 21,
+            "file": "backend/app/factory.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/main.py",
+            "name": "main.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 5,
+            "file": "backend/app/main.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/scripts/init_db.py",
+            "name": "init_db.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 24,
+            "file": "backend/scripts/init_db.py",
+            "testRefs": 0
+          }
+        ]
+      },
+      {
+        "id": "dom:be-api",
+        "name": "B2 \u00b7 HTTP API",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "backend/app/api/api.py",
+            "name": "api.py (FastAPI app)",
+            "kind": "module",
+            "language": "python",
+            "loc": 23,
+            "file": "backend/app/api/api.py",
+            "testRefs": 1
+          },
+          {
+            "id": "route:DELETE /todo/{todo_id}",
+            "name": "DELETE /todo/{todo_id}",
+            "kind": "module",
+            "language": "python",
+            "loc": 11,
+            "file": "backend/app/api/api.py:76",
+            "testRefs": 8
+          },
+          {
+            "id": "route:GET /",
+            "name": "GET /",
+            "kind": "module",
+            "language": "python",
+            "loc": 4,
+            "file": "backend/app/api/api.py:35",
+            "testRefs": 0
+          },
+          {
+            "id": "route:GET /todo",
+            "name": "GET /todo",
+            "kind": "module",
+            "language": "python",
+            "loc": 4,
+            "file": "backend/app/api/api.py:89",
+            "testRefs": 6
+          },
+          {
+            "id": "route:GET /todo/{todo_id}",
+            "name": "GET /todo/{todo_id}",
+            "kind": "module",
+            "language": "python",
+            "loc": 7,
+            "file": "backend/app/api/api.py:54",
+            "testRefs": 4
+          },
+          {
+            "id": "route:POST /todo",
+            "name": "POST /todo",
+            "kind": "module",
+            "language": "python",
+            "loc": 11,
+            "file": "backend/app/api/api.py:41",
+            "testRefs": 5
+          },
+          {
+            "id": "route:PUT /todo/{todo_id}",
+            "name": "PUT /todo/{todo_id}",
+            "kind": "module",
+            "language": "python",
+            "loc": 11,
+            "file": "backend/app/api/api.py:63",
+            "testRefs": 1
+          }
+        ]
+      },
+      {
+        "id": "dom:be-schemas",
+        "name": "B3 \u00b7 Schemas (DTOs)",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "backend/app/schemas/api_responses/api_response.py",
+            "name": "api_response.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 7,
+            "file": "backend/app/schemas/api_responses/api_response.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/schemas/api_responses/delete_to_do_response.py",
+            "name": "delete_to_do_response.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 4,
+            "file": "backend/app/schemas/api_responses/delete_to_do_response.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/schemas/api_responses/get_list_to_do_response.py",
+            "name": "get_list_to_do_response.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 12,
+            "file": "backend/app/schemas/api_responses/get_list_to_do_response.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/schemas/api_responses/get_to_do_response.py",
+            "name": "get_to_do_response.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 10,
+            "file": "backend/app/schemas/api_responses/get_to_do_response.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/schemas/api_responses/to_do_response.py",
+            "name": "to_do_response.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 10,
+            "file": "backend/app/schemas/api_responses/to_do_response.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/schemas/data_schemes/create_todo_schema.py",
+            "name": "create_todo_schema.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 21,
+            "file": "backend/app/schemas/data_schemes/create_todo_schema.py",
+            "testRefs": 8
+          },
+          {
+            "id": "backend/app/schemas/data_schemes/todo_schema.py",
+            "name": "todo_schema.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 49,
+            "file": "backend/app/schemas/data_schemes/todo_schema.py",
+            "testRefs": 10
+          },
+          {
+            "id": "backend/app/schemas/data_schemes/update_todo_schema.py",
+            "name": "update_todo_schema.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 6,
+            "file": "backend/app/schemas/data_schemes/update_todo_schema.py",
+            "testRefs": 5
+          }
+        ]
+      },
+      {
+        "id": "dom:be-service",
+        "name": "B4 \u00b7 ToDo service",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "backend/app/business_logic/builders/builder_interface.py",
+            "name": "builder_interface.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 7,
+            "file": "backend/app/business_logic/builders/builder_interface.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/business_logic/builders/todo_entry_builder.py",
+            "name": "todo_entry_builder.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 25,
+            "file": "backend/app/business_logic/builders/todo_entry_builder.py",
+            "testRefs": 4
+          },
+          {
+            "id": "backend/app/business_logic/decorators.py",
+            "name": "decorators.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 43,
+            "file": "backend/app/business_logic/decorators.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/business_logic/exceptions.py",
+            "name": "exceptions.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 5,
+            "file": "backend/app/business_logic/exceptions.py",
+            "testRefs": 24
+          },
+          {
+            "id": "backend/app/business_logic/todo_service.py",
+            "name": "todo_service.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 81,
+            "file": "backend/app/business_logic/todo_service.py",
+            "testRefs": 1
+          }
+        ]
+      },
+      {
+        "id": "dom:be-validation",
+        "name": "B5 \u00b7 Validation & sanitization",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "backend/app/business_logic/validators/field_validator.py",
+            "name": "field_validator.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 24,
+            "file": "backend/app/business_logic/validators/field_validator.py",
+            "testRefs": 2
+          },
+          {
+            "id": "backend/app/business_logic/validators/input_sanitizer.py",
+            "name": "input_sanitizer.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 23,
+            "file": "backend/app/business_logic/validators/input_sanitizer.py",
+            "testRefs": 3
+          },
+          {
+            "id": "backend/app/business_logic/validators/uuid_validator.py",
+            "name": "uuid_validator.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 16,
+            "file": "backend/app/business_logic/validators/uuid_validator.py",
+            "testRefs": 3
+          },
+          {
+            "id": "backend/app/business_logic/validators/validator_factory.py",
+            "name": "validator_factory.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 21,
+            "file": "backend/app/business_logic/validators/validator_factory.py",
+            "testRefs": 5
+          },
+          {
+            "id": "backend/app/business_logic/validators/validator_interface.py",
+            "name": "validator_interface.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 6,
+            "file": "backend/app/business_logic/validators/validator_interface.py",
+            "testRefs": 0
+          }
+        ]
+      },
+      {
+        "id": "dom:be-persistence",
+        "name": "B6 \u00b7 Persistence",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "backend/app/data_access/database.py",
+            "name": "database.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 75,
+            "file": "backend/app/data_access/database.py",
+            "testRefs": 1
+          },
+          {
+            "id": "backend/app/data_access/repository.py",
+            "name": "repository.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 78,
+            "file": "backend/app/data_access/repository.py",
+            "testRefs": 1
+          },
+          {
+            "id": "backend/app/models/todo.py",
+            "name": "todo.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 13,
+            "file": "backend/app/models/todo.py",
+            "testRefs": 13
+          }
+        ]
+      },
+      {
+        "id": "dom:be-platform",
+        "name": "B7 \u00b7 Platform (logging, config)",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "backend/app/config.py",
+            "name": "config.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 23,
+            "file": "backend/app/config.py",
+            "testRefs": 0
+          },
+          {
+            "id": "backend/app/logger.py",
+            "name": "logger.py",
+            "kind": "module",
+            "language": "python",
+            "loc": 18,
+            "file": "backend/app/logger.py",
+            "testRefs": 7
+          }
+        ]
+      },
+      {
+        "id": "dom:data",
+        "name": "Data stores",
+        "kind": "domain",
+        "children": [
+          {
+            "id": "ds:qc:todos",
+            "name": "'todos' query cache (browser memory)",
+            "kind": "datastore"
+          },
+          {
+            "id": "ds:toDo",
+            "name": "toDo (SQLite table)",
+            "kind": "datastore"
+          }
+        ]
+      }
+    ]
+  },
+  "edges": [
+    {
+      "source": "backend/app/api/api.py",
+      "target": "backend/app/factory.py",
+      "kind": "call",
+      "via": "import create_todo_service"
+    },
+    {
+      "source": "backend/app/api/api.py",
+      "target": "route:DELETE /todo/{todo_id}",
+      "kind": "dispatch",
+      "via": "FastAPI router: backend/app/api/api.py registers delete_todo() for DELETE /todo/{todo_id}"
+    },
+    {
+      "source": "backend/app/api/api.py",
+      "target": "route:GET /",
+      "kind": "dispatch",
+      "via": "FastAPI router: backend/app/api/api.py registers health_check() for GET /"
+    },
+    {
+      "source": "backend/app/api/api.py",
+      "target": "route:GET /todo",
+      "kind": "dispatch",
+      "via": "FastAPI router: backend/app/api/api.py registers list_todos() for GET /todo"
+    },
+    {
+      "source": "backend/app/api/api.py",
+      "target": "route:GET /todo/{todo_id}",
+      "kind": "dispatch",
+      "via": "FastAPI router: backend/app/api/api.py registers get_todo() for GET /todo/{todo_id}"
+    },
+    {
+      "source": "backend/app/api/api.py",
+      "target": "route:POST /todo",
+      "kind": "dispatch",
+      "via": "FastAPI router: backend/app/api/api.py registers create_todo() for POST /todo"
+    },
+    {
+      "source": "backend/app/api/api.py",
+      "target": "route:PUT /todo/{todo_id}",
+      "kind": "dispatch",
+      "via": "FastAPI router: backend/app/api/api.py registers update_todo() for PUT /todo/{todo_id}"
+    },
+    {
+      "source": "backend/app/business_logic/builders/builder_interface.py",
+      "target": "backend/app/models/todo.py",
+      "kind": "call",
+      "via": "import ToDoEntryData"
+    },
+    {
+      "source": "backend/app/business_logic/builders/builder_interface.py",
+      "target": "backend/app/schemas/data_schemes/create_todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoCreateScheme"
+    },
+    {
+      "source": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "target": "backend/app/business_logic/builders/builder_interface.py",
+      "kind": "call",
+      "via": "import BuilderInterface"
+    },
+    {
+      "source": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoValidationError"
+    },
+    {
+      "source": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "target": "backend/app/business_logic/validators/field_validator.py",
+      "kind": "call",
+      "via": "import FieldValidator"
+    },
+    {
+      "source": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "target": "backend/app/business_logic/validators/uuid_validator.py",
+      "kind": "call",
+      "via": "import UUIDValidator"
+    },
+    {
+      "source": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "target": "backend/app/models/todo.py",
+      "kind": "call",
+      "via": "import ToDoEntryData"
+    },
+    {
+      "source": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "target": "backend/app/schemas/data_schemes/create_todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoCreateScheme"
+    },
+    {
+      "source": "backend/app/business_logic/decorators.py",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoAlreadyExistsError"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/business_logic/builders/builder_interface.py",
+      "kind": "call",
+      "via": "import BuilderInterface"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "kind": "dispatch",
+      "via": "DI: ToDoService(builder=ToDoEntryBuilder) wired at backend/app/factory.py:24"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/business_logic/decorators.py",
+      "kind": "call",
+      "via": "import handle_service_exceptions"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoNotFoundError"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/business_logic/validators/field_validator.py",
+      "kind": "call",
+      "via": "import FieldValidator"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/business_logic/validators/uuid_validator.py",
+      "kind": "dispatch",
+      "via": "DI: ToDoService(uuid_validator=UUIDValidator) wired at backend/app/factory.py:24"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/business_logic/validators/validator_interface.py",
+      "kind": "call",
+      "via": "import ValidatorInterface"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/data_access/repository.py",
+      "kind": "call",
+      "via": "import ToDoRepositoryInterface"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/schemas/data_schemes/create_todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoCreateScheme"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/schemas/data_schemes/todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoSchema"
+    },
+    {
+      "source": "backend/app/business_logic/todo_service.py",
+      "target": "backend/app/schemas/data_schemes/update_todo_schema.py",
+      "kind": "call",
+      "via": "import TodoUpdateScheme"
+    },
+    {
+      "source": "backend/app/business_logic/validators/field_validator.py",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoValidationError"
+    },
+    {
+      "source": "backend/app/business_logic/validators/field_validator.py",
+      "target": "backend/app/business_logic/validators/input_sanitizer.py",
+      "kind": "call",
+      "via": "import InputSanitizer"
+    },
+    {
+      "source": "backend/app/business_logic/validators/field_validator.py",
+      "target": "backend/app/business_logic/validators/validator_interface.py",
+      "kind": "call",
+      "via": "import ValidatorInterface"
+    },
+    {
+      "source": "backend/app/business_logic/validators/field_validator.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/app/business_logic/validators/input_sanitizer.py",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoValidationError"
+    },
+    {
+      "source": "backend/app/business_logic/validators/input_sanitizer.py",
+      "target": "backend/app/business_logic/validators/validator_interface.py",
+      "kind": "call",
+      "via": "import ValidatorInterface"
+    },
+    {
+      "source": "backend/app/business_logic/validators/input_sanitizer.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/app/business_logic/validators/uuid_validator.py",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoValidationError"
+    },
+    {
+      "source": "backend/app/business_logic/validators/uuid_validator.py",
+      "target": "backend/app/business_logic/validators/validator_interface.py",
+      "kind": "call",
+      "via": "import ValidatorInterface"
+    },
+    {
+      "source": "backend/app/business_logic/validators/uuid_validator.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/app/business_logic/validators/validator_factory.py",
+      "target": "backend/app/business_logic/validators/field_validator.py",
+      "kind": "call",
+      "via": "import FieldValidator"
+    },
+    {
+      "source": "backend/app/business_logic/validators/validator_factory.py",
+      "target": "backend/app/business_logic/validators/input_sanitizer.py",
+      "kind": "call",
+      "via": "import InputSanitizer"
+    },
+    {
+      "source": "backend/app/business_logic/validators/validator_factory.py",
+      "target": "backend/app/business_logic/validators/uuid_validator.py",
+      "kind": "call",
+      "via": "import UUIDValidator"
+    },
+    {
+      "source": "backend/app/business_logic/validators/validator_factory.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/app/data_access/database.py",
+      "target": "backend/app/models/todo.py",
+      "kind": "call",
+      "via": "import ToDoEntryData"
+    },
+    {
+      "source": "backend/app/data_access/repository.py",
+      "target": "backend/app/data_access/database.py",
+      "kind": "dispatch",
+      "via": "DI: ToDoRepository(session_manager=safe_session_scope) wired at backend/app/factory.py:14"
+    },
+    {
+      "source": "backend/app/data_access/repository.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/app/data_access/repository.py",
+      "target": "backend/app/models/todo.py",
+      "kind": "call",
+      "via": "import ToDoEntryData"
+    },
+    {
+      "source": "backend/app/data_access/repository.py",
+      "target": "backend/app/schemas/data_schemes/update_todo_schema.py",
+      "kind": "call",
+      "via": "import TodoUpdateScheme"
+    },
+    {
+      "source": "backend/app/data_access/repository.py",
+      "target": "ds:toDo",
+      "kind": "read",
+      "via": "ORM session.query() on mapped class -> toDo"
+    },
+    {
+      "source": "backend/app/data_access/repository.py",
+      "target": "ds:toDo",
+      "kind": "write",
+      "via": "ORM session.merge() on mapped class -> toDo"
+    },
+    {
+      "source": "backend/app/factory.py",
+      "target": "backend/app/business_logic/builders/todo_entry_builder.py",
+      "kind": "call",
+      "via": "import ToDoEntryBuilder"
+    },
+    {
+      "source": "backend/app/factory.py",
+      "target": "backend/app/business_logic/todo_service.py",
+      "kind": "call",
+      "via": "import ToDoService"
+    },
+    {
+      "source": "backend/app/factory.py",
+      "target": "backend/app/business_logic/validators/validator_factory.py",
+      "kind": "call",
+      "via": "import ValidatorFactory"
+    },
+    {
+      "source": "backend/app/factory.py",
+      "target": "backend/app/data_access/database.py",
+      "kind": "call",
+      "via": "import safe_session_scope"
+    },
+    {
+      "source": "backend/app/factory.py",
+      "target": "backend/app/data_access/repository.py",
+      "kind": "call",
+      "via": "import ToDoRepository"
+    },
+    {
+      "source": "backend/app/factory.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/app/main.py",
+      "target": "backend/app/api/api.py",
+      "kind": "dispatch",
+      "via": "string target \"backend.app.api.api:app\" at backend/app/main.py:11"
+    },
+    {
+      "source": "backend/app/main.py",
+      "target": "backend/app/data_access/database.py",
+      "kind": "call",
+      "via": "import Base"
+    },
+    {
+      "source": "backend/app/main.py",
+      "target": "ds:toDo",
+      "kind": "write",
+      "via": "DDL Base.metadata.create_all() at backend/app/main.py:10"
+    },
+    {
+      "source": "backend/app/schemas/api_responses/delete_to_do_response.py",
+      "target": "backend/app/schemas/api_responses/api_response.py",
+      "kind": "call",
+      "via": "import ApiResponse"
+    },
+    {
+      "source": "backend/app/schemas/api_responses/get_list_to_do_response.py",
+      "target": "backend/app/schemas/api_responses/api_response.py",
+      "kind": "call",
+      "via": "import ApiResponse"
+    },
+    {
+      "source": "backend/app/schemas/api_responses/get_list_to_do_response.py",
+      "target": "backend/app/schemas/data_schemes/todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoSchema"
+    },
+    {
+      "source": "backend/app/schemas/api_responses/get_to_do_response.py",
+      "target": "backend/app/schemas/api_responses/api_response.py",
+      "kind": "call",
+      "via": "import ApiResponse"
+    },
+    {
+      "source": "backend/app/schemas/api_responses/get_to_do_response.py",
+      "target": "backend/app/schemas/data_schemes/todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoSchema"
+    },
+    {
+      "source": "backend/app/schemas/api_responses/to_do_response.py",
+      "target": "backend/app/schemas/api_responses/api_response.py",
+      "kind": "call",
+      "via": "import ApiResponse"
+    },
+    {
+      "source": "backend/app/schemas/api_responses/to_do_response.py",
+      "target": "backend/app/schemas/data_schemes/todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoSchema"
+    },
+    {
+      "source": "backend/scripts/init_db.py",
+      "target": "backend/app/data_access/database.py",
+      "kind": "call",
+      "via": "import Base"
+    },
+    {
+      "source": "backend/scripts/init_db.py",
+      "target": "backend/app/logger.py",
+      "kind": "call",
+      "via": "import CustomLogger"
+    },
+    {
+      "source": "backend/scripts/init_db.py",
+      "target": "ds:toDo",
+      "kind": "read",
+      "via": "schema introspection get_table_names() at backend/scripts/init_db.py:25"
+    },
+    {
+      "source": "backend/scripts/init_db.py",
+      "target": "ds:toDo",
+      "kind": "write",
+      "via": "DDL Base.metadata.create_all() at backend/scripts/init_db.py:19"
+    },
+    {
+      "source": "frontend/index.html",
+      "target": "frontend/src/main.tsx",
+      "kind": "dispatch",
+      "via": "<script src=\"/src/main.tsx\"> in frontend/index.html"
+    },
+    {
+      "source": "frontend/src/App.tsx",
+      "target": "frontend/src/App.css",
+      "kind": "call",
+      "via": "import './App.css'"
+    },
+    {
+      "source": "frontend/src/App.tsx",
+      "target": "frontend/src/components/Header.tsx",
+      "kind": "call",
+      "via": "import './components/Header'"
+    },
+    {
+      "source": "frontend/src/App.tsx",
+      "target": "frontend/src/components/errors/ErrorBoundary.tsx",
+      "kind": "call",
+      "via": "import './components/errors/ErrorBoundary'"
+    },
+    {
+      "source": "frontend/src/App.tsx",
+      "target": "frontend/src/components/todos/TodoList.tsx",
+      "kind": "call",
+      "via": "import './components/todos/TodoList'"
+    },
+    {
+      "source": "frontend/src/App.tsx",
+      "target": "frontend/src/components/ui/toaster.tsx",
+      "kind": "call",
+      "via": "import './components/ui/toaster'"
+    },
+    {
+      "source": "frontend/src/App.tsx",
+      "target": "frontend/src/config/queryClient.ts",
+      "kind": "call",
+      "via": "import './config/queryClient'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoDeleteButton.tsx",
+      "target": "frontend/src/hooks/queries/useDeleteTodo.ts",
+      "kind": "call",
+      "via": "import '@/hooks/queries/useDeleteTodo'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoDeleteButton.tsx",
+      "target": "frontend/src/hooks/useToast.ts",
+      "kind": "call",
+      "via": "import '@/hooks/useToast'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoEditForm.tsx",
+      "target": "frontend/src/hooks/queries/useUpdateTodo.ts",
+      "kind": "call",
+      "via": "import '@/hooks/queries/useUpdateTodo'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoEditForm.tsx",
+      "target": "frontend/src/hooks/useToast.ts",
+      "kind": "call",
+      "via": "import '@/hooks/useToast'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoForm.tsx",
+      "target": "frontend/src/hooks/queries/useCreateTodo.ts",
+      "kind": "call",
+      "via": "import '@/hooks/queries/useCreateTodo'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoForm.tsx",
+      "target": "frontend/src/hooks/useToast.ts",
+      "kind": "call",
+      "via": "import '@/hooks/useToast'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoItem.tsx",
+      "target": "frontend/src/components/todos/TodoDeleteButton.tsx",
+      "kind": "call",
+      "via": "import './TodoDeleteButton'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoItem.tsx",
+      "target": "frontend/src/components/todos/TodoEditForm.tsx",
+      "kind": "call",
+      "via": "import './TodoEditForm'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoList.tsx",
+      "target": "frontend/src/components/common/Spinner.tsx",
+      "kind": "call",
+      "via": "import '../common/Spinner'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoList.tsx",
+      "target": "frontend/src/components/errors/ErrorMessage.tsx",
+      "kind": "call",
+      "via": "import '../errors/ErrorMessage'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoList.tsx",
+      "target": "frontend/src/components/todos/TodoForm.tsx",
+      "kind": "call",
+      "via": "import './TodoForm'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoList.tsx",
+      "target": "frontend/src/components/todos/TodoItem.tsx",
+      "kind": "call",
+      "via": "import './TodoItem'"
+    },
+    {
+      "source": "frontend/src/components/todos/TodoList.tsx",
+      "target": "frontend/src/hooks/queries/useTodoList.ts",
+      "kind": "call",
+      "via": "import '@/hooks/queries/useTodoList'"
+    },
+    {
+      "source": "frontend/src/components/ui/toaster.tsx",
+      "target": "frontend/src/lib/toaster.ts",
+      "kind": "call",
+      "via": "import '../../lib/toaster'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useCreateTodo.ts",
+      "target": "ds:qc:todos",
+      "kind": "read",
+      "via": "TanStack Query getQueryData key 'todos'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useCreateTodo.ts",
+      "target": "ds:qc:todos",
+      "kind": "write",
+      "via": "TanStack Query setQueryData key 'todos'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useCreateTodo.ts",
+      "target": "frontend/src/services/api/todoApi.ts",
+      "kind": "call",
+      "via": "import '@/services/api/todoApi'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useCreateTodo.ts",
+      "target": "frontend/src/types/todo.ts",
+      "kind": "call",
+      "via": "import '@/types/todo'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useDeleteTodo.ts",
+      "target": "ds:qc:todos",
+      "kind": "read",
+      "via": "TanStack Query getQueryData key 'todos'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useDeleteTodo.ts",
+      "target": "ds:qc:todos",
+      "kind": "write",
+      "via": "TanStack Query setQueryData key 'todos'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useDeleteTodo.ts",
+      "target": "frontend/src/services/api/todoApi.ts",
+      "kind": "call",
+      "via": "import '@/services/api/todoApi'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useDeleteTodo.ts",
+      "target": "frontend/src/types/todo.ts",
+      "kind": "call",
+      "via": "import '@/types/todo'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useTodoList.ts",
+      "target": "ds:qc:todos",
+      "kind": "read",
+      "via": "TanStack Query useQuery key 'todos'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useTodoList.ts",
+      "target": "frontend/src/services/api/todoApi.ts",
+      "kind": "call",
+      "via": "import '@/services/api/todoApi'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useUpdateTodo.ts",
+      "target": "ds:qc:todos",
+      "kind": "read",
+      "via": "TanStack Query getQueryData key 'todos'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useUpdateTodo.ts",
+      "target": "ds:qc:todos",
+      "kind": "write",
+      "via": "TanStack Query setQueryData key 'todos'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useUpdateTodo.ts",
+      "target": "frontend/src/services/api/todoApi.ts",
+      "kind": "call",
+      "via": "import '@/services/api/todoApi'"
+    },
+    {
+      "source": "frontend/src/hooks/queries/useUpdateTodo.ts",
+      "target": "frontend/src/types/todo.ts",
+      "kind": "call",
+      "via": "import '@/types/todo'"
+    },
+    {
+      "source": "frontend/src/hooks/useToast.ts",
+      "target": "frontend/src/lib/toaster.ts",
+      "kind": "call",
+      "via": "import '@/lib/toaster'"
+    },
+    {
+      "source": "frontend/src/main.tsx",
+      "target": "frontend/src/App.tsx",
+      "kind": "call",
+      "via": "import './App.tsx'"
+    },
+    {
+      "source": "frontend/src/main.tsx",
+      "target": "frontend/src/index.css",
+      "kind": "call",
+      "via": "import './index.css'"
+    },
+    {
+      "source": "frontend/src/services/api/client.ts",
+      "target": "frontend/src/config/env.ts",
+      "kind": "call",
+      "via": "import '../../config/env'"
+    },
+    {
+      "source": "frontend/src/services/api/client.ts",
+      "target": "frontend/src/types/todo.ts",
+      "kind": "call",
+      "via": "import '../../types/todo'"
+    },
+    {
+      "source": "frontend/src/services/api/todoApi.ts",
+      "target": "frontend/src/services/api/client.ts",
+      "kind": "call",
+      "via": "import './client'"
+    },
+    {
+      "source": "frontend/src/services/api/todoApi.ts",
+      "target": "frontend/src/types/todo.ts",
+      "kind": "call",
+      "via": "import '../../types/todo'"
+    },
+    {
+      "source": "frontend/src/services/api/todoApi.ts",
+      "target": "route:DELETE /todo/{todo_id}",
+      "kind": "dispatch",
+      "via": "HTTP DELETE /todo/${todoId} via todoApi.delete() (called by useDeleteTodo.ts)"
+    },
+    {
+      "source": "frontend/src/services/api/todoApi.ts",
+      "target": "route:GET /todo",
+      "kind": "dispatch",
+      "via": "HTTP GET /todo via todoApi.list() (called by useTodoList.ts)"
+    },
+    {
+      "source": "frontend/src/services/api/todoApi.ts",
+      "target": "route:POST /todo",
+      "kind": "dispatch",
+      "via": "HTTP POST /todo via todoApi.create() (called by useCreateTodo.ts)"
+    },
+    {
+      "source": "frontend/src/services/api/todoApi.ts",
+      "target": "route:PUT /todo/{todo_id}",
+      "kind": "dispatch",
+      "via": "HTTP PUT /todo/${todoId} via todoApi.update() (called by useUpdateTodo.ts)"
+    },
+    {
+      "source": "route:DELETE /todo/{todo_id}",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoNotFoundError"
+    },
+    {
+      "source": "route:DELETE /todo/{todo_id}",
+      "target": "backend/app/business_logic/todo_service.py",
+      "kind": "dispatch",
+      "via": "module singleton service = ToDoService instance (backend/app/api/api.py:31) -> .delete_todo()"
+    },
+    {
+      "source": "route:DELETE /todo/{todo_id}",
+      "target": "backend/app/schemas/api_responses/delete_to_do_response.py",
+      "kind": "call",
+      "via": "import DeleteToDoResponse"
+    },
+    {
+      "source": "route:GET /todo",
+      "target": "backend/app/business_logic/todo_service.py",
+      "kind": "dispatch",
+      "via": "module singleton service = ToDoService instance (backend/app/api/api.py:31) -> .get_all_todos()"
+    },
+    {
+      "source": "route:GET /todo",
+      "target": "backend/app/schemas/api_responses/get_list_to_do_response.py",
+      "kind": "call",
+      "via": "import ListToDoResponse"
+    },
+    {
+      "source": "route:GET /todo/{todo_id}",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoNotFoundError"
+    },
+    {
+      "source": "route:GET /todo/{todo_id}",
+      "target": "backend/app/business_logic/todo_service.py",
+      "kind": "dispatch",
+      "via": "module singleton service = ToDoService instance (backend/app/api/api.py:31) -> .get_todo()"
+    },
+    {
+      "source": "route:GET /todo/{todo_id}",
+      "target": "backend/app/schemas/api_responses/get_to_do_response.py",
+      "kind": "call",
+      "via": "import GetToDoResponse"
+    },
+    {
+      "source": "route:POST /todo",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoAlreadyExistsError"
+    },
+    {
+      "source": "route:POST /todo",
+      "target": "backend/app/business_logic/todo_service.py",
+      "kind": "dispatch",
+      "via": "module singleton service = ToDoService instance (backend/app/api/api.py:31) -> .create_todo()"
+    },
+    {
+      "source": "route:POST /todo",
+      "target": "backend/app/schemas/api_responses/to_do_response.py",
+      "kind": "call",
+      "via": "import ToDoResponse"
+    },
+    {
+      "source": "route:POST /todo",
+      "target": "backend/app/schemas/data_schemes/create_todo_schema.py",
+      "kind": "call",
+      "via": "import ToDoCreateScheme"
+    },
+    {
+      "source": "route:PUT /todo/{todo_id}",
+      "target": "backend/app/business_logic/exceptions.py",
+      "kind": "call",
+      "via": "import ToDoNotFoundError"
+    },
+    {
+      "source": "route:PUT /todo/{todo_id}",
+      "target": "backend/app/business_logic/todo_service.py",
+      "kind": "dispatch",
+      "via": "module singleton service = ToDoService instance (backend/app/api/api.py:31) -> .update_todo()"
+    },
+    {
+      "source": "route:PUT /todo/{todo_id}",
+      "target": "backend/app/schemas/api_responses/to_do_response.py",
+      "kind": "call",
+      "via": "import ToDoResponse"
+    },
+    {
+      "source": "route:PUT /todo/{todo_id}",
+      "target": "backend/app/schemas/data_schemes/update_todo_schema.py",
+      "kind": "call",
+      "via": "import TodoUpdateScheme"
+    }
+  ],
+  "entryPoints": [
+    "backend/app/main.py",
+    "backend/scripts/init_db.py",
+    "frontend/index.html",
+    "route:DELETE /todo/{todo_id}",
+    "route:GET /",
+    "route:GET /todo",
+    "route:GET /todo/{todo_id}",
+    "route:POST /todo",
+    "route:PUT /todo/{todo_id}"
+  ],
+  "deadEnds": [
+    "backend/app/config.py",
+    "frontend/src/components/common/LoadingOverlay.tsx"
+  ],
+  "observations": [
+    "Single hub: 5 of 6 HTTP routes (all except route:GET /) dispatch into one ToDoService singleton (todo_service.py, fan-out 12), built at import time in api.py via the hand-written composition root factory.py. There is no FastAPI Depends(); tests reach the service by patching the module global.",
+    "toDo has exactly one DML writer (repository.py), a clean persistence choke point. But the schema has two authorities: DDL comes from 2 create_all() callers (main.py, init_db.py) on the declarative Base, while reads and writes go through a separately defined Table on another MetaData (2 definitions of the same table). Consolidate before any port.",
+    "Client-cache coupling: the 'todos' query cache has 3 writers (the mutation hooks) and 4 readers, all keyed to a hardcoded page 1 / limit 10 that matches TodoList. Any pagination change touches 5 modules at once.",
+    "Cross-tier seam: 4 of 6 routes have a frontend caller. No frontend caller for route:GET /, route:GET /todo/{todo_id} (the e2e readiness check polls /docs; todoApi.getById exists but is never called). TS contract types are hand-mirrored in types/todo.ts. The REST contract is the natural migration seam, and generating types from OpenAPI would remove the drift risk.",
+    "DI resolution: ToDoService.input_sanitizer <- InputSanitizer wired at backend/app/factory.py:24, but self.input_sanitizer is never used. So the keyword sanitizer is reached only through FieldValidator's own instance. repository.py reaches database.py only through the injected safe_session_scope (no import).",
+    "Dead-end candidates: backend/app/config.py, frontend/src/components/common/LoadingOverlay.tsx. No unresolved dynamic dispatch was found (the uvicorn string target and every HTTP call resolved), so these are not suppressed.",
+    "Import-root split: init_db.py imports through `app.*` after a sys.path hack while everything else uses `backend.app.*`. The same module can then load twice under two names; normalise it before restructuring packages."
+  ],
+  "flows": [
+    {
+      "name": "Capture a new todo",
+      "persona": "Todo user",
+      "description": "Someone types a task and presses Enter; it appears at once and is saved on the server.",
+      "steps": [
+        {
+          "label": "Types a title and presses Enter (checked: not empty, at most 255 characters)",
+          "nodes": [
+            "frontend/src/components/todos/TodoForm.tsx"
+          ]
+        },
+        {
+          "label": "Shown in the list instantly, before the server answers",
+          "nodes": [
+            "frontend/src/hooks/queries/useCreateTodo.ts",
+            "ds:qc:todos"
+          ]
+        },
+        {
+          "label": "Sent to the server with a browser-generated ID",
+          "nodes": [
+            "frontend/src/services/api/todoApi.ts",
+            "frontend/src/services/api/client.ts",
+            "route:POST /todo"
+          ]
+        },
+        {
+          "label": "Server checks the text; titles with words like 'or' or 'update' are rejected",
+          "nodes": [
+            "backend/app/business_logic/todo_service.py",
+            "backend/app/business_logic/builders/todo_entry_builder.py",
+            "backend/app/business_logic/validators/uuid_validator.py",
+            "backend/app/business_logic/validators/field_validator.py",
+            "backend/app/business_logic/validators/input_sanitizer.py"
+          ]
+        },
+        {
+          "label": "Saved to the database",
+          "nodes": [
+            "backend/app/data_access/repository.py",
+            "backend/app/data_access/database.py",
+            "ds:toDo"
+          ]
+        },
+        {
+          "label": "List refreshes from the server (or the instant entry is rolled back on error)",
+          "nodes": [
+            "frontend/src/hooks/queries/useCreateTodo.ts",
+            "ds:qc:todos",
+            "frontend/src/hooks/queries/useTodoList.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Review my todo list",
+      "persona": "Todo user",
+      "description": "Someone opens the app and sees their todos; only the first 10 are ever shown.",
+      "steps": [
+        {
+          "label": "Opens the app in the browser",
+          "nodes": [
+            "frontend/index.html",
+            "frontend/src/main.tsx",
+            "frontend/src/App.tsx"
+          ]
+        },
+        {
+          "label": "List asks for page 1, 10 items",
+          "nodes": [
+            "frontend/src/components/todos/TodoList.tsx",
+            "frontend/src/hooks/queries/useTodoList.ts",
+            "ds:qc:todos"
+          ]
+        },
+        {
+          "label": "Request goes to the server",
+          "nodes": [
+            "frontend/src/services/api/todoApi.ts",
+            "frontend/src/services/api/client.ts",
+            "route:GET /todo"
+          ]
+        },
+        {
+          "label": "Server loads todos not marked deleted (no sort order)",
+          "nodes": [
+            "backend/app/business_logic/todo_service.py",
+            "backend/app/data_access/repository.py",
+            "ds:toDo"
+          ]
+        },
+        {
+          "label": "Each todo is shown with Edit and Delete buttons",
+          "nodes": [
+            "frontend/src/components/todos/TodoItem.tsx",
+            "frontend/src/components/todos/TodoDeleteButton.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rename a todo",
+      "persona": "Todo user",
+      "description": "Someone edits a todo's title; the change shows at once and is saved.",
+      "steps": [
+        {
+          "label": "Clicks Edit and types a new title",
+          "nodes": [
+            "frontend/src/components/todos/TodoItem.tsx",
+            "frontend/src/components/todos/TodoEditForm.tsx"
+          ]
+        },
+        {
+          "label": "Change shown instantly",
+          "nodes": [
+            "frontend/src/hooks/queries/useUpdateTodo.ts",
+            "ds:qc:todos"
+          ]
+        },
+        {
+          "label": "Sent to the server",
+          "nodes": [
+            "frontend/src/services/api/todoApi.ts",
+            "frontend/src/services/api/client.ts",
+            "route:PUT /todo/{todo_id}"
+          ]
+        },
+        {
+          "label": "Server re-checks the text (same keyword rules)",
+          "nodes": [
+            "backend/app/business_logic/todo_service.py",
+            "backend/app/business_logic/validators/field_validator.py",
+            "backend/app/business_logic/validators/input_sanitizer.py"
+          ]
+        },
+        {
+          "label": "Saved; the 'updated' timestamp is not refreshed",
+          "nodes": [
+            "backend/app/data_access/repository.py",
+            "backend/app/data_access/database.py",
+            "ds:toDo"
+          ]
+        },
+        {
+          "label": "List refreshes from the server",
+          "nodes": [
+            "frontend/src/hooks/queries/useUpdateTodo.ts",
+            "frontend/src/hooks/queries/useTodoList.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete a todo",
+      "persona": "Todo user",
+      "description": "Someone deletes a todo after confirming; it disappears but is only flagged as deleted in the database.",
+      "steps": [
+        {
+          "label": "Clicks Delete and confirms the prompt",
+          "nodes": [
+            "frontend/src/components/todos/TodoDeleteButton.tsx"
+          ]
+        },
+        {
+          "label": "Removed from view instantly",
+          "nodes": [
+            "frontend/src/hooks/queries/useDeleteTodo.ts",
+            "ds:qc:todos"
+          ]
+        },
+        {
+          "label": "Sent to the server",
+          "nodes": [
+            "frontend/src/services/api/todoApi.ts",
+            "frontend/src/services/api/client.ts",
+            "route:DELETE /todo/{todo_id}"
+          ]
+        },
+        {
+          "label": "Server checks the ID is a valid UUID",
+          "nodes": [
+            "backend/app/business_logic/todo_service.py",
+            "backend/app/business_logic/validators/uuid_validator.py"
+          ]
+        },
+        {
+          "label": "Row flagged as deleted and kept forever (no purge)",
+          "nodes": [
+            "backend/app/data_access/repository.py",
+            "backend/app/data_access/database.py",
+            "ds:toDo"
+          ]
+        }
+      ]
+    }
+  ]
+}
