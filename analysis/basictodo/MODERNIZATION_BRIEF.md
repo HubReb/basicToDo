@@ -1,6 +1,6 @@
 # Modernization Brief: basicToDo
 
-_System: `legacy/basictodo` · Brief generated 2026-10-03 16:15 · Status: **APPROVED for Phase 1 only** (Rebekka Hubert, 2026-10-03; see §8). Decisions recorded in §7 on 2026-10-03._
+_System: `legacy/basictodo` · Brief generated 2026-10-03 16:15 · Status: **APPROVED for Phase 1 only** (the owner, 2026-10-03; see §8). Decisions recorded in §7 on 2026-10-03._
 
 **Built from:**
 
@@ -146,7 +146,7 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - **Harness repair:** rename the two `backend/tests/test_builders/**/tests_*.py` files so pytest collects their 9 tests. Verified passing on both stacks.
 
 **Entry criteria (checkable):**
-- [x] This brief is approved in §8 (Phase 1 only; Rebekka Hubert, 2026-10-03).
+- [x] This brief is approved in §8 (Phase 1 only; the owner, 2026-10-03).
 - [x] Q1, Q3 and Q10 are ticked in §7.
 - [x] `modernized/basictodo-uplifted/` exists as a git-tracked copy of `legacy/basictodo`, with the seed commit recorded. _(2026-10-05: a clone of `plugin/uplift-basictodo/base`; the seed is `bd2a0b9`, which equals `a2d59f1` plus `.github/` and `analysis/` only.)_
 - [x] `a2d59f1` is verified as an ancestor of upstream `main` (checked 2026-10-03). `main` itself is out of scope (Q11).
@@ -202,24 +202,31 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
   - **F2 (majors, cut C2):** Vite 8 + plugin-react 6; Vitest 5 + jsdom 30 + jest-dom 7; TypeScript 6.0 (TS 7 deferred, D-22); Chakra 3.37; Playwright 1.63.
 
 **Entry criteria:**
-- [ ] Phase 1 exit criteria are met and `PLAYBOOK.md` exists.
+- [x] Phase 1 exit criteria are met and `PLAYBOOK.md` exists. _(2026-10-05; draft PR #113)_
 - [x] Q2 is decided: **Node 24 LTS**.
-- [ ] Node 24 is installed locally (the owner installs it before Phase 2, per Q2), and `/modernize-preflight basictodo node24+vite8.3` shows Check 3 green.
-- [ ] Playwright's chromium-1243 is downloaded locally (D-23).
-- [ ] `BASELINE.md` has a frontend section recorded **on legacy dependencies**:
+- [x] Node 24 is installed locally (the owner installs it before Phase 2, per Q2), and `/modernize-preflight basictodo node24+vite8.3` shows Check 3 green. _(v24.21.0 from nodejs.org through `env/install_node24.sh`; Check 3 appended to `PREFLIGHT.md`.)_
+- [x] Playwright's chromium-1243 is downloaded locally (D-23). _(Through the fixed screenshot runner, Playwright 1.63.0.)_
+- [x] `BASELINE.md` has a frontend section recorded **on legacy dependencies**: _(F0 at `75e0fff`, on Node 22 and Node 24, identical on both)_
   - `tsc -b` result, vitest 13/13, build OK with bundle sizes, e2e 13/13;
   - `npm audit` counts;
   - **Playwright screenshots of the screens in all four persona flows (§4)**, for visual comparison.
-- [ ] Prerequisites D-17 (tsconfig `baseUrl`) and D-18 (`@testing-library/jest-dom/vitest`) have landed on legacy dependencies with build and vitest green.
+- [x] Prerequisites D-17 (tsconfig `baseUrl`) and D-18 (`@testing-library/jest-dom/vitest`) have landed on legacy dependencies with build and vitest green. _(`2dba37a`; `dist/`, tests, e2e and screens identical to F0.)_
 
 **Exit criteria:**
-- [ ] **F1 checkpoint:** all frontend gates green on same-major dependencies, and `npm audit` reports 0 high or critical.
-- [ ] **F2:** `npm run build` (including `tsc -b`) green; vitest 13/13; Playwright **1.63** e2e 13/13.
-- [ ] `npm ci` succeeds with the npm major that the CI Node ships (D-16).
+- [x] **F1 checkpoint:** all frontend gates green on same-major dependencies, and `npm audit` reports 0 high or critical. _(`21a7337`: audit 0; screens identical; `dist/` changes attributed to react 19.3 and @tanstack 5.104 only.)_
+- [x] **F2:** `npm run build` (including `tsc -b`) green; vitest 13/13; Playwright **1.63** e2e 13/13. _(`e0fc04c`)_
+- [x] `npm ci` succeeds with the npm major that the CI Node ships (D-16). _(npm 11.19.0 on a fresh `node_modules`.)_
 - [ ] A human has reviewed and accepted the screenshot comparison of the four flows. Expected visual deltas: Lightning CSS rewrites (D-19) and the Chakra outline border (D-24).
-- [ ] `npm audit` reports **0**.
+  - _Measured 2026-10-05: none of the 8 screens differs from F0, in pixels or computed styles. D-19 changes only serialization; D-24 is masked by the unlayered `button` rule in `src/index.css`. The evidence and a positive control are in `baseline/frontend/visual-review.html`. Awaiting the owner's review._
+- [x] `npm audit` reports **0**.
 - [ ] `plugin/uplift-basictodo/phase-2` (branched from phase-1) is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and the frontend and e2e workflows green on it (Q11).
-- [ ] `PLAYBOOK.md` (frontend section) is written.
+- [x] `PLAYBOOK.md` (frontend section) is written.
+
+**Phase 2 findings (2026-10-05):**
+1. **The expected visual deltas D-19 and D-24 do not appear** in this app. The reasons and the evidence are in `DELTA_CATALOG.md` §G and `BASELINE.md`.
+2. **F1 is held to "Chakra stays at 3.28"**, so that D-24 belongs to F2 as planned. The same-major refresh must include transitive packages to reach audit 0.
+3. **The pre-existing white-on-light buttons** come from unlayered legacy rules in `src/index.css`. They are left unchanged, as a candidate for a later UI pass at the owner's discretion.
+4. **ESLint stays on major 9** (ESLint 10 is not in this phase's scope).
 
 **Relative scale:** **L**. The frontend scope is 1.04 KSLOC, index 3.06, 56%.
 
@@ -446,7 +453,7 @@ Neither P0 rule is below High confidence, so **no phase is blocked on SME confir
 
 ## 7. Open Questions
 
-**Decisions recorded 2026-10-03** from Rebekka Hubert's written answers. Each decision is quoted verbatim. Q11 was revised in a follow-up answer the same day; both versions are kept below. **Q1, Q3 and Q10 gate Phase 1: all three are decided.** Q8a was decided in a further answer the same day. One item remains open: **Q8b** (gates Phase 5 only). Q11b was decided later the same day.
+**Decisions recorded 2026-10-03** from the owner's written answers. Each decision is quoted verbatim. Q11 was revised in a follow-up answer the same day; both versions are kept below. **Q1, Q3 and Q10 gate Phase 1: all three are decided.** Q8a was decided in a further answer the same day. One item remains open: **Q8b** (gates Phase 5 only). Q11b was decided later the same day.
 
 **Target & versions**
 - [x] **Q1: Approve the target stack** in §1 as a same-stack uplift (not a rebuild or cross-stack transform).
@@ -529,8 +536,13 @@ Neither P0 rule is below High confidence, so **no phase is blocked on SME confir
 ## 8. Approval Block
 
 ```
-Approved by: Rebekka Hubert    Date: 2026-10-03
+Approved by: the owner    Date: 2026-10-03
 Approval covers: Phase 1 only
+
+Approved by: the owner    Date: 2026-10-05
+Approval covers: Phase 2
 ```
 
-_Approval covers **Phase 1 only**. Phases 2–5 need a fresh approval after the pilot's `PLAYBOOK.md` is written and this brief has been revised with what the pilot surfaced. Execution has not started: `/modernize-uplift` has not been run._
+- **Phase 1** was approved on 2026-10-03 and executed on 2026-10-05: draft PR #113 is open, the exit criteria are met, `PLAYBOOK.md` is written, and the brief is revised with the pilot findings.
+- **Phase 2** was approved on 2026-10-05, after the pilot. Decision, verbatim: _"1. go"_, in answer to "Freigabe für Phase 2".
+- **Phases 3–5** still need their own approval, and Q12 must be decided before Phase 3.

@@ -160,3 +160,30 @@ This is a re-run of Check 3 only, for the target `py3.13+fastapi0.142.2`. The se
 | mypy (non-blocking in CI) | 5 errors: the 3 legacy errors plus D-05 at `repository.py:73` and `:89`. `DELTA_CATALOG.md` §B predicted 4. |
 
 **Check 3 for the target lock: ✅ green.** The `uplift` verdict for Phase 1 becomes **Ready**: both lockfiles restore, build and test on this machine, so the dual-run is real.
+
+## Addendum 2026-10-05: Check 3 for the frontend target (`/modernize-uplift` Phase 2 entry criterion)
+
+This is a re-run of Check 3 only, for `node24+vite8.3`. Check 0 and everything above are unchanged.
+
+**Method:**
+1. A throwaway export of `frontend/` at the `phase-1` tip (`75e0fff`).
+2. The F2 package set applied to `package.json`:
+   - `add`, `snippet`, `textlint` and `framer-motion` removed;
+   - vite ^8.3.2, @vitejs/plugin-react ^6.1.1, vitest ^5.0.3, jsdom ^30.1.1, @testing-library/jest-dom ^7.0.1, typescript ~6.0.3, @chakra-ui/react ^3.37.0, @playwright/test ^1.63.0, vite-tsconfig-paths ^6.1.1.
+3. A fresh `npm install` without the old lockfile.
+
+The run used Node v24.21.0 and npm 11.19.0, an official nodejs.org build installed by `analysis/basictodo/env/install_node24.sh`. The distribution's `nodejs24` package (24.14.1) is below jsdom 30's floor of 24.15.
+
+| Step | Result |
+|---|---|
+| Install | ✅ 387 packages: vite 8.3.2, @vitejs/plugin-react 6.1.2, vitest 5.0.3, jsdom 30.1.2, jest-dom 7.0.1, typescript 6.0.3, Chakra 3.37.0, React 19.3.0, Playwright 1.63.0, eslint 9.39.5, typescript-eslint 8.71.0. Patch versions differ slightly from `DELTA_CATALOG.md` §A, which lists plugin-react 6.1.1 and jsdom 30.1.1. |
+| `npm audit` | ✅ 0 |
+| `tsc -b`, no prerequisites | ❌ TS5101 (`baseUrl`), as D-17 predicts |
+| `tsc -b` with D-17 only | ❌ 15× TS2339 `toBeInTheDocument`, as D-18 predicts |
+| `tsc -b` with D-17 + D-18 | ✅ |
+| vitest | ✅ 13/13 in 5 files |
+| `npm run build` | ✅ JS 563.37 kB, CSS 1.69 kB |
+
+The screenshot runner is ready as well: `playwright@1.63.0` with Chromium headless shell 153.0.8010.12 (revision chromium-1243), installed outside `frontend/node_modules` (D-23).
+
+**Check 3 for the frontend target: ✅ green, provided D-17 and D-18 land first.**

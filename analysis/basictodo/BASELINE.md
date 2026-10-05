@@ -233,6 +233,81 @@ The push to `phase-1` ran the three push-triggered workflows as well: Python 39 
 On `main`, the owner has since disabled pylint, jscpd and isort in super-linter for the same reasons. The base branch keeps the `a2d59f1` configuration, and Phase 3 owns the linter setup.
 
 
+## Frontend (Phase 2)
+
+_Recorded 2026-10-05 for Phase 2 (brief §3, entry criterion "frontend section on legacy dependencies")._
+
+**State measured: F0.** This is `frontend/` exactly as it stands at the `phase-1` tip `75e0fff`, with the legacy lock. It was recorded from a git worktree at that SHA. The backend for e2e and screens is the Phase 1 target (FastAPI 0.142, venv `target-lock`), so in Phase 2 only the frontend changes.
+
+**Runtimes.** CI runs the legacy frontend on Node 20, which is not available locally. The local oracle is **Node 22.22.2 / npm 10.9.7**. F0 was also run on **Node 24.21.0 / npm 11.19.0**, to separate the runtime change from the dependency changes.
+
+| Gate | Node 22 | Node 24 | Same? |
+|---|---|---|---|
+| `npm ci` | ✅ | ✅ | — |
+| vitest | 13/13 | 13/13 | ✅ per test (`F0/vitest.tsv`) |
+| `npm run build` (`tsc -b` + `vite build`) | ✅ JS 669.36 kB, CSS 1.59 kB | ✅ | ✅ **byte-identical `dist/`** (`F0/dist.sha256`) |
+| ESLint (`continue-on-error` in CI) | 1 error: `e2e/smoke.spec.ts:89` `'e' is defined but never used` | same | ✅ |
+| `npm audit` | 35: 1 critical (vitest), 24 high, 7 moderate, 3 low | same | ✅ |
+| Playwright e2e (frontend's own 1.57, chromium-1200) | 13/13, 0 flaky | 13/13, 0 flaky | ✅ per test (`F0/e2e.tsv`) |
+| Screenshots, 8 screens | captured | captured | ✅ **pixel-identical, computed styles identical** |
+
+**Screenshots.** A fixed setup takes every capture in this phase (F0, F1, F2), so browser rendering cannot vary:
+- **Browser:** Playwright **1.63.0** with Chromium headless shell **153.0.8010.12** (revision 1243). It is installed from `baseline/frontend/runner/` (exact pins, lockfile committed) **outside** `frontend/node_modules`. The frontend's own Playwright is used only for e2e.
+- **Servers:**
+  - `frontend/dist` is served by Python's stdlib HTTP server on `localhost:5173`, so Vite's `preview` is not in the path. Port 5173 is needed because the backend allows only that origin.
+  - The backend runs on `127.0.0.1:8000` with a fresh SQLite database, started through `provenance.py`.
+- **Browser context:** 1280×800 at 1×, `reducedMotion`, animations disabled, caret hidden, mouse parked in the corner, fonts and network idle awaited.
+- **The 8 screens** follow the four persona flows (brief §4):
+  - empty list;
+  - title typed;
+  - after create, with toast;
+  - four todos;
+  - edit form open;
+  - after save, with toast;
+  - after delete, with toast (`window.confirm` accepted);
+  - validation error.
+- **Each capture stores:**
+  - the PNG;
+  - the **computed styles of every rendered element**, keyed by DOM path (colours, borders, outline, shadow, font, spacing, box);
+  - `capture.json` with the Playwright and browser version, the Chromium revision, Node, the runner lock hash and the SHA-256 of every `dist/` file.
+- **Determinism:** two captures of the same build are pixel-identical in all 8 screens.
+- `compare_screens.py` reports pixel share, bounding box, a diff image and every style change, and refuses to compare captures made with different setups.
+
+**A legacy visual quirk** pinned by the screens: the Chakra buttons (Edit, Delete Todo, Save, Cancel) render white text on a near-white background and are barely legible.
+
+**Tools,** in `baseline/frontend/`, all run from the repository root:
+- `run_frontend_suite.sh <node-bin> <outdir> [backend-venv]`
+- `run_screens.sh <backend-venv> <outdir> <runner-dir> <node-bin>`
+- `capture_screens.mjs`
+- `compare_screens.py`
+
+### Frontend checkpoints after F0 (`phase-2`)
+
+All later states were measured on **Node 24.21.0 / npm 11.19.0**. Screens were captured with the same runner and browser as F0; `capture.json` shows identical Playwright, browser, revision and runner lock for F0, F1 and F2.
+
+| State | Commit | vitest | Build | e2e | `npm audit` | Screens vs F0 | `dist/` vs F0 |
+|---|---|---|---|---|---|---|---|
+| Prerequisites D-17, D-18 (legacy deps, Node 22) | `2dba37a` | 13/13, identical per test | ✅ | 13/13, identical | 35 | **pixel-identical, styles identical** | **byte-identical** |
+| CI on Node 24 (D-15) | `d1709cb` | — (workflow change only) | | | | | |
+| **F1** same-major refresh | `21a7337` | 13/13, identical per test | ✅ JS 699.17 kB, CSS 1.59 kB | 13/13 (Playwright 1.57), identical | **0** | **pixel-identical, styles identical** | JS and `index.html` differ, CSS byte-identical; see below |
+| **F2** majors (C2) | `e0fc04c` | 13/13, identical per test | ✅ JS 563.36 kB, CSS 1.69 kB | 13/13 (**Playwright 1.63**), identical | **0** | **pixel-identical, styles identical** | all files differ (new toolchain) |
+
+ESLint reports the same single pre-existing error in every state (`e2e/smoke.spec.ts:89`, an unused `e`). It is `continue-on-error` in CI.
+
+**F1 stop rule, `dist/` differences classified.** `bundle_modules.py` rebuilt F0 and F1 with sourcemaps and compared the bundle module by module (`F0/bundle-modules.json`, `F1/bundle-modules.json`, `F1/bundle-modules-diff-vs-F0.txt`):
+- **JS bundle:** module changes occur **only** in packages that F1 bumps:
+  - `react` and `react-dom` 19.2.0 → 19.3.0;
+  - `@tanstack/query-core`, `@tanstack/react-query` and `@tanstack/react-query-devtools` 5.90.10/5.91.0 → 5.104.1.
+- **Identical modules:** all 22 app modules and the other 68 bundled packages, Chakra 3.28 and its `@ark-ui`/`@zag-js` subtree included.
+- **`index.html`:** only the hashed bundle file name changes.
+
+**F2 visual comparison** (`visual-review.html`, `F2/compare-screens-vs-F0.md`): **no screen differs from F0**, in pixels or in any computed style. The two expected visual deltas are present in the build but change no computed value in this app.
+- **D-19:** the built CSS differs (`F2/css-diff-vs-F0.diff`, prettier-normalized). The changes are reordered declarations, `transparent` → `#0000`, the `color-scheme` lowering variables (only used by `light-dark()`, which is absent), vendor-prefix normalization and keyword case. All of them preserve computed values in Chromium.
+- **D-24:** Chakra 3.37 changes the `outline` button's border to `var(--outline-color, var(--outline-color-legacy))` (layer `recipes`). The app's unlayered `button { border: 1px solid transparent; … }` in `src/index.css` beats every cascade layer, so the computed border of the Cancel button stays `rgba(0, 0, 0, 0)` in F0 and F2 (`F2/d24-cascade-probe.json`, from `probe_layers.mjs`). The same unlayered rule causes the pre-existing white-on-light buttons.
+- **Positive control:** adding `body{letter-spacing:.5px}` to the F2 stylesheet changed all 8 screens (0.30–0.75 % of pixels, plus box changes in the styles). The capture detects even a one-line CSS change. The stylesheet was restored afterwards, and its hash matched the build again (`F2/positive-control.md`).
+
+**Human review of the screenshot comparison:** _pending (Phase 2 exit criterion)._
+
 ## Change log
 
 _Empty. Phase 5 records each intentional behaviour change here, with its Q6 row ID._

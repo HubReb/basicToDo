@@ -1,0 +1,15 @@
+{
+ "playwright": "1.63.0",
+ "browser": "chromium 153.0.8010.12",
+ "chromium_revision": "1243",
+ "node": "v24.21.0",
+ "runner_lock_sha256": "7cb5e363a037c7621fb454fd14a50502ad48e99d37a40e82accf54709ab7891f",
+ "viewport": "1280x800@1x",
+ "reduced_motion": true,
+ "dist_sha256": [
+  "034fe40368b51b47d56922a140c92856977d5da33af281db746d2f6b22250e4c  ./assets/index-DPFTD5Gq.css",
+  "4da9fdeaf915c44ddd93ad2c72648368a0076ad18d42beb73d71e8111bbae984  ./assets/index-DzHABgbV.js",
+  "a4280b82d7f1742ab64d5f3b7037050e74fbaa180d3f344f978ce2a7bface11f  ./index.html",
+  "4a748afd443918bb16591c834c401dae33e87861ab5dbad0811c3a3b4a9214fb  ./vite.svg"
+ ]
+}

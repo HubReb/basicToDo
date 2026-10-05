@@ -1,0 +1,53 @@
+{
+ "variantClass": "chakra-button css-1r661dj",
+ "computedBorder": "rgba(0, 0, 0, 0)",
+ "hits": [
+  {
+   "layer": "(unlayered)",
+   "selector": "button",
+   "props": [
+    "border-color: rgba(0, 0, 0, 0)",
+    "border: 1px solid rgba(0, 0, 0, 0)",
+    "border-top-color: rgba(0, 0, 0, 0)",
+    "color: rgb(255, 255, 255)",
+    "background-color: rgb(26, 26, 26)"
+   ]
+  },
+  {
+   "layer": "(unlayered)",
+   "selector": "button",
+   "props": [
+    "background-color: rgb(249, 249, 249)"
+   ]
+  },
+  {
+   "layer": "reset",
+   "selector": "*, ::before, ::after, ::backdrop",
+   "props": [
+    "border-color: var(--global-color-border, currentColor)"
+   ]
+  },
+  {
+   "layer": "reset",
+   "selector": "button, [type=\"button\"], [type=\"reset\"], [type=\"submit\"]",
+   "props": [
+    "background-color: transparent"
+   ]
+  },
+  {
+   "layer": "reset",
+   "selector": "button, input, optgroup, select, textarea",
+   "props": [
+    "color: inherit"
+   ]
+  },
+  {
+   "layer": "recipes",
+   "selector": ".css-1r661dj",
+   "props": [
+    "border-color: var(--outline-color, var(--outline-color-legacy))",
+    "color: var(--chakra-colors-color-palette-fg)"
+   ]
+  }
+ ]
+}

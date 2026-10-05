@@ -40,7 +40,7 @@ The probe copy lives at `<scratchpad>/uplift-probe/` and the evidence files at `
 
 | Component | Source | Target | Note |
 |---|---|---|---|
-| Node (CI) | 20 (**EOL 2026-04-30**) | 24 ≥24.15 **or** 22 ≥22.22.2 | Even a same-major refresh excludes Node 20 (D-15) |
+| Node (CI) | 20 (**EOL 2026-04-30**) | 24 ≥24.15 **or** 22 ≥22.22.2 | Even a same-major refresh excludes Node 20 (D-15). The floors come from **jsdom 30.1.1** (`engines.node: ^22.22.2 \|\| ^24.15.0 \|\| >=26.0.0`, checked 2026-10-05). The distribution's `nodejs24` package (24.14.1) is below it; `analysis/basictodo/env/install_node24.sh` installs a signed nodejs.org build instead. |
 | vite / @vitejs/plugin-react | 6.4.1 / 4.7.0 | **8.3.2 / 6.1.1** (same-major alternative: vite 6.4.3) | Vite 8 uses Rolldown and Lightning CSS; rollup and esbuild leave the tree |
 | vitest | 4.0.13 | **5.0.3** (4.1.11 also works) | Engines: Node ^22.12, ^24 or ≥26 |
 | typescript | 5.8.3 | **6.0.3** | TS 7.0.2 is blocked by typescript-eslint (D-22) |
@@ -109,12 +109,12 @@ All three are backward-compatible: D-17 and D-18 were verified on the legacy dep
 | D-16 | FE tooling | npm major ↔ lockfile coupling | npm 10 crashed on the F1 set; an npm-11-made F2 lock fails `npm ci` on npm 10 (`Missing: typescript@5.9.3`, via vite-tsconfig-paths 6 → tsconfck) | **breaking (CI install)** | With D-15 | Generate the lock with the npm major the CI Node ships (Node 24 → npm 11 everywhere), or remove vite-tsconfig-paths |
 | D-17 | FE build | TS 6.0 errors on `baseUrl` (TS5101) | `tsconfig.app.json:20` → `tsc -b` exits 2, so **`npm run build` fails** | **breaking** | With the TS bump | Delete `baseUrl`; `"@/*": ["./src/*"]`. Verified on TS 5.8/6.0/7.0. Can land first. |
 | D-18 | FE test types | Vitest 5 removed the global `jest.Matchers` bridge | `src/test/setup.ts:1` → 15× TS2339 `toBeInTheDocument`; build fails (runtime still 13/13) | **breaking (build)** | With Vitest 5 | `import '@testing-library/jest-dom/vitest'`. Verified on legacy deps. Can land first. |
-| D-19 | FE build | Vite 8: Rolldown plus Lightning CSS; plugin-react 6 needs vite ^8 | Build green. JS 669 → 563 KB. Lightning CSS rewrites `index.css` (lowers `color-scheme: light dark` at :6, reorders declarations, `transparent` → `#0000`). | behavioural (CSS); breaking if the pair is split | **Yes**: vite 8 + plugin-react 6 together | Bump together; optionally native `resolve.tsconfigPaths` |
+| D-19 | FE build | Vite 8: Rolldown plus Lightning CSS; plugin-react 6 needs vite ^8 | Build green. JS 669 → 563 KB. Lightning CSS rewrites `index.css` (lowers `color-scheme: light dark` at :6, reorders declarations, `transparent` → `#0000`). | behavioural (CSS); breaking if the pair is split | **Yes**: vite 8 + plugin-react 6 together | Bump together; optionally native `resolve.tsconfigPaths`. **Phase 2 measured:** no computed-value change in this app. The CSS diff is serialization only (`baseline/frontend/F2/css-diff-vs-F0.diff`). |
 | D-20 | FE security | rollup ≥4.58 (path traversal) | Baseline 4.52.5 | security | No | Met on a Vite 6/7 path; moot on Vite 8 (no rollup) |
 | D-21 | FE security | npm advisories | 35 at baseline (includes `@modelcontextprotocol/sdk` via the **unused** `textlint`) | security | No | Same-major refresh F1 → 0; F2 → 0 |
 | D-22 | FE tooling | typescript-eslint 8.71 has peer `typescript <6.1` | ESLint crashes under TS 7 | breaking (TS 7 only) | Yes | Target TS 6.0.3; defer TS 7 |
 | D-23 | FE e2e | Playwright 1.63 needs chromium-1243 | Only chromium-1200 is cached locally; CI installs its own | gap (local) | No | Download the browser for local validation |
-| D-24 | FE UI | Chakra 3.29–3.37: outline-variant border token changed | `TodoEditForm.tsx:105`; `lib/toaster.ts:3` still type-compatible | behavioural (visual) | No | Visual re-baseline |
+| D-24 | FE UI | Chakra 3.29–3.37: outline-variant border token changed | `TodoEditForm.tsx:105`; `lib/toaster.ts:3` still type-compatible | behavioural (visual) | No | Visual re-baseline. **Phase 2 measured:** masked in this app. The unlayered global `button` rule in `src/index.css` beats Chakra's `recipes` layer, so the border stays transparent (`baseline/frontend/F2/d24-cascade-probe.json`). |
 | D-25 | CI | node16/node20 actions → node24 majors | All `uses:` lines; `setup-python@v3` at `python-app.yml:101` | deprecation | No | Bump per §A |
 | D-26 | CI | Immutable tags (no `@v10` for setup-uv, no `@v4` for coverage-comment) | `python-app.yml:30, 78, 92, 97`; `e2e.yml:28` | **breaking if bumped naively** | No | Pin exact versions or SHAs. setup-uv v6–v10 changed cache and activation defaults; the workflows set `enable-cache: true` explicitly. |
 | D-27 | CI | super-linter v4 → v9: `*_STANDARD` linters removed; many more linters enabled by default | `super-linter.yml:30` + env | breaking-likely **(inferred)** | No | `super-linter/super-linter@v9.0.0`; drop the removed env vars; expect new findings |
@@ -137,7 +137,7 @@ All three are backward-compatible: D-17 and D-18 were verified on the legacy dep
 3. **OpenAPI (D-12):** `ValidationError` gains `ctx` and `input`.
 4. **Telemetry (D-09):** span export auto-activates if `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
 5. **Coverage accounting on Python 3.14 (D-08).**
-6. **Shipped CSS (D-19) and the Chakra outline border (D-24):** visual only; **not yet visually verified.**
+6. **Shipped CSS (D-19) and the Chakra outline border (D-24):** visual only. **Verified in Phase 2: no visible change.** The 8 persona-flow screens are pixel-identical, with identical computed styles, from F0 to F2. See §G.
 7. **Docs pages (D-28):** `/docs` gains a viewport meta tag; `/redoc` loads `redoc@2` instead of `redoc@next`. Found by the Phase 1 golden master.
 
 **Unchanged** (60-request characterization diff): every status code, every success body, `done` coercion, the 404/405/409/400 bodies, the 307 trailing-slash redirect, and the disallowed-origin 400. Two quirks are identical on both stacks and belong in the baseline:
@@ -196,4 +196,15 @@ The backend pilot surfaced the following. The rows above carry the corrections; 
 |   | - `uv sync` puts an editable install of the checkout into the venv. A script run (`backend/scripts/init_db.py`) from another worktree would then import `backend.app` from that checkout. | |
 |   | - `uv export` writes ANSI codes into its header unless `--color never` is set. | |
 |   | - `backend/todo.db`, `test.db`, `frontend/playwright-report/` and `frontend/test-results/` are not gitignored. | |
+
+### Phase 2 findings (frontend, 2026-10-05)
+
+| # | Finding | Effect |
+|---|---|---|
+| 6 | **Where the Node 24 floor comes from:** jsdom 30.1.1 declares `^22.22.2 \|\| ^24.15.0 \|\| >=26.0.0`. The distribution's `nodejs24` package (24.14.1) is below it. | Node 24 comes from a signed nodejs.org build (`env/install_node24.sh`). CI's `setup-node` with `'24'` resolves above the floor. |
+| 7 | **D-19 and D-24 are invisible in this app.** The CSS diff only reorders, normalizes and prefixes. The Chakra outline token is overridden by the unlayered `button` rule in `src/index.css`, because cascade layers lose to unlayered rules. | The expected visual deltas did not materialize. A positive control shows that the screenshot setup does detect a one-line CSS change. |
+| 8 | **The pre-existing white-on-light Chakra buttons** come from the same unlayered `index.css` rules, a Vite template leftover. | Not changed (minimal diff). A candidate for the owner, with Phase 5 or a later UI pass. |
+| 9 | **A same-major refresh has to reach transitive packages.** Updating only the direct dependencies left 11 advisories (7 high) in build-tool internals (rollup, postcss, nanoid, ws, picomatch, …). Updating every lock entry except the Chakra subtree reached 0 and kept Chakra's 81 entries at F0. | F1 = `npm uninstall` of the 4 unused packages, then `npm update` over all lock entries except `@chakra-ui`, `@ark-ui`, `@zag-js`, `@pandacss`, `@internationalized`, `@floating-ui`, `@swc/helpers`, `proxy-compare` and `uqr`. |
+| 10 | **npm 11.19 holds back install scripts** that are not allow-listed. On F1 that was `esbuild` (postinstall only). Vite 8 drops esbuild, so F2 has none. | Nothing approved. The builds do not need it. |
+| 11 | **Resolved patch versions** differ slightly from §A: plugin-react 6.1.2, jsdom 30.1.2. **ESLint stays on major 9** (9.39.5); ESLint 10 is not part of Phase 2. | Recorded in `UPLIFT_NOTES.md`. |
 

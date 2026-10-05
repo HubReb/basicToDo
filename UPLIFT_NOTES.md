@@ -86,3 +86,45 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 ## Playbook
 
 `analysis/basictodo/PLAYBOOK.md`, section "Backend", holds the ordered recipe, the environment facts and the error table from this pilot. Its gaps are the findings in `DELTA_CATALOG.md` §G.
+
+---
+
+# Uplift notes: basicToDo, Phase 2 (frontend)
+
+**Uplift:** `node20/22 + vite 6.4 + vitest 4.0 + ts 5.8 + chakra 3.28 + playwright 1.57` → `node24 + vite 8.3 + vitest 5.0 + ts 6.0 + chakra 3.37 + playwright 1.63`
+
+**Branch:** `plugin/uplift-basictodo/phase-2`, based on `phase-1`.
+
+**Evidence:** `analysis/basictodo/BASELINE.md` ("Frontend") and `analysis/basictodo/baseline/frontend/`.
+
+**Proof type:** dual run on Node 22 and Node 24 for F0, then per-checkpoint comparisons on Node 24. CI's legacy Node 20 is not available locally, so the legacy oracle is Node 22.
+
+## Commits and delta → fix mapping
+
+| Commit | Change | Deltas | How applied |
+|---|---|---|---|
+| `2dba37a` | tsconfig `baseUrl` dropped, alias `./src/*`; `@testing-library/jest-dom/vitest` | D-17, D-18 | by hand, on legacy deps |
+| `d1709cb` | `node-version: '24'` in `frontend.yml` and `e2e.yml` | D-15 | by hand |
+| `21a7337` | **F1:** removes `add`, `snippet`, `textlint` and `framer-motion`; same-major refresh of all lock entries except Chakra's subtree; lock made by npm 11 | D-16, D-20, D-21 | `npm uninstall`, `npm update` |
+| `e0fc04c` | **F2:** vite 8.3.2 + plugin-react 6.1.2; vitest 5.0.3 + jsdom 30.1.2 + jest-dom 7.0.1; typescript 6.0.3; Chakra 3.37.0; Playwright 1.63.0; vite-tsconfig-paths 6.1.1 | C2: D-16, D-19, D-22, D-23, D-24 | `npm install` |
+
+## Result
+
+| Measure | F0 (legacy) | F1 | F2 |
+|---|---|---|---|
+| vitest | 13/13 | 13/13, identical per test | 13/13, identical per test |
+| Playwright e2e | 13/13 (1.57) | 13/13 (1.57) | 13/13 (**1.63**) |
+| Build: JS / CSS | 669.36 / 1.59 kB | 699.17 / 1.59 kB | 563.36 / 1.69 kB |
+| `npm audit` | 35 (1 critical, 24 high) | **0** | **0** |
+| 8 persona-flow screens vs F0 | — | pixel-identical, styles identical | **pixel-identical, styles identical** |
+
+- **F1's `dist/` change** is fully attributed. JS modules changed only in the bumped react/react-dom 19.3.0 and @tanstack 5.104.1. All app modules and the other 68 packages are identical, and the CSS is byte-identical.
+- **D-19 and D-24 do not show** in this app. The CSS diff is serialization only. The Chakra outline token loses to the unlayered legacy `button` rule in `src/index.css`. A positive control proves that the screenshot setup detects a one-line CSS change.
+
+## Residual and deferred
+
+- **ESLint 10** and other lint-plugin majors are not part of Phase 2. ESLint stays 9.39.5, and its one pre-existing error (`e2e/smoke.spec.ts:89`, unused `e`) is unchanged.
+- **TypeScript 7** is blocked by typescript-eslint's peer range (D-22).
+- **Native `resolve.tsconfigPaths`** instead of vite-tsconfig-paths: optional, not done.
+- **The unlayered `button` rules in `src/index.css`** (a Vite template leftover) override Chakra and make the buttons barely legible. This is pre-existing and left as is; it is a candidate for a later UI pass.
+- **Visual review by the owner:** pending.
