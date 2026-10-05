@@ -140,3 +140,23 @@ Coverage hotspots worth shoring up with characterization tests before transformi
 3. **Logging partly goes nowhere.** `CustomLogger` subclasses `Logger` but attaches its handler to a different `getLogger(name)` instance. Calls like `logger.info()` on the `CustomLogger` object therefore have no handler. INFO is dropped, and WARNING+ reaches stderr unformatted through Python's last-resort handler. For example, `init_db.py` runs silently. Recorded traces that rely on logs will miss INFO events.
 4. **The README commands are stale.** It says `python -m app.main`; the real command is `uv run python -m backend.app.main` from the repo root. It also says `uv run pytest/backend .`; the real command is `uv run pytest backend/tests/`. The CI workflows above are the correct reference.
 5. **`backend/backend/tests/**`** holds 9 empty `__init__.py` files, a stray copy of the tests package layout. It's harmless but will show up in inventories.
+
+## Addendum 2026-10-05: Check 3 for the target lock (`/modernize-uplift` Phase 1 entry criterion)
+
+This is a re-run of Check 3 only, for the target `py3.13+fastapi0.142.2`. The sections above, and the Check 0 answers in particular, are unchanged. A full preflight re-run would have asked Check 0 again and overwritten them.
+
+**Method:**
+1. A throwaway export of the Phase 1 working copy at `72cf484`, which is the seed `bd2a0b9` plus the builder-test rename and the P0 contract tests.
+2. The C1 constraints from the brief, applied in `pyproject.toml`: `fastapi[standard]>=0.142.2`, `starlette>=1.3.1`, `python-multipart>=0.0.31`, `anyio>=4.14.2`, `pytest>=9.0.3`, `sqlalchemy[mypy]>=2.0.54,<2.1`.
+3. `uv lock --upgrade`, then `uv sync --frozen --all-extras --dev` into a fresh venv on Python 3.13.15.
+4. The CI gates, through `analysis/basictodo/baseline/run_suite.sh`.
+
+| Step | Result |
+|---|---|
+| Restore (`uv sync --frozen`) | ✅ |
+| Resolved | fastapi 0.142.2, starlette 1.7.0, pydantic 2.13.5, sqlalchemy 2.0.54, sqlalchemy-utils 0.42.1, uvicorn 0.54.0, python-multipart 0.0.32, anyio 4.15.1, pytest 9.1.1, pytest-asyncio 1.4.0, pytest-cov 7.1.0, mypy 2.4.0, pylint 4.1.2. All match `DELTA_CATALOG.md` §A, except black: 26.10.0 here vs 26.5.1 there (a dev tool, released in between). |
+| `init_db.py` | ✅ |
+| pytest | ✅ **454 passed / 1 skipped**, coverage 83.96%. This is identical to the legacy lock on the same tree. The extra warning is D-06 (no `httpx2` yet). |
+| mypy (non-blocking in CI) | 5 errors: the 3 legacy errors plus D-05 at `repository.py:73` and `:89`. `DELTA_CATALOG.md` §B predicted 4. |
+
+**Check 3 for the target lock: ✅ green.** The `uplift` verdict for Phase 1 becomes **Ready**: both lockfiles restore, build and test on this machine, so the dual-run is real.

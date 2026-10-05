@@ -74,7 +74,7 @@ The probe copy lives at `<scratchpad>/uplift-probe/` and the evidence files at `
 | pytest, Py 3.13 + SA 2.0.54 | 433 passed / 1 skipped / 81.78% | **433 / 1 / 81.78%, identical** (1 new StarletteDeprecationWarning, D-06) |
 | pytest, Py 3.14.7 | — | 433 / 1 / **81.40%** (D-07, D-08) |
 | pytest, SA 2.1.3 | — | **0 collected** (import error in product code, D-03). With the D-03b fix: 433 / 1. |
-| mypy gate (non-blocking) | already red: 3 errors | 4 errors (5 once the stubs are removed). All mechanical (D-04, D-05). |
+| mypy gate (non-blocking) | already red: 3 errors | 4 errors (5 once the stubs are removed). All mechanical (D-04, D-05). **Pilot correction:** the count is install-order dependent (D-04). On the same tree and target lock, two fresh venvs gave 5 and 3 errors. |
 | vitest | 13/13 | **13/13** on Vitest 4.1.11 and on 5.0.3. Test-file *types* break the build on Vitest 5 until D-18 lands. |
 | Playwright e2e | 13/13 (runner 1.57) | **13/13** on runner 1.57 against the fully upgraded app. Runner 1.63 was not run (browser not cached). |
 
@@ -85,6 +85,8 @@ The probe copy lives at `<scratchpad>/uplift-probe/` and the evidence files at `
 
 All three are backward-compatible: D-17 and D-18 were verified on the legacy dependencies, D-06 on the target. They land as a prerequisite step inside their unit's phase.
 
+**Pilot correction for D-06:** it is compatible with the code but **not lock-neutral**. On the legacy lock, `httpx2` 2.13 raises anyio and idna. It therefore lands with C1, not as a prerequisite.
+
 ## C. Deltas that touch this code
 
 | ID | Area | Upstream change | Evidence here | Severity | Coordinated cut | Fix |
@@ -92,9 +94,9 @@ All three are backward-compatible: D-17 and D-18 were verified on the legacy dep
 | D-01 | BE deps | Starlette security fixes need Starlette 1.x; FastAPI 0.115 caps <0.47 | `pyproject.toml:14`; 7 Starlette advisories | security | **Yes**: fastapi + starlette in one lock bump; no code change | `fastapi[standard]>=0.142.2`, `starlette>=1.3.1`. Verified 433/1. |
 | D-02 | BE deps | Transitive advisories | multipart (6), anyio (2), black (2), pytest, click, idna, pygments, python-dotenv | security | No | Floors `python-multipart>=0.0.31`, `anyio>=4.14.2`, `pytest>=9.0.3` → 22 advisories go to 0 |
 | D-03 | BE deps | SA 2.1 privatised `ScalarAttributeImpl`; sqlalchemy-utils subclasses it at import | `database.py:13` (UUIDType, used at :71, :92) | breaking (SA 2.1 only) | Inside one file | (a) cap `sqlalchemy<2.1` (verified), or **(b)** use `sqlalchemy.Uuid()` and drop sqlalchemy-utils. (b) was verified on SA 2.0.43 and 2.1.3, Py 3.13 and 3.14. Storage is identical (`CHAR(32)` hex) and reads work in both directions (SQLite only). |
-| D-04 | BE tooling | sqlalchemy-stubs and sqlalchemy2-stubs install into the same directory and shadow SA 2.x's inline types | `pyproject.toml:20-23`; `registry` attr-defined at `database.py:10` | tooling | With D-03b | Remove both stub packages and the `[mypy]` extra |
+| D-04 | BE tooling | sqlalchemy-stubs and sqlalchemy2-stubs install into the same directory and shadow SA 2.x's inline types | `pyproject.toml:20-23`; `registry` attr-defined at `database.py:10` | tooling | With D-03b | Remove both stub packages and the `[mypy]` extra. **Pilot finding:** both packages own `sqlalchemy-stubs/orm/__init__.pyi` (both RECORDs list it), so the one installed last wins. Which one that is varies between fresh `uv sync` runs, and so does the mypy result: `database.py:10` and `main.py:10` come and go. mypy is not a stable gate until this is fixed. |
 | D-05 | BE tooling | mypy 2.x: instance-only attribute on class object | `repository.py:73, :89`; stale ignores `database.py:52`, `main.py:10`, `models/todo.py:5` | tooling (gate is non-blocking) | No | Mechanical ignores / cleanup |
-| D-06 | Test harness | Starlette 1.7 TestClient prefers `httpx2`; with plain httpx it warns (a UserWarning subclass) | `tests/test_api/test_setup_for_api_endpoins.py:6, :22` | deprecation | No | Add the `httpx2` dev dependency (verified, zero warnings) |
+| D-06 | Test harness | Starlette 1.7 TestClient prefers `httpx2`; with plain httpx it warns (a UserWarning subclass) | `tests/test_api/test_setup_for_api_endpoins.py:6, :22` | deprecation | No | Add the `httpx2` dev dependency (verified, zero warnings). **Pilot finding:** not lock-neutral on the legacy lock (anyio 4.9.0 → 4.14.2, idna 3.10 → 3.20, sniffio dropped), so it belongs in C1. |
 | D-07 | Py 3.14 | `asyncio.iscoroutinefunction` deprecated (removal in 3.16) | `business_logic/decorators.py:2, :53` | deprecation | No | `inspect.iscoroutinefunction` (verified on 3.14 with deprecation warnings as errors) |
 | D-08 | Py 3.14 | Lazy annotations change which lines coverage counts | coverage 81.78% → 81.40% (gate 80%) | measurement | No | None. Note the shrinking margin. |
 | D-09 | BE behaviour | FastAPI 0.142 ships native OpenTelemetry; `[standard]` grows from 71 to 92 pins | `api.py:20`. Dormant by default; **setting `OTEL_EXPORTER_OTLP_ENDPOINT` alone starts span export.** | behavioural (env-dependent) | No | Keep legacy behaviour: `FastAPI(..., telemetry={"auto_configure": False})`, or pin `<0.142`. Brief §7. |
@@ -116,6 +118,7 @@ All three are backward-compatible: D-17 and D-18 were verified on the legacy dep
 | D-25 | CI | node16/node20 actions → node24 majors | All `uses:` lines; `setup-python@v3` at `python-app.yml:101` | deprecation | No | Bump per §A |
 | D-26 | CI | Immutable tags (no `@v10` for setup-uv, no `@v4` for coverage-comment) | `python-app.yml:30, 78, 92, 97`; `e2e.yml:28` | **breaking if bumped naively** | No | Pin exact versions or SHAs. setup-uv v6–v10 changed cache and activation defaults; the workflows set `enable-cache: true` explicitly. |
 | D-27 | CI | super-linter v4 → v9: `*_STANDARD` linters removed; many more linters enabled by default | `super-linter.yml:30` + env | breaking-likely **(inferred)** | No | `super-linter/super-linter@v9.0.0`; drop the removed env vars; expect new findings |
+| D-28 | BE behaviour | FastAPI 0.115 → 0.142 changed its built-in docs pages: Swagger UI HTML gains `<meta name="viewport" content="width=device-width, initial-scale=1.0">`; ReDoc loads `redoc@2` instead of `redoc@next` from the CDN | `/docs` and `/redoc` (FastAPI defaults; the app does not customize them). **Found by the Phase 1 golden master**, not by the catalog run. | behavioural (docs UI only; the API is unchanged) | With C1 | None. Re-baseline the two pages. `redoc@2` pins a major instead of the moving pre-release tag. Decided by the owner on 2026-10-05: classify, do not reproduce the legacy HTML. |
 
 **Checked, not applicable:**
 - **SQLAlchemy 2.1:** autoflush change, greenlet, mypy plugin, mapped-dataclass defaults, legacy Query API.
@@ -135,6 +138,7 @@ All three are backward-compatible: D-17 and D-18 were verified on the legacy dep
 4. **Telemetry (D-09):** span export auto-activates if `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
 5. **Coverage accounting on Python 3.14 (D-08).**
 6. **Shipped CSS (D-19) and the Chakra outline border (D-24):** visual only; **not yet visually verified.**
+7. **Docs pages (D-28):** `/docs` gains a viewport meta tag; `/redoc` loads `redoc@2` instead of `redoc@next`. Found by the Phase 1 golden master.
 
 **Unchanged** (60-request characterization diff): every status code, every success body, `done` coercion, the 404/405/409/400 bodies, the 307 trailing-slash redirect, and the disallowed-origin 400. Two quirks are identical on both stacks and belong in the baseline:
 - `PUT {"done": null}` returns **500**.
@@ -143,7 +147,7 @@ All three are backward-compatible: D-17 and D-18 were verified on the legacy dep
 ## E. Ordering constraints (order and dependency only, no durations)
 
 - **Prerequisites (backward-compatible, can land before any bump):**
-  - **P-BE:** D-06 (`httpx2`), D-07 (`inspect.iscoroutinefunction`).
+  - **P-BE:** D-07 (`inspect.iscoroutinefunction`). D-06 (`httpx2`) moved into C1, because it changes the legacy lock (pilot finding).
   - **P-FE:** D-17 (tsconfig), D-18 (`setup.ts`).
   - **P-BE, SA 2.1 path only:** D-03b + D-04.
   - **P-CI:** D-15. The Node bump precedes or accompanies *any* frontend lock change.
@@ -176,3 +180,20 @@ All three are backward-compatible: D-17 and D-18 were verified on the legacy dep
   - `npx tsc --noEmit` in CI checks **0 files** (`tsconfig.json` has `"files": []`). The real type gate is `tsc -b` inside `npm run build`.
   - mypy and ESLint are `continue-on-error`, and pylint runs with `--exit-zero`.
   - `python_files = "test_*.py"` skips the two `tests_*.py` builder files (9 tests, which pass on both stacks).
+
+## G. Pilot findings (Phase 1, 2026-10-05)
+
+The backend pilot surfaced the following. The rows above carry the corrections; this section is the summary.
+
+| # | Finding | Effect |
+|---|---|---|
+| 1 | **D-28 (new):** FastAPI's own `/docs` (viewport meta tag) and `/redoc` (`redoc@2` instead of `redoc@next`) pages change. The catalog run had compared only the `/docs` status. | The owner classified it as a delta and extended the Phase 1 exit criterion. |
+| 2 | **D-06 is not lock-neutral:** `httpx2` raises anyio and idna on the legacy lock. | Moved from the prerequisites into C1. |
+| 3 | **D-04 makes mypy nondeterministic:** the two stub packages overwrite one shared file, and install order decides the winner. | The mypy count is not a stable comparison or gate before Phase 4. This affects Q9 (mypy blocking in Phase 3); see the brief. |
+| 4 | **The test count grows:** 442 → 454 with the P0 contract tests (brief §5) → 456 with the D-09 telemetry tests. | Exit criteria compare per test against `BASELINE.md`, not against the old count. |
+| 5 | **Environment facts:** | See `PLAYBOOK.md`. |
+|   | - `python3` is 3.14 locally and `.python-version` is gitignored, so uv needs `UV_PYTHON=3.13`. | |
+|   | - `uv sync` puts an editable install of the checkout into the venv. A script run (`backend/scripts/init_db.py`) from another worktree would then import `backend.app` from that checkout. | |
+|   | - `uv export` writes ANSI codes into its header unless `--color never` is set. | |
+|   | - `backend/todo.db`, `test.db`, `frontend/playwright-report/` and `frontend/test-results/` are not gitignored. | |
+
