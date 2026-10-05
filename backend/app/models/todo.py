@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy.orm import Mapped, mapped_column  # type: ignore[attr-defined]
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 @dataclass

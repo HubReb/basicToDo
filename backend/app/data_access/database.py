@@ -49,7 +49,7 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
-)  # type: ignore
+)
 
 @contextmanager
 def safe_session_scope() -> Generator[Session, None, None]:
