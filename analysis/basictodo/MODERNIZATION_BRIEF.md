@@ -216,8 +216,9 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] **F1 checkpoint:** all frontend gates green on same-major dependencies, and `npm audit` reports 0 high or critical. _(`21a7337`: audit 0; screens identical; `dist/` changes attributed to react 19.3 and @tanstack 5.104 only.)_
 - [x] **F2:** `npm run build` (including `tsc -b`) green; vitest 13/13; Playwright **1.63** e2e 13/13. _(`e0fc04c`)_
 - [x] `npm ci` succeeds with the npm major that the CI Node ships (D-16). _(npm 11.19.0 on a fresh `node_modules`.)_
-- [ ] A human has reviewed and accepted the screenshot comparison of the four flows. Expected visual deltas: Lightning CSS rewrites (D-19) and the Chakra outline border (D-24).
-  - _Measured 2026-10-05: none of the 8 screens differs from F0, in pixels or computed styles. D-19 changes only serialization; D-24 is masked by the unlayered `button` rule in `src/index.css`. The evidence and a positive control are in `baseline/frontend/visual-review.html`. Awaiting the owner's review._
+- [x] A human has reviewed and accepted the screenshot comparison of the four flows. Expected visual deltas: Lightning CSS rewrites (D-19) and the Chakra outline border (D-24).
+  - _Accepted by the owner on 2026-10-05. The owner's answer was "go", given to the question "if you accept the review and give the go, I push phase-2 and open the draft PR"._
+  - _Measured 2026-10-05: none of the 8 screens differs from F0, in pixels or computed styles. D-19 changes only serialization; D-24 is masked by the unlayered `button` rule in `src/index.css`. The evidence and a positive control are in `baseline/frontend/visual-review.html`. The owner reviewed it._
 - [x] `npm audit` reports **0**.
 - [ ] `plugin/uplift-basictodo/phase-2` (branched from phase-1) is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and the frontend and e2e workflows green on it (Q11).
 - [x] `PLAYBOOK.md` (frontend section) is written.

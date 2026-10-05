@@ -306,7 +306,7 @@ ESLint reports the same single pre-existing error in every state (`e2e/smoke.spe
 - **D-24:** Chakra 3.37 changes the `outline` button's border to `var(--outline-color, var(--outline-color-legacy))` (layer `recipes`). The app's unlayered `button { border: 1px solid transparent; … }` in `src/index.css` beats every cascade layer, so the computed border of the Cancel button stays `rgba(0, 0, 0, 0)` in F0 and F2 (`F2/d24-cascade-probe.json`, from `probe_layers.mjs`). The same unlayered rule causes the pre-existing white-on-light buttons.
 - **Positive control:** adding `body{letter-spacing:.5px}` to the F2 stylesheet changed all 8 screens (0.30–0.75 % of pixels, plus box changes in the styles). The capture detects even a one-line CSS change. The stylesheet was restored afterwards, and its hash matched the build again (`F2/positive-control.md`).
 
-**Human review of the screenshot comparison:** _pending (Phase 2 exit criterion)._
+**Human review of the screenshot comparison:** accepted by the owner on 2026-10-05 (answer: "go"; Phase 2 exit criterion).
 
 ## Change log
 

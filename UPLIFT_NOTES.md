@@ -127,4 +127,4 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 - **TypeScript 7** is blocked by typescript-eslint's peer range (D-22).
 - **Native `resolve.tsconfigPaths`** instead of vite-tsconfig-paths: optional, not done.
 - **The unlayered `button` rules in `src/index.css`** (a Vite template leftover) override Chakra and make the buttons barely legible. This is pre-existing and left as is; it is a candidate for a later UI pass.
-- **Visual review by the owner:** pending.
+- **Visual review by the owner:** accepted on 2026-10-05.
