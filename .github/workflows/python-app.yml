@@ -7,10 +7,8 @@ on:
     branches: ["main"]
 
 permissions:
-  contents: write
-  pull-requests: write
-  actions: read     
-  
+  contents: read
+
 jobs:
   backend:
     name: Backend Tests & Quality Checks
@@ -19,15 +17,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           version: "0.7.16"
           enable-cache: true
@@ -54,29 +54,58 @@ jobs:
         continue-on-error: false
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: backend-test-results
           path: backend/junit/test-results.xml
         if: always()
 
       - name: Upload coverage report (HTML)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: backend-coverage-html
           path: backend/htmlcov/
         if: always()
 
       - name: Upload coverage report (XML)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: backend-coverage-xml
           path: backend/coverage.xml
         if: always()
 
-      - name: Comment coverage on PR
-        uses: py-cov-action/python-coverage-comment-action@v3
+      - name: Upload coverage data for PR comment
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: github.event_name == 'pull_request'
+        with:
+          name: backend-coverage-data
+          path: .coverage
+          include-hidden-files: true
+          retention-days: 1
+
+  # Runs in its own job so the write token never coexists with the
+  # third-party packages that `uv sync` installs and pytest executes.
+  coverage-comment:
+    name: Comment coverage on PR
+    needs: backend
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Download coverage data
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: backend-coverage-data
+
+      - name: Comment coverage on PR
+        uses: py-cov-action/python-coverage-comment-action@50d15ff8768f6d897b04e5a0805bd1a98f7096c4 # v3
         with:
           GITHUB_TOKEN: ${{ github.token }}
           COVERAGE_PATH: .
@@ -87,18 +116,20 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           # Install a specific version of uv.
           version: "0.7.16"
       - name: Enable caching
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
       - name: Set up Python 3.13
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@3542bca2639a428e1796aaa6a2ffef0c0f575566 # v3.1.4
         with:
           python-version: "3.13"
       - name: run linter
