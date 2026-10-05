@@ -38,53 +38,57 @@ name = "basictodo"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "black" },
-    { name = "factory-boy" },
     { name = "fastapi", extra = ["standard"] },
-    { name = "mypy" },
-    { name = "pylint" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
     { name = "slowapi" },
-    { name = "sqlalchemy", extra = ["mypy"] },
-    { name = "sqlalchemy-stubs" },
+    { name = "sqlalchemy" },
     { name = "sqlalchemy-utils" },
-    { name = "sqlalchemy2-stubs" },
-    { name = "types-greenlet" },
-    { name = "types-pygments" },
-    { name = "types-pyyaml" },
-    { name = "types-ujson" },
     { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "black" },
+    { name = "factory-boy" },
+    { name = "mypy" },
+    { name = "pylint" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "sqlalchemy", extra = ["mypy"] },
+    { name = "sqlalchemy-stubs" },
+    { name = "sqlalchemy2-stubs" },
+    { name = "types-greenlet" },
+    { name = "types-pygments" },
+    { name = "types-pyyaml" },
+    { name = "types-ujson" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.115.12" },
+    { name = "slowapi", specifier = ">=0.1.9" },
+    { name = "sqlalchemy", specifier = ">=2.0.41" },
+    { name = "sqlalchemy-utils", specifier = ">=0.41.2" },
+    { name = "uvicorn", specifier = ">=0.34.2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
     { name = "black", specifier = ">=25.1.0" },
     { name = "factory-boy", specifier = ">=3.3.0" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.115.12" },
     { name = "mypy", specifier = ">=1.16.0" },
     { name = "pylint", specifier = ">=3.3.7" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
-    { name = "slowapi", specifier = ">=0.1.9" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "sqlalchemy", extras = ["mypy"], specifier = ">=2.0.41" },
     { name = "sqlalchemy-stubs", specifier = ">=0.4" },
-    { name = "sqlalchemy-utils", specifier = ">=0.41.2" },
     { name = "sqlalchemy2-stubs", specifier = ">=0.0.2a38" },
     { name = "types-greenlet", specifier = ">=3.2.0.20250417" },
     { name = "types-pygments", specifier = ">=2.19.0.20250516" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20250516" },
     { name = "types-ujson", specifier = ">=5.10.0.20250326" },
-    { name = "uvicorn", specifier = ">=0.34.2" },
 ]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest-cov", specifier = ">=7.0.0" }]
 
 [[package]]
 name = "black"
