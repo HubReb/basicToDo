@@ -213,11 +213,22 @@ The push to `phase-1` ran the three push-triggered workflows as well: Python 39 
 
 **Super-Linter, attributed.** `DEFAULT_BRANCH` resolved to `plugin/uplift-basictodo/base`, so only the files changed in phase-1 were linted, as intended. Six linters reported errors. They fall into three groups:
 
-| Source | Files | Findings |
-|---|---|---|
-| **Pre-existing in legacy files**, surfaced because phase-1 touches or renames them | `backend/app/api/api.py`, `backend/app/business_logic/decorators.py`, and the two renamed builder tests (content unchanged) | black (multi-name import, single quotes, missing final newline), flake8 W292, isort (super-linter's default profile; the repo has no isort config at `a2d59f1`), jscpd (the async/sync wrapper pair in `decorators.py`). None of these is on a line phase-1 changed. |
-| **Phase-1 code** | `test_p0_contracts.py`, `test_telemetry_export.py`, and `baseline/{golden_master,junit_table,provenance,pytest_provenance}.py` | black (line wrapping), flake8 E501 in `golden_master.py` (11 lines over 120), isort in `test_p0_contracts.py` (the same default-profile ordering the existing tests use) |
-| **Analysis documents** | `DELTA_CATALOG.md`, `MODERNIZATION_BRIEF.md`, `PLAYBOOK.md`, `PREFLIGHT.md`, `BASELINE.md`; `legacy-vs-target.diff.txt` | markdownlint (MD013 line length ×18, MD049 ×6, MD007 ×4, MD040 ×1), textlint terminology ("id" → "ID", "repo" → "repository", …), jscpd on the generated diff text |
+- **Pre-existing in legacy files** that phase-1 touches or renames: `backend/app/api/api.py`, `backend/app/business_logic/decorators.py`, and the two renamed builder tests (content unchanged).
+  - black (multi-name import, single quotes, missing final newline);
+  - flake8 W292;
+  - isort with super-linter's default profile (the repo has no isort config at `a2d59f1`);
+  - jscpd (the async/sync wrapper pair in `decorators.py`).
+  - None of these is on a line phase-1 changed.
+- **Phase-1 code:** `test_p0_contracts.py`, `test_telemetry_export.py` and `baseline/{golden_master,junit_table,provenance,pytest_provenance}.py`.
+  - black (line wrapping) and flake8 E501 in `golden_master.py`.
+  - **Fixed in `53b317d`** with super-linter's own versions (black 22.12.0 defaults, flake8 6.0.0 at 120 columns). The PR run on `53b317d` confirms it: black 10 → 4 files and flake8 5 → 4, all of them legacy files.
+  - Still open: isort in `test_p0_contracts.py`, which uses the same default-profile ordering as the existing tests.
+- **Analysis documents:** `DELTA_CATALOG.md`, `MODERNIZATION_BRIEF.md`, `PLAYBOOK.md`, `PREFLIGHT.md`, `BASELINE.md`, and the generated `legacy-vs-target.diff.txt`.
+  - markdownlint: MD013 line length, MD049, MD007, MD040;
+  - textlint terminology: "id" → "ID", "repo" → "repository", and so on;
+  - jscpd on the generated diff text.
+
+**Why all six linter statuses stay red.** Super-Linter posts one status per linter (`--> Linted: …`), all from the single `run-lint` job. Each of the six still has at least one finding in a legacy file or an analysis document, so each stays red even after `53b317d`.
 
 On `main`, the owner has since disabled pylint, jscpd and isort in super-linter for the same reasons. The base branch keeps the `a2d59f1` configuration, and Phase 3 owns the linter setup.
 
