@@ -141,34 +141,42 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - `backend/` (app, scripts, tests), `pyproject.toml` and `uv.lock` in `modernized/basictodo-uplifted/`.
 - **Deltas:** D-01 and D-02 (cut C1), D-06 (`httpx2`), D-07 (`inspect.iscoroutinefunction`, forward-compatible), and D-09 (telemetry: `telemetry={"auto_configure": False}` per Q3).
 - **SQLAlchemy is pinned `>=2.0.54,<2.1`** (Q4).
-- **Re-baseline the behavioural deltas** D-10, D-11 and D-12.
+- **Re-baseline the behavioural deltas** D-10, D-11, D-12 and D-28 (D-28 added 2026-10-05 from the pilot).
 - **Manifest hygiene:** dev tools move from runtime dependencies to `[dependency-groups].dev` (TD-9, SEC-015). This is a separate commit from the lock bump.
 - **Harness repair:** rename the two `backend/tests/test_builders/**/tests_*.py` files so pytest collects their 9 tests. Verified passing on both stacks.
 
 **Entry criteria (checkable):**
 - [x] This brief is approved in §8 (Phase 1 only; Rebekka Hubert, 2026-10-03).
 - [x] Q1, Q3 and Q10 are ticked in §7.
-- [ ] `modernized/basictodo-uplifted/` exists as a git-tracked copy of `legacy/basictodo`, with the seed commit recorded.
+- [x] `modernized/basictodo-uplifted/` exists as a git-tracked copy of `legacy/basictodo`, with the seed commit recorded. _(2026-10-05: a clone of `plugin/uplift-basictodo/base`; the seed is `bd2a0b9`, which equals `a2d59f1` plus `.github/` and `analysis/` only.)_
 - [x] `a2d59f1` is verified as an ancestor of upstream `main` (checked 2026-10-03). `main` itself is out of scope (Q11).
-- [ ] The working copy has `HubReb/basicToDo` as its remote. Branch `plugin/uplift-basictodo/base` starts at `a2d59f1` and carries the CI-safety commit and the analysis-artifacts commit (§3). `plugin/uplift-basictodo/phase-1` branches from it.
-- [ ] `/modernize-preflight basictodo py3.13+fastapi0.142.2` re-run with Check 3 green for the target lock.
-- [ ] The two `tests_*.py` files are renamed **on the legacy lock** and pytest reports **442 passed, 1 skipped**.
-- [ ] `analysis/basictodo/BASELINE.md` is recorded **on the legacy lock** and contains:
+- [x] The working copy has `HubReb/basicToDo` as its remote. Branch `plugin/uplift-basictodo/base` starts at `a2d59f1` and carries the CI-safety commit and the analysis-artifacts commit (§3). `plugin/uplift-basictodo/phase-1` branches from it.
+- [x] `/modernize-preflight basictodo py3.13+fastapi0.142.2` re-run with Check 3 green for the target lock. _(Check 3 only, appended to `PREFLIGHT.md`, so the Check 0 answers stay verbatim.)_
+- [x] The two `tests_*.py` files are renamed **on the legacy lock** and pytest reports **442 passed, 1 skipped**. _(`61d37da`)_
+- [x] `analysis/basictodo/BASELINE.md` is recorded **on the legacy lock** and contains: _(recorded from `72cf484`, 83-request golden master)_
   - pytest counts and coverage;
   - the mypy error count;
   - the e2e result;
   - a characterization golden master of the HTTP API, stored under `analysis/basictodo/baseline/`. It must include at least the 60-request set from `DELTA_CATALOG.md` §D, every error path, CORS preflight headers, and the two recorded quirks (`PUT {"done": null}` → 500; "Todo to delete" → 400).
 
 **Exit criteria:**
-- [ ] The same suite passes on the target lock: **442 passed / 1 skipped**, coverage ≥ 80% and within 0.5 points of the baseline.
-- [ ] The golden master was replayed against a legacy-lock server and a target-lock server. **Every diff is one of D-10, D-11 or D-12 and is classified in `BASELINE.md`. Zero unclassified diffs.**
-- [ ] The P0 contract tests for RULE-008 and RULE-031 (§5) are green on both locks.
-- [ ] Playwright e2e passes 13/13 against the upgraded backend.
-- [ ] `pip-audit` on the target lock reports **0** advisories in runtime dependencies.
-- [ ] The telemetry behaviour chosen in Q3 is proven by a test that sets `OTEL_EXPORTER_OTLP_ENDPOINT` and asserts no export when "off" was chosen.
-- [ ] **Once the owner gives the go to push** (§3): `plugin/uplift-basictodo/base` and `plugin/uplift-basictodo/phase-1` are pushed, and phase-1's **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval") is open (Q11). python-app and e2e are green on it, and the results of the other four workflows are recorded in `BASELINE.md`.
-- [ ] **CI duration measured on that PR and recorded in `BASELINE.md`** (Q10).
-- [ ] `analysis/basictodo/PLAYBOOK.md` (backend section) is written. `DELTA_CATALOG.md` has the pilot's surprises folded in. **This brief is revised if the pilot changed the picture.**
+- [x] The same suite passes on the target lock: **442 passed / 1 skipped**, coverage ≥ 80% and within 0.5 points of the baseline. _(Pilot: the suite grew to 454 with the §5 P0 tests and to 456 with the D-09 telemetry tests. The target reproduces every one of the 455 legacy results per test; coverage is 83.96% on both.)_
+- [ ] The golden master was replayed against a legacy-lock server and a target-lock server. **Every diff is one of D-10, D-11, D-12 or D-28 and is classified in `BASELINE.md`. Zero unclassified diffs.**
+  - _Extended 2026-10-05 by the owner: "D-28 aufnehmen, Austrittskriterium erweitern, dann weiter mit Gate C". The pilot's golden master found two docs-page differences (D-28) that the catalog had not predicted._
+  - [x] _Met: 79 of 83 responses differ, all classified (`BASELINE.md`)._
+- [x] The P0 contract tests for RULE-008 and RULE-031 (§5) are green on both locks.
+- [x] Playwright e2e passes 13/13 against the upgraded backend.
+- [x] `pip-audit` on the target lock reports **0** advisories in runtime dependencies. _(22 in 9 packages at `72cf484`, with the dev tools still in the runtime; 19 in 7 after the hygiene commit `ddad5ec`; 0 after the bump. The bump adds 19 runtime pins from `fastapi[standard]` 0.142, OpenTelemetry among them; see `UPLIFT_NOTES.md`.)_
+- [x] The telemetry behaviour chosen in Q3 is proven by a test that sets `OTEL_EXPORTER_OTLP_ENDPOINT` and asserts no export when "off" was chosen. _(`test_telemetry_export.py`, with a control that does export.)_
+- [x] **Once the owner gives the go to push** (§3): `plugin/uplift-basictodo/base` and `plugin/uplift-basictodo/phase-1` are pushed, and phase-1's **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval") is open (Q11). python-app and e2e are green on it, and the results of the other four workflows are recorded in `BASELINE.md`. _(Draft PR #113, 2026-10-05. GitHub rejects commas in label names, so the label is `do not merge: eval`; the title carries "(do not merge, eval)". Frontend, CodeQL and dependency review are green; Super-Linter is red, with the findings attributed in `BASELINE.md`.)_
+- [x] **CI duration measured on that PR and recorded in `BASELINE.md`** (Q10). _(About 3 minutes of wall clock, 536 s of runner time.)_
+- [x] `analysis/basictodo/PLAYBOOK.md` (backend section) is written. `DELTA_CATALOG.md` has the pilot's surprises folded in (§G). **This brief is revised if the pilot changed the picture.** _(See "Pilot findings" below.)_
+
+**Pilot findings (2026-10-05) that revise this brief:**
+1. **D-28** (FastAPI docs pages) was added to the catalog and to the exit criterion by owner decision.
+2. **D-06 (`httpx2`) is not lock-neutral.** It moved from the prerequisites into C1. The §3 prerequisite lists and `DELTA_CATALOG.md` §E are corrected.
+3. **D-04 makes mypy nondeterministic.** The two stub packages overwrite one shared file, and the install order decides the mypy result (3 or 5 errors on the same tree and lock). **This conflicts with Q9 in Phase 3,** which makes mypy blocking: a blocking gate that flips between installs would fail CI at random. **Open question Q12 (§7) asks the owner to decide the order.**
+4. **Test counts:** later phases compare per test against `BASELINE.md`, not against "442".
 
 **Relative scale:** **M**. The backend scope is 0.71 KSLOC, index 2.02, 37% of the system index.
 
@@ -235,7 +243,7 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
   - **SEC-005:** top-level `permissions: contents: read`; the coverage-comment job isolated with `pull-requests: write`; `persist-credentials: false`.
   - **SEC-006:** every `uses:` pinned to an exact version or SHA, with Dependabot configured for `github-actions`.
 - **Gate changes per Q9:**
-  - mypy and ESLint become blocking;
+  - mypy and ESLint become blocking; **(mypy: see Q12, since D-04 makes mypy nondeterministic until the stub packages are removed)**
   - pylint runs over all of `backend/app`, not `app/*py`;
   - the `tsc --noEmit` step stops checking zero files.
 
@@ -511,6 +519,12 @@ Neither P0 rule is below High confidence, so **no phase is blocked on SME confir
   - [x] **Q11b: content of the analysis-artifacts commit.**
     - **Decision:** _"Commit analysis/basictodo/: PREFLIGHT.md, ASSESSMENT.md, ARCHITECTURE.mmd, TOPOLOGY.html, topology.json, extract_topology.py, call-graph.mmd, data-lineage.mmd, critical-path.mmd, BUSINESS_RULES.md, DATA_OBJECTS.md, rules_workflow_result.json, DELTA_CATALOG.md, MODERNIZATION_BRIEF.md. Before committing, scrub all files: absolute local paths (/home/..., /tmp/claude-*, ~/.cache, ~/.claude), the hostname, the list of connected MCP servers in PREFLIGHT.md Check 5, and OS details. Replace with neutral placeholders such as <workspace>. Show me the scrub diff before the commit."_
     - The scrub is applied to a staging copy. The working files in `analysis/basictodo/` stay unscrubbed for local use.
+
+- [ ] **Q12: mypy gate vs D-04 (raised by the Phase 1 pilot, 2026-10-05).** Q9 makes mypy blocking in Phase 3. While both SQLAlchemy stub packages are installed, the mypy result depends on install order (D-04, `DELTA_CATALOG.md` §G), so a blocking gate would fail at random. The options:
+    - (a) pull the stub removal (D-04, without the D-03b `Uuid` swap) into Phase 3, before mypy becomes blocking (recommended; it is a dev-only manifest change);
+    - (b) keep mypy non-blocking until Phase 4 has removed the stubs;
+    - (c) pin the install order some other way (not recommended; fragile).
+    - **Decision:** _open_
 
 ## 8. Approval Block
 

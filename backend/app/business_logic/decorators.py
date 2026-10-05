@@ -1,6 +1,6 @@
 """Decorators for business logic layer."""
-import asyncio
 import functools
+import inspect
 from typing import Any, Callable, TypeVar, cast
 
 from sqlalchemy.exc import IntegrityError
@@ -50,4 +50,4 @@ def handle_service_exceptions(func: _F) -> _F:
             self.logger.error("Error in %s: %s", func.__name__, exc)
             raise ToDoRepositoryError from exc
 
-    return cast(_F, async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper)
+    return cast(_F, async_wrapper if inspect.iscoroutinefunction(func) else sync_wrapper)
