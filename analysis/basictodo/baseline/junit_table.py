@@ -33,6 +33,8 @@ if __name__ == "__main__":
             print(f"- {line}")
         for line in extra:
             print(f"+ {line}")
-        print(f"{len(rows)} tests, {len(missing)} missing or changed, {len(extra)} new or changed")
+        print(
+            f"{len(rows)} tests, {len(missing)} missing or changed, {len(extra)} new or changed"
+        )
         sys.exit(1 if missing or extra else 0)
     print("\n".join(rows))

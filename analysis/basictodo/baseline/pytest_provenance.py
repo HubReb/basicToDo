@@ -16,6 +16,7 @@ def pytest_sessionfinish(session, exitstatus):
     if not out:
         return
     import json
+
     record = collect("pytest")
     with open(out, "w", encoding="utf-8") as f:
         json.dump(record, f, indent=1)

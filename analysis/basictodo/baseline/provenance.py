@@ -26,6 +26,7 @@ APP_PREFIXES = ("backend", "app")
 def _version(dist):
     try:
         from importlib.metadata import version
+
         return version(dist)
     except Exception:
         return None
@@ -46,10 +47,20 @@ def collect(process):
         else:
             outside.append(name)
     try:
-        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
-                             text=True, check=True).stdout.strip()
-        dirty = bool(subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
-                                    capture_output=True, text=True, check=True).stdout.strip())
+        sha = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        dirty = bool(
+            subprocess.run(
+                ["git", "status", "--porcelain", "--untracked-files=no"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        )
     except (OSError, subprocess.CalledProcessError):
         sha, dirty = None, None
     return {
@@ -68,10 +79,12 @@ def collect(process):
 
 
 def summary(record):
-    return (f"provenance [{record['process']}]: tree {record['tree']}, venv {record['venv']}, "
-            f"fastapi {record['fastapi']}, backend.app -> {record['backend.app']}, "
-            f"{record['app_modules_loaded']} app modules, "
-            f"outside tree: {record['app_modules_outside_tree'] or 'none'}")
+    return (
+        f"provenance [{record['process']}]: tree {record['tree']}, venv {record['venv']}, "
+        f"fastapi {record['fastapi']}, backend.app -> {record['backend.app']}, "
+        f"{record['app_modules_loaded']} app modules, "
+        f"outside tree: {record['app_modules_outside_tree'] or 'none'}"
+    )
 
 
 def write(record, out_path):
@@ -87,8 +100,10 @@ def serve(out_path, uvicorn_args):
     # `python -m` puts the working directory first on sys.path; do the same.
     sys.path[0] = os.getcwd()
     import backend.app.api.api  # noqa: F401  (the module uvicorn will serve)
+
     write(collect("uvicorn server"), out_path)
     from uvicorn.main import main as uvicorn_main
+
     uvicorn_main(args=uvicorn_args)
 
 

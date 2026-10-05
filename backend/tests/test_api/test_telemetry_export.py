@@ -80,7 +80,11 @@ def run_with_otlp_endpoint(code, sink, tmp_path):
     env["DATABASE_URL"] = f"sqlite:///{tmp_path / 'telemetry.db'}"
     result = subprocess.run(
         [sys.executable, "-c", code],
-        cwd=REPO_ROOT, env=env, capture_output=True, text=True, timeout=120,
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=120,
     )
     assert result.returncode == 0, result.stderr
 

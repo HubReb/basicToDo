@@ -69,7 +69,13 @@ def req(label, method, path, body=None, headers=None, raw=None):
         hdrs = {**JSON, **hdrs}
     elif raw is not None:
         data = raw
-    return {"label": label, "method": method, "path": path, "headers": hdrs, "body": data}
+    return {
+        "label": label,
+        "method": method,
+        "path": path,
+        "headers": hdrs,
+        "body": data,
+    }
 
 
 def sequence():
@@ -79,30 +85,138 @@ def sequence():
     add(req("GET root", "GET", "/"))
     add(req("HEAD root", "HEAD", "/"))
     # Create (RULE-008 and the input validators)
-    add(req("POST create ok", "POST", "/todo", {"id": ID, "title": " Wash ", "description": "d"}))
+    add(
+        req(
+            "POST create ok",
+            "POST",
+            "/todo",
+            {"id": ID, "title": " Wash ", "description": "d"},
+        )
+    )
     add(req("POST create ok 2", "POST", "/todo", {"id": ID2, "title": "Second"}))
     add(req("POST duplicate id", "POST", "/todo", {"id": ID, "title": "Dup"}))
     add(req("POST missing id", "POST", "/todo", {"title": "x"}))
     add(req("POST malformed id", "POST", "/todo", {"id": "nope", "title": "x"}))
     add(req("POST empty id", "POST", "/todo", {"id": "", "title": "x"}))
     add(req("POST null id", "POST", "/todo", {"id": None, "title": "x"}))
-    add(req("POST whitespace title", "POST", "/todo", {"id": "22222222-2222-3333-4444-555555555555", "title": "   "}))
-    add(req("POST title int", "POST", "/todo", {"id": "33333333-2222-3333-4444-555555555555", "title": 123}))
-    add(req("POST title missing", "POST", "/todo", {"id": "33333333-2222-3333-4444-666666666666"}))
-    add(req("POST title 255 chars", "POST", "/todo", {"id": ID_LONG_TITLE, "title": "t" * 255}))
-    add(req("POST title 256 chars", "POST", "/todo", {"id": "33333333-2222-3333-4444-777777777777", "title": "t" * 256}))
-    add(req("POST description 256 chars", "POST", "/todo", {"id": "33333333-2222-3333-4444-888888888888", "title": "ok", "description": "d" * 256}))
+    add(
+        req(
+            "POST whitespace title",
+            "POST",
+            "/todo",
+            {"id": "22222222-2222-3333-4444-555555555555", "title": "   "},
+        )
+    )
+    add(
+        req(
+            "POST title int",
+            "POST",
+            "/todo",
+            {"id": "33333333-2222-3333-4444-555555555555", "title": 123},
+        )
+    )
+    add(
+        req(
+            "POST title missing",
+            "POST",
+            "/todo",
+            {"id": "33333333-2222-3333-4444-666666666666"},
+        )
+    )
+    add(
+        req(
+            "POST title 255 chars",
+            "POST",
+            "/todo",
+            {"id": ID_LONG_TITLE, "title": "t" * 255},
+        )
+    )
+    add(
+        req(
+            "POST title 256 chars",
+            "POST",
+            "/todo",
+            {"id": "33333333-2222-3333-4444-777777777777", "title": "t" * 256},
+        )
+    )
+    add(
+        req(
+            "POST description 256 chars",
+            "POST",
+            "/todo",
+            {
+                "id": "33333333-2222-3333-4444-888888888888",
+                "title": "ok",
+                "description": "d" * 256,
+            },
+        )
+    )
     add(req("POST invalid json", "POST", "/todo", raw=b"{bad", headers=JSON))
-    add(req("POST text/plain body", "POST", "/todo", raw=b'{"id":"44444444-2222-3333-4444-555555555555","title":"x"}', headers={"Content-Type": "text/plain"}))
+    add(
+        req(
+            "POST text/plain body",
+            "POST",
+            "/todo",
+            raw=b'{"id":"44444444-2222-3333-4444-555555555555","title":"x"}',
+            headers={"Content-Type": "text/plain"},
+        )
+    )
     add(req("POST no body", "POST", "/todo"))
-    add(req("POST SQL keyword title", "POST", "/todo", {"id": "55555555-2222-3333-4444-555555555555", "title": "a; drop table"}))
-    add(req("POST quirk 'Todo to delete' (blocklist)", "POST", "/todo", {"id": "55555555-2222-3333-4444-666666666666", "title": "Todo to delete"}))
-    add(req("POST unknown extra field", "POST", "/todo", {"id": ID_EXTRA_FIELD, "title": "Extra", "foo": 1}))
+    add(
+        req(
+            "POST SQL keyword title",
+            "POST",
+            "/todo",
+            {"id": "55555555-2222-3333-4444-555555555555", "title": "a; drop table"},
+        )
+    )
+    add(
+        req(
+            "POST quirk 'Todo to delete' (blocklist)",
+            "POST",
+            "/todo",
+            {"id": "55555555-2222-3333-4444-666666666666", "title": "Todo to delete"},
+        )
+    )
+    add(
+        req(
+            "POST unknown extra field",
+            "POST",
+            "/todo",
+            {"id": ID_EXTRA_FIELD, "title": "Extra", "foo": 1},
+        )
+    )
     add(req("POST uppercase id", "POST", "/todo", {"id": ID_UPPER, "title": "Upper"}))
     # Update, including lax bool coercion and the done=null quirk (500)
-    for v in ["yes", "on", "1", 1, "true", "TRUE", "y", "t", 1.0, "false", 0, "off", "no", "maybe", 2, None, [], {}]:
+    for v in [
+        "yes",
+        "on",
+        "1",
+        1,
+        "true",
+        "TRUE",
+        "y",
+        "t",
+        1.0,
+        "false",
+        0,
+        "off",
+        "no",
+        "maybe",
+        2,
+        None,
+        [],
+        {},
+    ]:
         add(req(f"PUT done={v!r}", "PUT", f"/todo/{ID2}", {"done": v}))
-    add(req("PUT title update", "PUT", f"/todo/{ID}", {"title": "New", "description": "x"}))
+    add(
+        req(
+            "PUT title update",
+            "PUT",
+            f"/todo/{ID}",
+            {"title": "New", "description": "x"},
+        )
+    )
     add(req("PUT empty object", "PUT", f"/todo/{ID}", {}))
     add(req("PUT whitespace title", "PUT", f"/todo/{ID}", {"title": "   "}))
     add(req("PUT unknown id", "PUT", f"/todo/{UNKNOWN}", {"title": "New"}))
@@ -128,14 +242,73 @@ def sequence():
     add(req("DELETE collection (405)", "DELETE", "/todo"))
     add(req("GET unknown route", "GET", "/nope"))
     # CORS
-    add(req("OPTIONS preflight allowed", "OPTIONS", "/todo", headers={"Origin": ALLOWED_ORIGIN, "Access-Control-Request-Method": "PUT", "Access-Control-Request-Headers": "content-type"}))
-    add(req("OPTIONS preflight allowed DELETE", "OPTIONS", f"/todo/{ID}", headers={"Origin": ALLOWED_ORIGIN, "Access-Control-Request-Method": "DELETE"}))
-    add(req("OPTIONS preflight disallowed origin", "OPTIONS", "/todo", headers={"Origin": OTHER_ORIGIN, "Access-Control-Request-Method": "PUT"}))
-    add(req("OPTIONS preflight 127.0.0.1 origin", "OPTIONS", "/todo", headers={"Origin": "http://127.0.0.1:5173", "Access-Control-Request-Method": "GET"}))
-    add(req("GET list CORS allowed", "GET", "/todo", headers={"Origin": ALLOWED_ORIGIN}))
-    add(req("GET list CORS disallowed", "GET", "/todo", headers={"Origin": OTHER_ORIGIN}))
-    add(req("GET 404 CORS allowed", "GET", f"/todo/{UNKNOWN}", headers={"Origin": ALLOWED_ORIGIN}))
-    add(req("POST 422 CORS allowed", "POST", "/todo", {"title": "x"}, headers={"Origin": ALLOWED_ORIGIN}))
+    add(
+        req(
+            "OPTIONS preflight allowed",
+            "OPTIONS",
+            "/todo",
+            headers={
+                "Origin": ALLOWED_ORIGIN,
+                "Access-Control-Request-Method": "PUT",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+    )
+    add(
+        req(
+            "OPTIONS preflight allowed DELETE",
+            "OPTIONS",
+            f"/todo/{ID}",
+            headers={
+                "Origin": ALLOWED_ORIGIN,
+                "Access-Control-Request-Method": "DELETE",
+            },
+        )
+    )
+    add(
+        req(
+            "OPTIONS preflight disallowed origin",
+            "OPTIONS",
+            "/todo",
+            headers={"Origin": OTHER_ORIGIN, "Access-Control-Request-Method": "PUT"},
+        )
+    )
+    add(
+        req(
+            "OPTIONS preflight 127.0.0.1 origin",
+            "OPTIONS",
+            "/todo",
+            headers={
+                "Origin": "http://127.0.0.1:5173",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+    )
+    add(
+        req("GET list CORS allowed", "GET", "/todo", headers={"Origin": ALLOWED_ORIGIN})
+    )
+    add(
+        req(
+            "GET list CORS disallowed", "GET", "/todo", headers={"Origin": OTHER_ORIGIN}
+        )
+    )
+    add(
+        req(
+            "GET 404 CORS allowed",
+            "GET",
+            f"/todo/{UNKNOWN}",
+            headers={"Origin": ALLOWED_ORIGIN},
+        )
+    )
+    add(
+        req(
+            "POST 422 CORS allowed",
+            "POST",
+            "/todo",
+            {"title": "x"},
+            headers={"Origin": ALLOWED_ORIGIN},
+        )
+    )
     # Delete (RULE-031) and re-create (RULE-008)
     add(req("DELETE ok", "DELETE", f"/todo/{ID}"))
     add(req("DELETE again (404)", "DELETE", f"/todo/{ID}"))
@@ -144,7 +317,14 @@ def sequence():
     add(req("GET deleted", "GET", f"/todo/{ID}"))
     add(req("PUT deleted", "PUT", f"/todo/{ID}", {"title": "Back"}))
     add(req("PUT deleted restore attempt", "PUT", f"/todo/{ID}", {"deleted": False}))
-    add(req("POST re-create deleted id (409)", "POST", "/todo", {"id": ID, "title": "Again"}))
+    add(
+        req(
+            "POST re-create deleted id (409)",
+            "POST",
+            "/todo",
+            {"id": ID, "title": "Again"},
+        )
+    )
     add(req("GET list after delete", "GET", "/todo?limit=100"))
     # API documentation
     add(req("GET openapi.json", "GET", "/openapi.json"))
@@ -155,12 +335,18 @@ def sequence():
 
 
 TOLERANCE_S = 5
-ISO_CORE = r"\b(?P<date>\d{4}-\d{2}-\d{2})(?P<sep>[T ])(?P<time>\d{2}:\d{2}:\d{2})(?P<frac>\.\d+)?(?P<off>Z|[+-]\d{2}:?\d{2})?"
+ISO_CORE = (
+    r"\b(?P<date>\d{4}-\d{2}-\d{2})(?P<sep>[T ])(?P<time>\d{2}:\d{2}:\d{2})"
+    r"(?P<frac>\.\d+)?(?P<off>Z|[+-]\d{2}:?\d{2})?"
+)
 # An optional JSON key in front of the value tells the zero-microsecond rule
 # which field the timestamp belongs to.
 ISO = re.compile(r'(?P<prefix>"(?P<key>[A-Za-z0-9_]+)"\s*:\s*")?' + ISO_CORE)
 ISO_FULL = re.compile(r"^" + ISO_CORE + r"$")
-HTTP_DATE = re.compile(r"\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT\b")
+HTTP_DATE = re.compile(
+    r"\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} "
+    r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT\b"
+)
 
 
 def field_fraction_lengths(bodies):
@@ -170,7 +356,9 @@ def field_fraction_lengths(bodies):
         for m in ISO.finditer(body):
             if m.group("key"):
                 frac = len(m.group("frac")) - 1 if m.group("frac") else 0
-                seen.setdefault(m.group("key"), {})[m.group(0)[len(m.group("prefix")):]] = frac
+                seen.setdefault(m.group("key"), {})[
+                    m.group(0)[len(m.group("prefix")) :]
+                ] = frac
     return seen
 
 
@@ -179,12 +367,13 @@ def mask_timestamps(text, fraction_lengths=None):
         digits = len(m.group("frac")) - 1 if m.group("frac") else 0
         key = m.group("key")
         if digits == 0 and key and fraction_lengths:
-            value = m.group(0)[len(m.group("prefix")):]
+            value = m.group(0)[len(m.group("prefix")) :]
             others = [n for v, n in fraction_lengths.get(key, {}).items() if v != value]
             if others and all(n == 6 for n in others):
                 digits = 6
         frac = "." + "f" * digits if digits else ""
         return f"{m.group('prefix') or ''}YYYY-MM-DD{m.group('sep')}hh:mm:ss{frac}{m.group('off') or ''}"
+
     text = ISO.sub(iso, text)
     return HTTP_DATE.sub("Www, DD Mmm YYYY hh:mm:ss GMT", text)
 
@@ -216,15 +405,24 @@ def timestamp_basis(body, window):
         ts = datetime.datetime.fromisoformat(value)
         is_local = local_start - tol <= ts <= local_end + tol
         is_utc = utc_start - tol <= ts <= utc_end + tol
-        basis[path] = ("local=utc" if is_local and is_utc else
-                       "local" if is_local else "utc" if is_utc else "neither")
+        basis[path] = (
+            "local=utc"
+            if is_local and is_utc
+            else "local"
+            if is_local
+            else "utc"
+            if is_utc
+            else "neither"
+        )
     return basis
 
 
 def now_pair():
     """(local naive, UTC naive) read from the system clock."""
-    return (datetime.datetime.now(),
-            datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
+    return (
+        datetime.datetime.now(),
+        datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+    )
 
 
 def capture(base_url, out_path, provenance_paths=()):
@@ -244,30 +442,41 @@ def capture(base_url, out_path, provenance_paths=()):
     fraction_lengths = field_fraction_lengths(body for *_, body, _ in raw)
     records = []
     for r, status, reason, headers, body, window in raw:
-        records.append({
-            "label": r["label"],
-            "request": {
-                "method": r["method"],
-                "path": r["path"],
-                "headers": r["headers"],
-                "body": r["body"].decode() if r["body"] is not None else None,
-            },
-            "status": status,
-            "reason": reason,
-            "headers": sorted([k.lower(), mask_timestamps(v)] for k, v in headers),
-            "timestamp_basis": timestamp_basis(body, window),
-            "body": mask_timestamps(body, fraction_lengths),
-        })
+        records.append(
+            {
+                "label": r["label"],
+                "request": {
+                    "method": r["method"],
+                    "path": r["path"],
+                    "headers": r["headers"],
+                    "body": r["body"].decode() if r["body"] is not None else None,
+                },
+                "status": status,
+                "reason": reason,
+                "headers": sorted([k.lower(), mask_timestamps(v)] for k, v in headers),
+                "timestamp_basis": timestamp_basis(body, window),
+                "body": mask_timestamps(body, fraction_lengths),
+            }
+        )
     with open(out_path, "w", encoding="utf-8") as f:
-        provenance = [json.load(open(path, encoding="utf-8")) for path in provenance_paths]
-        json.dump({"provenance": provenance, "responses": records}, f, indent=1, ensure_ascii=False)
+        provenance = [
+            json.load(open(path, encoding="utf-8")) for path in provenance_paths
+        ]
+        json.dump(
+            {"provenance": provenance, "responses": records},
+            f,
+            indent=1,
+            ensure_ascii=False,
+        )
         f.write("\n")
     print(f"captured {len(records)} responses -> {out_path}")
 
 
 def pretty(body):
     try:
-        return json.dumps(json.loads(body), indent=1, sort_keys=True, ensure_ascii=False).splitlines()
+        return json.dumps(
+            json.loads(body), indent=1, sort_keys=True, ensure_ascii=False
+        ).splitlines()
     except ValueError:
         return body.splitlines()
 
@@ -285,9 +494,11 @@ def diff(a_path, b_path):
     (prov_a, a), (prov_b, b) = load(a_path), load(b_path)
     for side, prov in (("a", prov_a), ("b", prov_b)):
         for r in prov or [{"process": "(no provenance recorded)"}]:
-            print(f"provenance {side}: [{r['process']}] tree {r.get('tree')}, venv {r.get('venv')}, "
-                  f"fastapi {r.get('fastapi')}, backend.app -> {r.get('backend.app')}, "
-                  f"outside tree: {r.get('app_modules_outside_tree') or 'none'}")
+            print(
+                f"provenance {side}: [{r['process']}] tree {r.get('tree')}, venv {r.get('venv')}, "
+                f"fastapi {r.get('fastapi')}, backend.app -> {r.get('backend.app')}, "
+                f"outside tree: {r.get('app_modules_outside_tree') or 'none'}"
+            )
     if [r["label"] for r in a] != [r["label"] for r in b]:
         print("request sequences differ; captures are not comparable")
         return 2
@@ -295,7 +506,9 @@ def diff(a_path, b_path):
     for ra, rb in zip(a, b):
         out = []
         if (ra["status"], ra["reason"]) != (rb["status"], rb["reason"]):
-            out.append(f"  status: {ra['status']} {ra['reason']} -> {rb['status']} {rb['reason']}")
+            out.append(
+                f"  status: {ra['status']} {ra['reason']} -> {rb['status']} {rb['reason']}"
+            )
         ha = {tuple(h) for h in ra["headers"]}
         hb = {tuple(h) for h in rb["headers"]}
         for k, v in sorted(ha - hb):
@@ -305,17 +518,23 @@ def diff(a_path, b_path):
         basis_a, basis_b = ra.get("timestamp_basis", {}), rb.get("timestamp_basis", {})
         for path in sorted(set(basis_a) | set(basis_b)):
             if basis_a.get(path) != basis_b.get(path):
-                out.append(f"  timestamp basis {path}: {basis_a.get(path)} -> {basis_b.get(path)}")
+                out.append(
+                    f"  timestamp basis {path}: {basis_a.get(path)} -> {basis_b.get(path)}"
+                )
         if ra["body"] != rb["body"]:
             if pretty(ra["body"]) == pretty(rb["body"]):
                 out.append("  body: same JSON content, different serialization")
             else:
-                for line in difflib.unified_diff(pretty(ra["body"]), pretty(rb["body"]), "a", "b", n=1, lineterm=""):
+                for line in difflib.unified_diff(
+                    pretty(ra["body"]), pretty(rb["body"]), "a", "b", n=1, lineterm=""
+                ):
                     if not line.startswith(("---", "+++")):
                         out.append(f"  body {line}")
         if out:
             n_diff += 1
-            print(f"### {ra['label']}  ({ra['request']['method']} {ra['request']['path']})")
+            print(
+                f"### {ra['label']}  ({ra['request']['method']} {ra['request']['path']})"
+            )
             print("\n".join(out))
     print(f"{n_diff} of {len(a)} responses differ")
     return 1 if n_diff else 0

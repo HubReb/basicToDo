@@ -128,7 +128,9 @@ class TestRule008ClientSuppliedUniqueId:
         ],
         ids=["missing", "malformed", "empty", "null"],
     )
-    def test_missing_or_malformed_id_is_rejected_with_422(self, client, db_engine, payload):
+    def test_missing_or_malformed_id_is_rejected_with_422(
+        self, client, db_engine, payload
+    ):
         response = client.post("/todo", json=payload)
 
         assert response.status_code == 422
@@ -168,7 +170,10 @@ class TestRule031SoftDelete:
         assert client.delete(f"/todo/{deleted_id}").status_code == 200
 
         assert client.get(f"/todo/{deleted_id}").status_code == 404
-        assert client.put(f"/todo/{deleted_id}", json={"title": "Changed"}).status_code == 404
+        assert (
+            client.put(f"/todo/{deleted_id}", json={"title": "Changed"}).status_code
+            == 404
+        )
         listed = client.get("/todo").json()
         assert [entry["id"] for entry in listed["todo_entries"]] == [str(kept_id)]
         assert listed["results"] == 1
