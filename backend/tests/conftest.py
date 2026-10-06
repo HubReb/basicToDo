@@ -1,8 +1,7 @@
 """Root conftest.py with shared fixtures for all tests."""
-import os
+
 import uuid
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Generator
 from unittest.mock import MagicMock
 
@@ -130,9 +129,7 @@ def todo_service_integration(
 def test_db_engine():
     """Create a test database engine using in-memory SQLite."""
     engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        echo=False
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}, echo=False
     )
 
     # Create all tables
@@ -149,10 +146,7 @@ def test_db_engine():
 def test_db_session(test_db_engine):
     """Create a test database session."""
     TestSessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=test_db_engine,
-        expire_on_commit=False
+        autocommit=False, autoflush=False, bind=test_db_engine, expire_on_commit=False
     )
 
     session = TestSessionLocal()
@@ -166,10 +160,7 @@ def test_db_session(test_db_engine):
 def test_session_scope(test_db_engine):
     """Create a session scope context manager for testing."""
     TestSessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=test_db_engine,
-        expire_on_commit=False
+        autocommit=False, autoflush=False, bind=test_db_engine, expire_on_commit=False
     )
 
     @contextmanager

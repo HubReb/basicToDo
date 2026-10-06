@@ -1,4 +1,4 @@
-""" Todo entry data schema """
+"""Todo entry data schema"""
 
 from datetime import datetime
 from typing import Optional
