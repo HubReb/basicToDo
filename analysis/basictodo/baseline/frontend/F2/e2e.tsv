@@ -1,0 +1,13 @@
+smoke.spec.ts::should find the input field	expected	attempts=1
+smoke.spec.ts::should load the application	expected	attempts=1
+todo-crud.spec.ts::should cancel todo edit	expected	attempts=1
+todo-crud.spec.ts::should create a new todo	expected	attempts=1
+todo-crud.spec.ts::should delete a todo	expected	attempts=1
+todo-crud.spec.ts::should update an existing todo	expected	attempts=1
+todo-validation.spec.ts::should clear error when user starts typing	expected	attempts=1
+todo-validation.spec.ts::should prevent creating empty todo	expected	attempts=1
+todo-validation.spec.ts::should prevent creating whitespace-only todo	expected	attempts=1
+todo-validation.spec.ts::should prevent exceeding character limit	expected	attempts=1
+todo-validation.spec.ts::should prevent updating todo to empty value	expected	attempts=1
+todo-validation.spec.ts::should show character limit warning	expected	attempts=1
+todo-validation.spec.ts::should show visual error indicator on invalid input	expected	attempts=1

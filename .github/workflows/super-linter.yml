@@ -3,41 +3,68 @@
 #
 # You can adjust the behavior by modifying this file.
 # For more information, see:
-# https://github.com/github/super-linter
+# https://github.com/super-linter/super-linter
 name: Lint Code Base
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
     branches: ["main", "plugin/uplift-basictodo/base"]
+
+permissions:
+  contents: read
+
 jobs:
   run-lint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # One status per linter (MULTI_STATUS) and the PR summary comment.
       statuses: write
-      checks: write
       pull-requests: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
       - name: Lint Code Base
-        uses: github/super-linter@985ef206aaca4d560cb9ee2af2b42ba44adc1d55 # v4.10.0
+        uses: super-linter/super-linter@2da136927bd4a73596db63044b504547c62cb854 # v9.0.0
         env:
           VALIDATE_ALL_CODEBASE: false
           # Diff against the PR target, so PRs into plugin/uplift-basictodo/base
           # lint only their own changes, not everything since main diverged.
           DEFAULT_BRANCH: ${{ github.base_ref || 'main' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_TYPESCRIPT_STANDARD: false
+          # The frontend is linted by its own ESLint config in frontend.yml,
+          # which is a blocking gate. Biome and Prettier have no configuration
+          # in this repository and would duplicate (and, per super-linter's
+          # docs, conflict with) that ESLint setup.
           VALIDATE_TYPESCRIPT_ES: false
           VALIDATE_TSX: false
           VALIDATE_JAVASCRIPT_ES: false
-          VALIDATE_JAVASCRIPT_STANDARD: false
-          FILTER_REGEX_EXCLUDE: .*tsconfig.*\.json
+          VALIDATE_BIOME_FORMAT: false
+          VALIDATE_BIOME_LINT: false
+          VALIDATE_TYPESCRIPT_PRETTIER: false
+          VALIDATE_JAVASCRIPT_PRETTIER: false
+          VALIDATE_JSX_PRETTIER: false
+          # pylint runs as its own (non-blocking) job in python-app.yml, as on main.
+          VALIDATE_PYTHON_PYLINT: false
+          # jscpd flags pre-existing legitimate duplication and, since v6,
+          # scans the whole codebase rather than the changed files; as on main.
+          VALIDATE_JSCPD: false
+          # The repository has no isort or ruff configuration. isort's and
+          # ruff's defaults disagree with its import style (as on main for
+          # isort), and ruff's formatter conflicts with black. black and
+          # flake8 stay enabled as the Python style gates.
+          VALIDATE_PYTHON_ISORT: false
+          VALIDATE_PYTHON_RUFF: false
+          VALIDATE_PYTHON_RUFF_FORMAT: false
+          # Not linted: tsconfig files (as before); the modernization
+          # evidence and notes under analysis/ and UPLIFT_NOTES.md, which are
+          # generated artifacts rather than product code; and the generated
+          # lockfiles. super-linter matches absolute paths, hence (^|/).
+          FILTER_REGEX_EXCLUDE: (.*tsconfig.*\.json|(^|/)analysis/|(^|/)UPLIFT_NOTES\.md$|(^|/)uv\.lock$|(^|/)package-lock\.json$)

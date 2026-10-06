@@ -1,0 +1,13 @@
+src/components/common/__tests__/Spinner.test.tsx::Spinner > renders spinner	passed
+src/components/common/__tests__/Spinner.test.tsx::Spinner > renders with custom size	passed
+src/components/errors/__tests__/ErrorBoundary.test.tsx::ErrorBoundary > renders children when no error	passed
+src/components/errors/__tests__/ErrorBoundary.test.tsx::ErrorBoundary > renders custom fallback when provided	passed
+src/components/errors/__tests__/ErrorBoundary.test.tsx::ErrorBoundary > renders error UI when error occurs	passed
+src/components/errors/__tests__/ErrorMessage.test.tsx::ErrorMessage > displays error message	passed
+src/components/errors/__tests__/ErrorMessage.test.tsx::ErrorMessage > renders with proper styling	passed
+src/components/todos/__tests__/TodoItem.test.tsx::TodoItem > hides edit and delete buttons when editing	passed
+src/components/todos/__tests__/TodoItem.test.tsx::TodoItem > renders todo title	passed
+src/components/todos/__tests__/TodoItem.test.tsx::TodoItem > shows delete button	passed
+src/components/todos/__tests__/TodoItem.test.tsx::TodoItem > shows edit form when edit clicked	passed
+src/components/todos/__tests__/TodoList.test.tsx::TodoList > renders todo form	passed
+src/components/todos/__tests__/TodoList.test.tsx::TodoList > renders without errors	passed

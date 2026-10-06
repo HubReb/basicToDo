@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy.orm import Mapped, mapped_column  # type: ignore[attr-defined]
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 @dataclass
@@ -14,5 +14,5 @@ class ToDoEntryData:
     description: str
     created_at: datetime | None
     updated_at: datetime | None
-    deleted: Mapped[bool] = mapped_column(default=False, name='deleted')
+    deleted: Mapped[bool] = mapped_column(default=False, name="deleted")
     done: bool = False
