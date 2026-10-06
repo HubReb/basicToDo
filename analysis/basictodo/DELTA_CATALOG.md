@@ -240,4 +240,4 @@ Note 9: Chakra's subtree is `@chakra-ui`, `@ark-ui`, `@zag-js`, `@pandacss`, `@i
 | 22 | **`init_db.py`'s `app.*` import root** let a second checkout load the model from the venv's editable install. Since the refactor, the model is what `create_all` uses. | Import root normalised (`15d0044`). |
 | 23 | **Alembic autogenerate does not see CHECK constraints;** `[tool.alembic]` works without `alembic.ini` only if `env.py` reads neither logging config nor `sqlalchemy.url`. | Hand-written revision; `sqlite_master` compared byte for byte; `env.py` takes the application's URL. |
 | 24 | **Aware timestamps lose their offset** when stored; the wall clock is kept. | Pinned by a property test; input for Q6.6. |
-| 25 | **super-linter v9 parses Alembic's `script.py.mako` as Python** (black, flake8, mypy E999; mypy then checks nothing else). | Excluding the template makes the run green (throwaway check). Owner's decision pending. |
+| 25 | **super-linter v9 parses Alembic's `script.py.mako` as Python** (black, flake8, mypy E999; mypy then checks nothing else). | That file only is excluded (`5ffc86b`, a scope exception by the owner); the run is green. |

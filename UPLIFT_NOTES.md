@@ -209,6 +209,7 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | `15d0044` | `init_db.py` imports `backend.app.*` from its own checkout | (import root, brief scope) | by hand |
 | `d7f9092` | `ConfigDict` instead of `class Config` | D-14 | by hand |
 | `053a4f3` | Alembic baseline revision `0001`, `[tool.alembic]` in `pyproject.toml`, `check_baseline.py` before stamping | (brief scope; the owner's decisions) | revision written by hand; `alembic` in the dev group |
+| `5ffc86b` | super-linter: `backend/migrations/script.py.mako` excluded (that file only) | — (scope exception, the owner) | `FILTER_REGEX_EXCLUDE`; actionlint, zizmor, Prettier clean |
 
 ## Result
 
@@ -225,7 +226,7 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | Runtime pins / `pip-audit` | 63 / 0 | **62** (no `sqlalchemy-utils`) / **0** |
 | Coverage | 83.98 % | 83.47 %: removed always-executed statements left the denominator; the 88 missed statements are unchanged |
 | e2e | 13/13 | **13/13** |
-| super-linter v9 (local) | green (`5c46f21`) | **red only on `backend/migrations/script.py.mako`** (Alembic's Mako template, parsed as Python); green with that file excluded (throwaway check). Owner's decision pending |
+| super-linter v9 (local) | green (`5c46f21`) | red at `053a4f3` only on `backend/migrations/script.py.mako` (Alembic's Mako template, parsed as Python); **green at `5ffc86b`** with that file excluded |
 
 **Two behaviours changed on purpose.** Their characterization tests were replaced, not edited, so the per-test table shows them as 4 rows out and 4 in.
 - **RULE-037:** an entry built without `deleted` now gets `False`. The legacy dataclass default was a `MappedColumn`, and storing it failed with `OperationalError: no such column: deleted`. All 65 existing constructions pass `deleted`, so no caller changes behaviour.
@@ -234,7 +235,7 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 ## Residual and deferred
 
 - **Alembic is not used at runtime** (the owner's decision). `main.py` and `init_db.py` keep `create_all`. An existing database is stamped by hand, after `check_baseline.py` accepts it (`analysis/basictodo/PLAYBOOK.md`). Alembic moves to the runtime and into the runtime dependencies in Phase 5, with the Q6.6 data migration.
-- **super-linter and `script.py.mako`:** the template has to be excluded in `.github/workflows/super-linter.yml` (outside Phase 4's file scope), or left out of the repository (then `alembic revision` needs it back). Pending the owner's decision.
+- **Scope exception:** Phase 4 touches `.github/workflows/super-linter.yml` once (`5ffc86b`) to exclude the Alembic template, by the owner's decision (noted in the brief). The pattern matches that file only.
 - **The legacy Query API** (`session.query`) stays; `select()` is not part of this pass.
 - **SQLAlchemy 2.1 (C3)** is now possible from the data layer's side, because `sqlalchemy-utils` is gone. It stays deferred (Q4).
 - **pylint's `E1102 func.now is not callable`** (report-only, a known false positive) now points at `models/todo.py`.

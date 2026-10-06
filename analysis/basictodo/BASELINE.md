@@ -584,6 +584,7 @@ Every run used a fresh venv synced from the commit's lock (`uv sync --frozen --a
 | `15d0044` `init_db.py` import root | 0 changed | 0 of 83 | **Before:** in a worktree, `init_db.py` loaded `app.*` from the worktree and `backend.app.models.todo` from the venv's other checkout (provenance exit 3). **After:** only `backend.*`, all from its own tree, also from another cwd. The DDL equals the snapshot. |
 | `d7f9092` `ConfigDict` (D-14) | 0 changed | 0 of 83 | `app.openapi()` byte-identical (11846 bytes); `pytest -W error --collect-only` collects all 473 tests. It stopped on PydanticDeprecatedSince20 before this commit and on MovedIn20Warning before `7b54c2e`. |
 | `053a4f3` Alembic baseline, `check_baseline.py` | 11 new | 0 of 83 | `uv lock` adds alembic 1.20.0 and mako 1.4.3, moves nothing; runtime export unchanged |
+| `5ffc86b` super-linter excludes `script.py.mako` (scope exception) | — (workflow only) | — | actionlint, zizmor, Prettier 3.9.8 clean; super-linter exit 0 |
 
 **The two intended changes** (`7b54c2e`; the tests were replaced, not edited):
 - **RULE-037:** `test_legacy_model_default_for_deleted_is_not_a_boolean_and_cannot_be_stored` → `test_model_default_for_deleted_is_false_and_stored_as_0`. An entry built without `deleted` used to hold a `MappedColumn`, and storing it failed with `OperationalError: no such column: deleted`. It now defaults to `False`, as the brief asks. All 65 existing constructions pass `deleted` explicitly.
@@ -604,10 +605,11 @@ Every run used a fresh venv synced from the commit's lock (`uv sync --frozen --a
 | `pip-audit`, runtime export | **0** (62 pins; `sqlalchemy-utils` gone) |
 | `sqlalchemy` pin | `>=2.0.54,<2.1` unchanged; 2.0.54 installed |
 | Frontend and e2e (Node 24.21.0) | `tsc -b`, vitest 13/13, build, lint, `npm audit` 0; **e2e 13/13** against this backend |
-| super-linter v9 (`run_superlinter.sh`) | **red, only because of `backend/migrations/script.py.mako`**; green with that file excluded. **Open decision**, below the table |
+| super-linter v9 (`run_superlinter.sh`) | Red at `053a4f3`, only because of `backend/migrations/script.py.mako`. **Green at `5ffc86b`:** exit 0, 15 linters, below the table |
 
 **super-linter and the Alembic template.** black, flake8 and mypy parse Alembic's Mako template `script.py.mako` as Python and fail on `${imports …}` (E999); mypy stops there and checks nothing else (`ci/superlinter-053a4f3.txt`).
-With the template added to `FILTER_REGEX_EXCLUDE` in a throwaway commit (never pushed, branch deleted), the run exits 0 with 15 linters, and mypy checks every changed file (`ci/superlinter-mako-excluded.txt`). Changing the workflow is outside Phase 4's file scope, so this is left to the owner.
+With the template added to `FILTER_REGEX_EXCLUDE` in a throwaway commit (never pushed, branch deleted), the run exits 0 with 15 linters, and mypy checks every changed file (`ci/superlinter-mako-excluded.txt`). Changing the workflow is outside Phase 4's file scope, so the owner decided: exclude exactly that file, as a scope exception noted in the brief.
+`5ffc86b` does so. At `5ffc86b` the run exits 0 with 15 linters; black, flake8 and mypy lint `env.py`, `check_baseline.py` and `versions/0001_baseline.py`, and the template no longer appears in the log (`ci/superlinter-5ffc86b.txt`).
 
 **The legacy sample DB in both directions** (`baseline/db/sample_db_roundtrip.sh`; legacy code `a2d59f1` on the legacy lock, new code `053a4f3`; `TZ=Etc/GMT-5`; on copies, and the committed file's sha256 is unchanged):
 - **(a)** Both codes read copy A identically: 10 rows with values and Python types, plus the service's list of 7 active todos.

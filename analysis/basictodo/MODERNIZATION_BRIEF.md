@@ -303,6 +303,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - **Alembic** is initialised with a baseline revision that reproduces the current DDL exactly (CHECK constraints, index).
   - **Decided 2026-10-06 (the owner, at Phase 4 planning):** the runtime keeps `create_all` in `main.py` and `init_db.py`; Alembic gets only the baseline revision and is run by hand, so `alembic` goes into the dev group.
     An existing database is stamped once (`alembic stamp head`), and only after a check script confirms that its `sqlite_master` equals the baseline snapshot (the owner's addition). Running Alembic at runtime moves to Phase 5, together with the Q6.6 data migration.
+- **Scope exception (the owner, 2026-10-07): Phase 4 touches one workflow file.** super-linter v9 parsed Alembic's Mako template `backend/migrations/script.py.mako` as Python and failed (black, flake8, mypy E999).
+  `5ffc86b` adds a pattern for exactly that file to `FILTER_REGEX_EXCLUDE` in `.github/workflows/super-linter.yml`; the migrations themselves stay linted. Decision, verbatim: _"A, with the pattern matching only backend/migrations/script.py.mako (not the migrations directory), and note the scope exception (workflow file touched in Phase 4) in the brief."_
 - `init_db.py`'s import root is normalised to `backend.app.*`.
 - **SQLAlchemy stays capped `<2.1`** (Q4). Cut C3 (2.1) is deferred to a later step. The `sqlalchemy.Uuid` swap **stays in scope**, because it is what makes 2.1 possible later.
 - **Behaviour is preserved:**

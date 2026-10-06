@@ -317,7 +317,7 @@ Deferred on purpose, with the phase that owns each item:
 | Alembic ≥ 1.16 reads `[tool.alembic]` from `pyproject.toml` without `alembic.ini` | `env.py` must not call `fileConfig(config.config_file_name)` or `get_main_option("sqlalchemy.url")`. Take the URL from the application at run time, with its own `NullPool` engine. |
 | A test that runs Alembic on a shared connection must commit it | Use `engine.begin()`, not `connect()`. Otherwise the DDL lands (pysqlite) but `alembic_version` stays empty. |
 | hypothesis with `tmp_path` inside `@given` fails the function-scoped-fixture health check | Use a module-scoped file (`tmp_path_factory`); `derandomize=True, database=None, deadline=None` keeps the per-test table stable |
-| super-linter v9 lints Alembic's `script.py.mako` as Python and fails (E999); mypy then stops | Exclude the template in `FILTER_REGEX_EXCLUDE`. The template is not Python. In Phase 4 this was left to the owner (outside the phase's file scope). |
+| super-linter v9 lints Alembic's `script.py.mako` as Python and fails (E999); mypy then stops | Exclude that file only in `FILTER_REGEX_EXCLUDE` (`(^\|/)backend/migrations/script\.py\.mako$`); the migrations stay linted. Phase 4 did so as a scope exception (`5ffc86b`). |
 
 ### Tools (`analysis/basictodo/baseline/db/`, run as noted)
 
@@ -364,4 +364,4 @@ Run from the repository root, on the venv of this checkout:
 |---|---|---|
 | `init_db.py` in a worktree: provenance exit 3, `backend.app.models.todo` outside the tree | `app.*` import root plus the editable install of another checkout | Import root normalised (`15d0044`) |
 | `python -W error -m pytest` stops with INTERNALERROR | pytest-asyncio's own configuration warning, not the application | `pytest -W error` (the application's warnings only) |
-| super-linter red on `script.py.mako` (black, flake8, mypy) | The Mako template is parsed as Python | Exclude the template (owner's decision pending at the end of Phase 4) |
+| super-linter red on `script.py.mako` (black, flake8, mypy) | The Mako template is parsed as Python | Exclude that file only (`5ffc86b`) |
