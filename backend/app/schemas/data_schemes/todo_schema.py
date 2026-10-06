@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ToDoSchema(BaseModel):
@@ -24,12 +24,9 @@ class ToDoSchema(BaseModel):
     deleted: bool = False
     done: bool = False
 
-    class Config:
-        """Configuration for pydantic"""
-
-        from_attributes = True
-        populate_by_name = True
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(
+        from_attributes=True, populate_by_name=True, arbitrary_types_allowed=True
+    )
 
     @field_validator("title")
     def verify_title_is_not_empty(cls, value: str) -> str:
