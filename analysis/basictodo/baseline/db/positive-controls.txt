@@ -1,0 +1,51 @@
+== Control 1: one CHECK constraint removed from the model (backend/app/models/todo.py)
+ backend/app/models/todo.py | 1 -
+ 1 file changed, 1 deletion(-)
+FAILED backend/tests/test_data_access/test_migrations.py::TestBaselineRevision::test_upgrade_head_creates_the_same_schema_as_create_all
+FAILED backend/tests/test_data_access/test_migrations.py::TestCheckBaseline::test_accepts_a_fresh_create_all_database
+FAILED backend/tests/test_data_access/test_storage_characterization.py::TestSchema::test_create_all_ddl_equals_the_baseline_snapshot
+3 failed, 24 passed in 1.79s
+pytest exit 1
+reverted; git status: []
+
+== Control 2: title column type changed in the baseline revision (String(length=255) -> String(length=200))
+ backend/migrations/versions/0001_baseline.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+FAILED backend/tests/test_data_access/test_migrations.py::TestBaselineRevision::test_upgrade_head_creates_the_same_schema_as_create_all
+FAILED backend/tests/test_data_access/test_migrations.py::TestBaselineRevision::test_the_alembic_cli_upgrades_the_configured_database
+FAILED backend/tests/test_data_access/test_migrations.py::TestCheckBaseline::test_its_snapshot_is_what_the_baseline_revision_creates
+3 failed, 24 passed in 1.85s
+pytest exit 1
+reverted; git status: []
+27 passed in 1.77s
+
+== Control 3: check_baseline.py on a copy of the sample DB rebuilt without description_length_check (data unchanged)
+rows unchanged: True (10 rows)
+dropped.db: schema differs from the baseline; do not stamp
+--- baseline
++++ dropped.db
+@@ -12,6 +12,5 @@
+ 	deleted BOOLEAN NOT NULL, 
+ 	done BOOLEAN NOT NULL, 
+ 	PRIMARY KEY (id), 
+-	CONSTRAINT title_length_check CHECK (length(title) <= 255), 
+-	CONSTRAINT description_length_check CHECK (length(description) <= 255)
++	CONSTRAINT title_length_check CHECK (length(title) <= 255)
+ )
+check_baseline exit 1
+
+== The stamp procedure (PLAYBOOK) on an unmodified copy of the sample DB, from the repository root
+1. back up the file
+   sample.db.bak written
+2. check_baseline.py
+sample.db: schema equals the baseline; alembic stamp head may follow
+   exit 0
+3. alembic stamp head
+4. alembic current
+   0001 (head)
+afterwards: check_baseline.py
+sample.db: already under Alembic; check it with alembic current
+   exit 2
+afterwards: alembic upgrade head
+rows unchanged by stamp and upgrade: True
+toDo schema unchanged: True

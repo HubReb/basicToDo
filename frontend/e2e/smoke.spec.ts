@@ -86,7 +86,7 @@ test.describe('Smoke Tests', () => {
     try {
       await page.waitForSelector('input[placeholder="Add a todo item"]', { timeout: 10000 });
       console.log('Found input by placeholder!');
-    } catch (e) {
+    } catch {
       console.log('Could not find input, checking for error/loading states');
       const spinner = await page.locator('svg').count();
       const errorMsg = await page.getByText(/error|failed/i).count();

@@ -23,7 +23,9 @@ class ToDoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateScheme) -> Optional[ToDoEntryData]:
+    def update_to_do(
+        self, entry_id: uuid.UUID, data: TodoUpdateScheme
+    ) -> Optional[ToDoEntryData]:
         pass
 
     @abstractmethod
@@ -31,7 +33,9 @@ class ToDoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[ToDoEntryData]:
+    def get_all_to_do_entries(
+        self, limit: int = 10, page: int = 1
+    ) -> List[ToDoEntryData]:
         pass
 
 
@@ -67,11 +71,15 @@ class ToDoRepository(ToDoRepositoryInterface):
             session.delete(entry)
         return True
 
-    def update_to_do(self, entry_id: uuid.UUID, data: TodoUpdateScheme) -> Optional[ToDoEntryData]:
+    def update_to_do(
+        self, entry_id: uuid.UUID, data: TodoUpdateScheme
+    ) -> Optional[ToDoEntryData]:
         with self.session_manager() as session:
-            entry: Optional[ToDoEntryData] = session.query(ToDoEntryData).filter(
-                ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False)
-            ).first()
+            entry: Optional[ToDoEntryData] = (
+                session.query(ToDoEntryData)
+                .filter(ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False))
+                .first()
+            )
             if not entry:
                 return None
             for key, value in data.model_dump(exclude_unset=True).items():
@@ -85,13 +93,23 @@ class ToDoRepository(ToDoRepositoryInterface):
 
     def get_to_do_entry(self, entry_id: uuid.UUID) -> Optional[ToDoEntryData]:
         with self.session_manager() as session:
-            return cast(Optional[ToDoEntryData], session.query(ToDoEntryData).filter(
-                ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False)
-            ).first())
+            return cast(
+                Optional[ToDoEntryData],
+                session.query(ToDoEntryData)
+                .filter(ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False))
+                .first(),
+            )
 
-    def get_all_to_do_entries(self, limit: int = 10, page: int = 1) -> List[ToDoEntryData]:
+    def get_all_to_do_entries(
+        self, limit: int = 10, page: int = 1
+    ) -> List[ToDoEntryData]:
         skip = (page - 1) * limit
         with self.session_manager() as session:
-            return cast(List[ToDoEntryData], session.query(ToDoEntryData).filter(
-                ToDoEntryData.deleted.is_(False)
-            ).offset(skip).limit(limit).all())
+            return cast(
+                List[ToDoEntryData],
+                session.query(ToDoEntryData)
+                .filter(ToDoEntryData.deleted.is_(False))
+                .offset(skip)
+                .limit(limit)
+                .all(),
+            )

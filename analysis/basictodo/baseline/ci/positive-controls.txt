@@ -1,0 +1,49 @@
+### mypy control at 4112dc5
+ backend/app/config.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+\ No newline at end of file
++            raise ValueError("Specify the config file or set the environment variable 'DATABASE_URL'!")
++MYPY_CONTROL: int = "a"
+backend/app/config.py:28: error: Incompatible types in assignment (expression
+has type "str", variable has type "int")  [assignment]
+    MYPY_CONTROL: int = "a"
+                        ^~~
+Found 1 error in 1 file (checked 35 source files)
+uv run mypy backend/app/ exit 1
+reverted: []
+Success: no issues found in 35 source files
+after revert exit 0
+
+### ESLint control at 4112dc5
++export default App;
++const eslintControl = 1;
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+frontend/src/App.tsx
+  28:7  error  'eslintControl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (1 error, 0 warnings)
+
+cd frontend && npm run lint exit 1
+reverted: []
+after revert exit 0
+
+### tsc -b control at 4112dc5
++export default App;
++export const tscControl: number = "a";
+src/App.tsx(28,14): error TS2322: Type 'string' is not assignable to type 'number'.
+cd frontend && npx tsc -b exit 2
+reverted: []
+after revert exit 0
+
+### old step (tsc --noEmit) with the same error, at 4112dc5
+cd frontend && npx tsc --noEmit exit 0
+reverted: []
+
+### YAML: continue-on-error of the gate steps at 4112dc5
+.github/workflows/python-app.yml job backend, step 'Run MyPy type checking': run='uv run mypy backend/app/', continue-on-error=<absent>, job continue-on-error=<absent>
+.github/workflows/frontend.yml job frontend, step 'Run TypeScript type checking': run='cd frontend\nnpx tsc -b', continue-on-error=<absent>, job continue-on-error=<absent>
+.github/workflows/frontend.yml job frontend, step 'Run ESLint': run='cd frontend\nnpm run lint', continue-on-error=<absent>, job continue-on-error=<absent>

@@ -1,0 +1,64 @@
+[
+ {
+  "step": "create with description",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000201",
+   "title": "Written by the legacy code",
+   "description": "round trip",
+   "created_at": "2026-10-07T02:23:04.252889",
+   "updated_at": "2026-10-06T21:23:04",
+   "deleted": false,
+   "done": false
+  }
+ },
+ {
+  "step": "create without description",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000202",
+   "title": "Also by the legacy code",
+   "description": null,
+   "created_at": "2026-10-07T02:23:04.291887",
+   "updated_at": "2026-10-06T21:23:04",
+   "deleted": false,
+   "done": false
+  }
+ },
+ {
+  "step": "edit a sample row",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000003",
+   "title": "Edited by the legacy code",
+   "description": null,
+   "created_at": "2026-10-07T02:08:05.587913",
+   "updated_at": "2026-10-06T21:08:05",
+   "deleted": false,
+   "done": false
+  }
+ },
+ {
+  "step": "mark a sample row done",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000009",
+   "title": "Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln.",
+   "description": null,
+   "created_at": "2026-10-07T02:08:05.656626",
+   "updated_at": "2026-10-06T21:08:05",
+   "deleted": false,
+   "done": true
+  }
+ },
+ {
+  "step": "delete a sample row",
+  "ok": true,
+  "result": true
+ },
+ {
+  "step": "256-character title (RULE-013)",
+  "ok": false,
+  "error": "ToDoAlreadyExistsError"
+ }
+]

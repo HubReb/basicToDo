@@ -1,0 +1,92 @@
+CI evidence for the Q9 gates: the mypy, type-check and ESLint steps, as logged by GitHub Actions.
+Workspace paths are shown relative to the checkout; each step's env block is left out.
+
+==============================================================================
+Phase 2, draft PR #114, e3ffd22 (gates with continue-on-error: true)
+==============================================================================
+--- Backend Tests & Quality Checks: mypy
+##[group]Run uv run mypy backend/app/
+uv run mypy backend/app/
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+backend/app/data_access/database.py:52: error: Unused "type: ignore" comment
+[unused-ignore]
+    )  # type: ignore
+    ^~~~~~~~~~~~~~~~
+backend/app/data_access/repository.py: note: In member "update_to_do" of class "ToDoRepository":
+backend/app/data_access/repository.py:73: error: Cannot access instance-only
+attribute "id" on class object  [misc]
+                    ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is...
+                    ^~~~~~~~~~~~~~~~
+backend/app/data_access/repository.py: note: In member "get_to_do_entry" of class "ToDoRepository":
+backend/app/data_access/repository.py:89: error: Cannot access instance-only
+attribute "id" on class object  [misc]
+                    ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is...
+                    ^~~~~~~~~~~~~~~~
+Found 3 errors in 2 files (checked 35 source files)
+##[error]Process completed with exit code 1.
+
+--- Frontend Build & Lint: type check
+##[group]Run cd frontend
+cd frontend
+npx tsc --noEmit
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+
+--- Frontend Build & Lint: ESLint
+##[group]Run cd frontend
+cd frontend
+npm run lint
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+frontend/e2e/smoke.spec.ts
+##[error]  89:14  error  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (1 error, 0 warnings)
+
+##[error]Process completed with exit code 1.
+
+==============================================================================
+Phase 3, draft PR #115, 5dadbcd (gates blocking)
+==============================================================================
+--- Backend Tests & Quality Checks: mypy
+##[group]Run uv run mypy backend/app/
+uv run mypy backend/app/
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+Success: no issues found in 35 source files
+
+--- Frontend Build & Lint: type check
+##[group]Run cd frontend
+cd frontend
+npx tsc -b
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+
+--- Frontend Build & Lint: ESLint
+##[group]Run cd frontend
+cd frontend
+npm run lint
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+==============================================================================
+Step and job conclusions (Actions API) and continue-on-error (parsed workflow YAML)
+==============================================================================
+Phase 2 (#114, e3ffd22): Run MyPy type checking: success; Run TypeScript type checking: success;
+  Run ESLint: success; jobs Backend Tests & Quality Checks and Frontend Build & Lint: success.
+  continue-on-error: true on the mypy and ESLint steps (and false on the pytest step), so both
+  steps were reported as success although mypy and ESLint exited 1 (above). The type-check step
+  had no continue-on-error, but tsc --noEmit on tsconfig.json ("files": []) checks no file.
+Phase 3 (#115, 5dadbcd): the same three steps and both jobs: success, each command exit 0 (above).
+  The only continue-on-error left in all six workflows is false, on the pytest step, so a
+  non-zero exit of mypy, tsc -b or ESLint fails its step, its job and the workflow.

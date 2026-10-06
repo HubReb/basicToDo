@@ -1,4 +1,5 @@
 """FastAPI routes for ToDo operations."""
+
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, status
@@ -7,7 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
     ToDoNotFoundError,
-    ToDoRepositoryError, ToDoValidationError,
+    ToDoRepositoryError,
+    ToDoValidationError,
 )
 from backend.app.factory import create_todo_service
 from backend.app.schemas.api_responses.delete_to_do_response import DeleteToDoResponse
@@ -17,7 +19,9 @@ from backend.app.schemas.api_responses.to_do_response import ToDoResponse
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
-app = FastAPI(title="ToDo API")
+# FastAPI >= 0.142 would start exporting OpenTelemetry data as soon as an
+# OTEL_EXPORTER_OTLP_* variable is set; keep the legacy behaviour (no export).
+app = FastAPI(title="ToDo API", telemetry={"auto_configure": False})
 
 # Configure CORS to allow frontend access
 app.add_middleware(

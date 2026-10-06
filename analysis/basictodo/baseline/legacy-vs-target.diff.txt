@@ -1,0 +1,248 @@
+provenance a: [uvicorn server] tree 2713c3c, venv ../.envs/legacy-lock, fastapi 0.115.12, backend.app -> backend/app/__init__.py, outside tree: none
+provenance a: [init_db.py] tree 2713c3c, venv ../.envs/legacy-lock, fastapi 0.115.12, backend.app -> backend/app/__init__.py, outside tree: none
+provenance b: [uvicorn server] tree 0df26b9, venv ../.envs/target-lock, fastapi 0.142.2, backend.app -> backend/app/__init__.py, outside tree: none
+provenance b: [init_db.py] tree 0df26b9, venv ../.envs/target-lock, fastapi 0.142.2, backend.app -> backend/app/__init__.py, outside tree: none
+### GET root  (GET /)
+  + header vary: Origin
+### HEAD root  (HEAD /)
+  + header vary: Origin
+### POST create ok  (POST /todo)
+  + header vary: Origin
+### POST create ok 2  (POST /todo)
+  + header vary: Origin
+### POST duplicate id  (POST /todo)
+  + header vary: Origin
+### POST missing id  (POST /todo)
+  + header vary: Origin
+### POST malformed id  (POST /todo)
+  - header content-length: 333
+  + header content-length: 195
+  + header vary: Origin
+  body @@ -4,3 +4,3 @@
+  body     "ctx": {
+  body -    "error": "invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `n` at 1"
+  body +    "error": "invalid character: found `n` at 1"
+  body     },
+  body @@ -11,3 +11,3 @@
+  body     ],
+  body -   "msg": "Input should be a valid UUID, invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `n` at 1",
+  body +   "msg": "Input should be a valid UUID, invalid character: found `n` at 1",
+  body     "type": "uuid_parsing"
+### POST empty id  (POST /todo)
+  + header vary: Origin
+### POST null id  (POST /todo)
+  + header vary: Origin
+### POST whitespace title  (POST /todo)
+  + header vary: Origin
+### POST title int  (POST /todo)
+  + header vary: Origin
+### POST title missing  (POST /todo)
+  + header vary: Origin
+### POST title 255 chars  (POST /todo)
+  + header vary: Origin
+### POST title 256 chars  (POST /todo)
+  + header vary: Origin
+### POST description 256 chars  (POST /todo)
+  + header vary: Origin
+### POST invalid json  (POST /todo)
+  + header vary: Origin
+### POST text/plain body  (POST /todo)
+  + header vary: Origin
+### POST no body  (POST /todo)
+  + header vary: Origin
+### POST SQL keyword title  (POST /todo)
+  + header vary: Origin
+### POST quirk 'Todo to delete' (blocklist)  (POST /todo)
+  + header vary: Origin
+### POST unknown extra field  (POST /todo)
+  + header vary: Origin
+### POST uppercase id  (POST /todo)
+  + header vary: Origin
+### PUT done='yes'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='on'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='1'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done=1  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='true'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='TRUE'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='y'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='t'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done=1.0  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='false'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done=0  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='off'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='no'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done='maybe'  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done=2  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done=[]  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT done={}  (PUT /todo/11111111-2222-3333-4444-666666666666)
+  + header vary: Origin
+### PUT title update  (PUT /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### PUT empty object  (PUT /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### PUT whitespace title  (PUT /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### PUT unknown id  (PUT /todo/99999999-2222-3333-4444-555555555555)
+  + header vary: Origin
+### PUT malformed path id  (PUT /todo/xyz)
+  - header content-length: 337
+  + header content-length: 199
+  + header vary: Origin
+  body @@ -4,3 +4,3 @@
+  body     "ctx": {
+  body -    "error": "invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `x` at 1"
+  body +    "error": "invalid character: found `x` at 1"
+  body     },
+  body @@ -11,3 +11,3 @@
+  body     ],
+  body -   "msg": "Input should be a valid UUID, invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `x` at 1",
+  body +   "msg": "Input should be a valid UUID, invalid character: found `x` at 1",
+  body     "type": "uuid_parsing"
+### GET one  (GET /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### GET one uppercase id  (GET /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### GET one urn id  (GET /todo/urn:uuid:11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### GET one hex id without dashes  (GET /todo/11111111222233334444555555555555)
+  + header vary: Origin
+### GET one unknown id  (GET /todo/99999999-2222-3333-4444-555555555555)
+  + header vary: Origin
+### GET one malformed id  (GET /todo/not-a-uuid)
+  - header content-length: 344
+  + header content-length: 206
+  + header vary: Origin
+  body @@ -4,3 +4,3 @@
+  body     "ctx": {
+  body -    "error": "invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `n` at 1"
+  body +    "error": "invalid character: found `n` at 1"
+  body     },
+  body @@ -11,3 +11,3 @@
+  body     ],
+  body -   "msg": "Input should be a valid UUID, invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `n` at 1",
+  body +   "msg": "Input should be a valid UUID, invalid character: found `n` at 1",
+  body     "type": "uuid_parsing"
+### GET list  (GET /todo)
+  + header vary: Origin
+### GET list limit=abc  (GET /todo?limit=abc)
+  + header vary: Origin
+### GET list limit=-1  (GET /todo?limit=-1&page=1)
+  + header vary: Origin
+### GET list page=0  (GET /todo?limit=10&page=0)
+  + header vary: Origin
+### GET list limit=1.5  (GET /todo?limit=1.5)
+  + header vary: Origin
+### GET list limit=' 2 '  (GET /todo?limit=%202%20)
+  + header vary: Origin
+### GET list limit=2 page=2  (GET /todo?limit=2&page=2)
+  + header vary: Origin
+### GET list trailing slash (307)  (GET /todo/)
+  + header vary: Origin
+### PATCH todo (405)  (PATCH /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### DELETE collection (405)  (DELETE /todo)
+  + header vary: Origin
+### GET unknown route  (GET /nope)
+  + header vary: Origin
+### OPTIONS preflight allowed  (OPTIONS /todo)
+  - header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT
+  - header vary: Origin
+  + header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY
+  + header vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network
+### OPTIONS preflight allowed DELETE  (OPTIONS /todo/11111111-2222-3333-4444-555555555555)
+  - header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT
+  - header vary: Origin
+  + header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY
+  + header vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network
+### OPTIONS preflight disallowed origin  (OPTIONS /todo)
+  - header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT
+  - header vary: Origin
+  + header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY
+  + header vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network
+### OPTIONS preflight 127.0.0.1 origin  (OPTIONS /todo)
+  - header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT
+  - header vary: Origin
+  + header access-control-allow-methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY
+  + header vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network
+### GET list CORS disallowed  (GET /todo)
+  + header vary: Origin
+### DELETE ok  (DELETE /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### DELETE again (404)  (DELETE /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### DELETE malformed id  (DELETE /todo/zzz)
+  - header content-length: 337
+  + header content-length: 199
+  + header vary: Origin
+  body @@ -4,3 +4,3 @@
+  body     "ctx": {
+  body -    "error": "invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `z` at 1"
+  body +    "error": "invalid character: found `z` at 1"
+  body     },
+  body @@ -11,3 +11,3 @@
+  body     ],
+  body -   "msg": "Input should be a valid UUID, invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `z` at 1",
+  body +   "msg": "Input should be a valid UUID, invalid character: found `z` at 1",
+  body     "type": "uuid_parsing"
+### DELETE unknown id  (DELETE /todo/99999999-2222-3333-4444-555555555555)
+  + header vary: Origin
+### GET deleted  (GET /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### PUT deleted  (PUT /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### PUT deleted restore attempt  (PUT /todo/11111111-2222-3333-4444-555555555555)
+  + header vary: Origin
+### POST re-create deleted id (409)  (POST /todo)
+  + header vary: Origin
+### GET list after delete  (GET /todo?limit=100)
+  + header vary: Origin
+### GET openapi.json  (GET /openapi.json)
+  - header content-length: 6977
+  + header content-length: 7045
+  + header vary: Origin
+  body @@ -374,2 +374,9 @@
+  body      "properties": {
+  body +     "ctx": {
+  body +      "title": "Context",
+  body +      "type": "object"
+  body +     },
+  body +     "input": {
+  body +      "title": "Input"
+  body +     },
+  body       "loc": {
+### GET docs  (GET /docs)
+  - header content-length: 932
+  + header content-length: 1007
+  + header vary: Origin
+  body @@ -4,2 +4,3 @@
+  body      <head>
+  body +    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  body      <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+### GET redoc  (GET /redoc)
+  - header content-length: 892
+  + header content-length: 889
+  + header vary: Origin
+  body @@ -27,3 +27,3 @@
+  body      <redoc spec-url="/openapi.json"></redoc>
+  body -    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
+  body +    <script src="https://cdn.jsdelivr.net/npm/redoc@2/bundles/redoc.standalone.js"> </script>
+  body      </body>
+### GET docs oauth2-redirect  (GET /docs/oauth2-redirect)
+  + header vary: Origin
+79 of 83 responses differ
