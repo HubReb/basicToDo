@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.todo_service import ToDoService
 from backend.app.business_logic.validators import ValidatorFactory
-from backend.app.data_access.database import Base, ToDoORM
+from backend.app.data_access.database import Base
 from backend.app.data_access.repository import ToDoRepository
 from backend.app.logger import CustomLogger
 

@@ -4,7 +4,6 @@ from typing import Callable, List, Optional, cast
 
 from sqlalchemy.exc import IntegrityError
 
-from backend.app.data_access.database import to_do_table
 from backend.app.logger import CustomLogger
 from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
@@ -78,7 +77,7 @@ class ToDoRepository(ToDoRepositoryInterface):
         with self.session_manager() as session:
             entry: Optional[ToDoEntryData] = (
                 session.query(ToDoEntryData)
-                .filter(to_do_table.c.id == entry_id, ToDoEntryData.deleted.is_(False))
+                .filter(ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False))
                 .first()
             )
             if not entry:
@@ -97,7 +96,7 @@ class ToDoRepository(ToDoRepositoryInterface):
             return cast(
                 Optional[ToDoEntryData],
                 session.query(ToDoEntryData)
-                .filter(to_do_table.c.id == entry_id, ToDoEntryData.deleted.is_(False))
+                .filter(ToDoEntryData.id == entry_id, ToDoEntryData.deleted.is_(False))
                 .first(),
             )
 

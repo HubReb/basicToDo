@@ -9,9 +9,10 @@ RULE-037: the creation path always persists deleted = false.
 Everything runs through the real builder and repository on a file-backed
 SQLite database, and the stored values are read back raw with sqlite3. The
 module imports only Base, ToDoEntryData, ToDoRepository and the builder, so it
-runs unchanged against the legacy dual mapping and against the declarative
-model that replaces it in Phase 4. Tests named "legacy" pin a behaviour that
-Phase 4 changes on purpose; they are replaced, not edited, when it does.
+ran unchanged against the legacy dual mapping and against the declarative
+model that replaced it in Phase 4. Phase 4 changed two behaviours on purpose,
+and their tests were replaced rather than edited: the model default for
+deleted, and string ids at the repository.
 """
 
 import asyncio
@@ -26,7 +27,7 @@ from typing import Generator
 
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import StatementError
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.business_logic.todo_service import ToDoService
@@ -284,9 +285,11 @@ class TestDeletedRule037:
         (row,) = raw_rows(db_path)
         assert (row["deleted"], row["deleted_type"]) == (0, "integer")
 
-    def test_legacy_model_default_for_deleted_is_not_a_boolean_and_cannot_be_stored(
+    def test_model_default_for_deleted_is_false_and_stored_as_0(
         self, repository, db_path
     ):
+        # Phase 4 replaced the legacy pin: the dataclass default used to be a
+        # MappedColumn, and storing it failed with "no such column: deleted".
         entry = ToDoEntryData(
             id=uuid.uuid4(),
             title="No deleted flag",
@@ -294,11 +297,12 @@ class TestDeletedRule037:
             created_at=datetime.datetime.now(),
             updated_at=None,
         )
-        assert not isinstance(entry.deleted, bool)
+        assert entry.deleted is False
 
-        with pytest.raises(OperationalError, match="no such column: deleted"):
-            repository.create_to_do(entry)
-        assert raw_rows(db_path) == []
+        repository.create_to_do(entry)
+
+        (row,) = raw_rows(db_path)
+        assert (row["deleted"], row["deleted_type"]) == (0, "integer")
 
 
 class TestIdBinding:
@@ -318,12 +322,14 @@ class TestIdBinding:
         [str, lambda value: value.hex, lambda value: str(value).upper()],
         ids=["canonical", "hex", "upper"],
     )
-    def test_legacy_repository_accepts_a_string_id(
+    def test_repository_rejects_a_string_id(
         self, spelling, session_builder, repository
     ):
+        # Phase 4 replaced the legacy pin: sqlalchemy_utils.UUIDType converted
+        # strings, sqlalchemy.Uuid binds uuid.UUID only. Every caller passes a
+        # uuid.UUID (typed path parameters and schemas, UUIDValidator).
         todo_id = uuid.uuid4()
         repository.create_to_do(build_entry(session_builder, todo_id))
 
-        found = repository.get_to_do_entry(spelling(todo_id))
-
-        assert found is not None and found.id == todo_id
+        with pytest.raises(StatementError, match="'str' object has no attribute 'hex'"):
+            repository.get_to_do_entry(spelling(todo_id))
