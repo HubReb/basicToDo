@@ -329,7 +329,7 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] The P0 contract tests are green. _(12 of 12; `test_p0_contracts.py` unchanged since Phase 3.)_
 - [x] mypy reports 0 errors with the stubs removed. _(Pulled into Phase 3 by Q12 and met there; Phase 4 must keep it at 0. At `053a4f3`: 0 in two fresh venvs synced like CI.)_
 - [x] `pyproject.toml` keeps `sqlalchemy>=2.0.54,<2.1`; the suite is green with `sqlalchemy-utils` removed, and `pip-audit` reports 0. _(`7b54c2e`; `pip-audit` 0 on 62 runtime pins.)_
-- [ ] `plugin/uplift-basictodo/phase-4` is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and python-app and e2e green on it (Q11).
+- [x] `plugin/uplift-basictodo/phase-4` is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and python-app and e2e green on it (Q11). _(PR #116 at `031731c`: all six workflows green, 145 s; `BASELINE.md`, "Phase 4 CI".)_
 
 **Relative scale:** **S**. Persistence plus its direct consumers is about 0.26 KSLOC, index 0.67, 12%.
 

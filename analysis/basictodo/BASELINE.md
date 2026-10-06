@@ -629,6 +629,29 @@ With the template added to `FILTER_REGEX_EXCLUDE` in a throwaway commit (never p
 - `check_baseline.py` afterwards exit 2 (already under Alembic);
 - `alembic upgrade head` is a no-op: rows and `toDo` schema unchanged.
 
+### Phase 4 CI (draft PR #116)
+
+Pushed on 2026-10-06 after the owner's go. Draft PR #116 (`phase-4` → `base`, label `do not merge: eval`), head `031731c`. **All six PR workflows and all three push runs are green.**
+
+| Workflow (PR run) | Result | Duration |
+|---|---|---|
+| Dependency review | ✅ no vulnerable packages, no denied licences | 24 s |
+| Frontend CI | ✅ | 34 s |
+| Python Application CI: `init_db.py`, mypy 0 (35 files), 483 passed, 1 skipped, 83.47 % | ✅ | 63 s |
+| CodeQL | ✅ | 72 s |
+| End-to-End Tests (13/13) | ✅ | 77 s |
+| Super-Linter (15 linters) | ✅ | 145 s |
+
+- **Duration:** 145 s wall clock, 496 s runner time across 10 jobs (Phase 3 at `a51d618`: 141 s and 468 s). Push runs: Frontend 28 s, Python 53 s, E2E 77 s.
+- **Super-Linter:** `DEFAULT_BRANCH` resolved to `origin/plugin/uplift-basictodo/base`; the image index is `sha256:7620fb6f…`, as in Phase 3.
+  - black, flake8 and mypy lint `backend/migrations/env.py`, `check_baseline.py` and `versions/0001_baseline.py`.
+  - `script.py.mako` does not appear in the log (the `5ffc86b` exclude).
+- **No Node 20 deprecation warning** in the downloaded logs.
+- **The numbers match the local runs:** pytest, coverage and mypy as at `053a4f3`.
+- Evidence: `baseline/ci/ci-pr116.txt`.
+
+**Exit criterion "python-app and e2e green on the draft PR" holds at `031731c`**; the other four workflows are green as well.
+
 ## Change log
 
 Phase 5 records each intentional behaviour change here, with its Q6 row ID. Two changes from Phase 4 are not Q6 rows; they are listed for traceability:

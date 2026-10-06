@@ -227,6 +227,7 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | Coverage | 83.98 % | 83.47 %: removed always-executed statements left the denominator; the 88 missed statements are unchanged |
 | e2e | 13/13 | **13/13** |
 | super-linter v9 (local) | green (`5c46f21`) | red at `053a4f3` only on `backend/migrations/script.py.mako` (Alembic's Mako template, parsed as Python); **green at `5ffc86b`** with that file excluded |
+| CI on the draft PR | #115: 6 of 6 green (141 s, 468 s) | **#116: 6 of 6 green** at `031731c`, plus 3 push runs; 145 s wall clock, 496 s runner time |
 
 **Two behaviours changed on purpose.** Their characterization tests were replaced, not edited, so the per-test table shows them as 4 rows out and 4 in.
 - **RULE-037:** an entry built without `deleted` now gets `False`. The legacy dataclass default was a `MappedColumn`, and storing it failed with `OperationalError: no such column: deleted`. All 65 existing constructions pass `deleted`, so no caller changes behaviour.
