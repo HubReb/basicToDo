@@ -4,12 +4,13 @@
 import sys
 from pathlib import Path
 
-# Add backend to path
-backend_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(backend_dir))
+# Put the repository root first, so that the script imports backend.app from
+# its own checkout, under the same module names as the application.
+repo_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(repo_root))
 
-from app.data_access.database import Base, engine, DATABASE_URL
-from app.logger import CustomLogger
+from backend.app.data_access.database import Base, engine, DATABASE_URL  # noqa: E402
+from backend.app.logger import CustomLogger  # noqa: E402
 
 logger = CustomLogger("DBInit")
 
