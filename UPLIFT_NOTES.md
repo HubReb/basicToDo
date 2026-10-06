@@ -181,3 +181,61 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 - **The super-linter image is pinned by tag, not by digest.** The action at the pinned SHA references `ghcr.io/super-linter/super-linter:v9.0.0`, a mutable tag. On PR #115 it resolved to the image the local runs used. A digest pin would need `uses: docker://ghcr.io/super-linter/super-linter@sha256:…`, which is not part of this phase.
 - **The seroval override** in `frontend/package.json` goes outside the `~1.5.4` range of solid-js 1.9.15, the latest release. Only solid-js's SSR build uses seroval, and this app does no server-side rendering. Remove the override once solid-js depends on a fixed seroval. Evidence: `analysis/basictodo/BASELINE.md` ("seroval advisories") and `analysis/basictodo/baseline/ci/ci-seroval-dfb46a5.txt`.
 - **#114 (Phase 2) is affected as well.** It brought seroval in, and its last green run predates the advisories. The fix is on `phase-3` only.
+
+# Uplift notes: basicToDo, Phase 4 (data layer)
+
+**Uplift:** the doubly defined `toDo` table (a declarative `ToDoORM` for the DDL, an imperative `Table` mapped onto the `ToDoEntryData` dataclass for every read and write) → one `MappedAsDataclass` model on a `DeclarativeBase`. `sqlalchemy.Uuid` replaces `sqlalchemy-utils`, and there is an Alembic baseline revision. SQLAlchemy stays 2.0.54 (`<2.1`, Q4).
+
+**Branch:** `plugin/uplift-basictodo/phase-4`, based on `phase-3`.
+
+**Evidence:** `analysis/basictodo/BASELINE.md` ("Data layer (Phase 4)") and `analysis/basictodo/baseline/db/`.
+
+**Proof type:**
+- characterization tests and properties written first and run on the legacy mapping and both locks;
+- per-commit pytest tables and golden master against the Phase 1 target;
+- the repository's SQL captured before and after;
+- the legacy sample database read and written by the legacy code (`a2d59f1`, legacy lock) and the new code, in both directions, each in its own process and venv;
+- a positive control for every new guard.
+
+## Commits and delta → fix mapping
+
+| Commit | Change | Deltas | How applied |
+|---|---|---|---|
+| `5cc9e06` | Characterization tests: RULE-034, RULE-035, RULE-037, id binding, DDL snapshot | (entry criterion) | by hand; green on both locks before any change |
+| `1944856` | `hypothesis` (dev) and 4 storage round-trip properties | (validation strategy) | `uv add --dev`; lock adds 2 packages, moves none |
+| `a803365` | Schema snapshot, sample legacy DB, before state | (entry criterion) | `make_sample_db.sh` on the legacy code |
+| `2ae6942` | black 26.5.1 on `conftest.py`, `todo_schema.py`, `init_db.py`; unused imports removed | — | black; ASTs identical |
+| `7b54c2e` | One declarative model; `ToDoORM`, `Table`, registry mapping and `sqlalchemy-utils` removed | TD-5, D-03b, D-13 | by hand; `uv lock` without upgrade removes one package |
+| `15d0044` | `init_db.py` imports `backend.app.*` from its own checkout | (import root, brief scope) | by hand |
+| `d7f9092` | `ConfigDict` instead of `class Config` | D-14 | by hand |
+| `053a4f3` | Alembic baseline revision `0001`, `[tool.alembic]` in `pyproject.toml`, `check_baseline.py` before stamping | (brief scope; the owner's decisions) | revision written by hand; `alembic` in the dev group |
+
+## Result
+
+| Measure | Before (`c30b4da`) | After (`053a4f3`) |
+|---|---|---|
+| Definitions of `toDo` | 2 (`ToDoORM` and an imperative `Table`) plus an imperative mapping | **1** (`ToDoEntryData`) |
+| DDL of a fresh database | snapshot | **byte-identical** (`create_all`, `init_db.py`, `alembic upgrade head`) |
+| Repository SQL (7 operations) | — | **identical**, parameters included |
+| pytest | 456 passed, 1 skipped | 483 passed, 1 skipped: **27 new tests, 0 changed** against the Phase 1 target |
+| Golden master | 0 of 83 against the Phase 1 target | **0 of 83** against the Phase 1 target and Phase 3 |
+| Legacy sample DB | written by the legacy code | read identically by both codes, written by both, and readable by the legacy code after the new code wrote to it |
+| mypy | 0 | **0** in two fresh venvs synced like CI, identical freezes |
+| Deprecation warnings in pytest | 2 (MovedIn20Warning D-13, PydanticDeprecatedSince20 D-14) | **0**; `pytest -W error` collects |
+| Runtime pins / `pip-audit` | 63 / 0 | **62** (no `sqlalchemy-utils`) / **0** |
+| Coverage | 83.98 % | 83.47 %: removed always-executed statements left the denominator; the 88 missed statements are unchanged |
+| e2e | 13/13 | **13/13** |
+| super-linter v9 (local) | green (`5c46f21`) | **red only on `backend/migrations/script.py.mako`** (Alembic's Mako template, parsed as Python); green with that file excluded (throwaway check). Owner's decision pending |
+
+**Two behaviours changed on purpose.** Their characterization tests were replaced, not edited, so the per-test table shows them as 4 rows out and 4 in.
+- **RULE-037:** an entry built without `deleted` now gets `False`. The legacy dataclass default was a `MappedColumn`, and storing it failed with `OperationalError: no such column: deleted`. All 65 existing constructions pass `deleted`, so no caller changes behaviour.
+- **D-03b:** the repository binds `uuid.UUID` only, and a `str` id raises `StatementError`; `UUIDType` used to convert strings. This is unreachable over HTTP (typed path parameters and schemas; `UUIDValidator` returns `UUID`).
+
+## Residual and deferred
+
+- **Alembic is not used at runtime** (the owner's decision). `main.py` and `init_db.py` keep `create_all`. An existing database is stamped by hand, after `check_baseline.py` accepts it (`analysis/basictodo/PLAYBOOK.md`). Alembic moves to the runtime and into the runtime dependencies in Phase 5, with the Q6.6 data migration.
+- **super-linter and `script.py.mako`:** the template has to be excluded in `.github/workflows/super-linter.yml` (outside Phase 4's file scope), or left out of the repository (then `alembic revision` needs it back). Pending the owner's decision.
+- **The legacy Query API** (`session.query`) stays; `select()` is not part of this pass.
+- **SQLAlchemy 2.1 (C3)** is now possible from the data layer's side, because `sqlalchemy-utils` is gone. It stays deferred (Q4).
+- **pylint's `E1102 func.now is not callable`** (report-only, a known false positive) now points at `models/todo.py`.
+- **Aware timestamps lose their offset** when stored, and the wall clock is kept (pinned by a property test). Q6.6 in Phase 5 builds on this.

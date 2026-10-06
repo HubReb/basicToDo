@@ -291,3 +291,77 @@ Deferred on purpose, with the phase that owns each item:
 | flake8 E501 on a `noqa` comment carrying its own reason | The reason made the line too long | Reason on comment lines above; bare `# noqa: <code>` on the reported line |
 | zizmor clean, but the exit criterion "top-level read-only" failed for `dependency-review.yml` | `pull-requests: write` at workflow level | Moved to the job (`5c46f21`) |
 | Dependency review and Trivy red on a docs-only commit | Advisories published after the last green run (seroval, 2026-10-05) | Compare the advisory's publish date with the last green run. If the parent package's range excludes the fixed version, use npm `overrides`, prove a lock diff limited to the advisory's packages and identical gates (`94e5c7d`) |
+
+## Data layer: one declarative model, `sqlalchemy.Uuid`, Alembic baseline
+
+**Proven on:** SQLAlchemy 2.0.54, with a declarative `ToDoORM` for the DDL plus an imperative `Table` mapped onto a dataclass, plus `sqlalchemy-utils`. Moved to one `MappedAsDataclass` model on a `DeclarativeBase`, `sqlalchemy.Uuid`, and an Alembic 1.20 baseline revision. SQLite only.
+
+**Result:** branch `plugin/uplift-basictodo/phase-4`, commits `5cc9e06` to `053a4f3`.
+
+**Idea:** the code that touches stored data changes, so the proof is about **storage**, not only behaviour:
+- pin what is stored (raw, through `sqlite3`) before the change;
+- keep the DDL byte-identical;
+- let the old and the new code read and write the same database file in both directions.
+
+### Environment facts
+
+| Fact | Consequence |
+|---|---|
+| CI runners use UTC | A test for "`created_at` is local, `updated_at` is UTC" proves nothing there. Force a zone without DST (`TZ=Etc/GMT-5`, then `time.tzset()`) in the test, and restore it. |
+| On insert, SQLAlchemy omits a column whose value is `None` if it has a default, so `func.now()` fills it; `RETURNING` sends the value back | The stored `updated_at` is the database's UTC clock, and so is the create **response**. Assert both. |
+| The legacy `ToDoEntryData` dataclass declared `deleted: Mapped[bool] = mapped_column(default=False)` | Its dataclass default was the `MappedColumn` object. Storing an entry without `deleted` failed with `OperationalError: no such column: deleted` (the object is rendered as SQL). With `MappedAsDataclass`, `default=` is a real dataclass default. |
+| `sqlalchemy_utils.UUIDType` converted strings; `sqlalchemy.Uuid` binds `uuid.UUID` only (`'str' object has no attribute 'hex'`) | Check every caller passes `UUID`. Here, every path is typed and the HTTP API cannot reach it. |
+| The API stores an omitted description as `''`, not NULL | NULL only comes from `PUT {"description": null}`. A sample database needs both. |
+| `init_db.py` imported `app.*` after putting `backend/` on `sys.path` | In a second checkout, the model came from the venv's editable install. Put the repository root on `sys.path` and import `backend.app.*`. |
+| Alembic's autogenerate compare does **not** see CHECK constraints, and renders them alphabetically | Write the baseline revision by hand and compare `sqlite_master` byte for byte. |
+| Alembic ≥ 1.16 reads `[tool.alembic]` from `pyproject.toml` without `alembic.ini` | `env.py` must not call `fileConfig(config.config_file_name)` or `get_main_option("sqlalchemy.url")`. Take the URL from the application at run time, with its own `NullPool` engine. |
+| A test that runs Alembic on a shared connection must commit it | Use `engine.begin()`, not `connect()`. Otherwise the DDL lands (pysqlite) but `alembic_version` stays empty. |
+| hypothesis with `tmp_path` inside `@given` fails the function-scoped-fixture health check | Use a module-scoped file (`tmp_path_factory`); `derandomize=True, database=None, deadline=None` keeps the per-test table stable |
+| super-linter v9 lints Alembic's `script.py.mako` as Python and fails (E999); mypy then stops | Exclude the template in `FILTER_REGEX_EXCLUDE`. The template is not Python. In Phase 4 this was left to the owner (outside the phase's file scope). |
+
+### Tools (`analysis/basictodo/baseline/db/`, run as noted)
+
+| Tool | What it does |
+|---|---|
+| `make_sample_db.sh <venv> <out-dir>` | From the root of the tree to run: a fresh database through `init_db.py`, then rows written through the HTTP API (`make_sample_db.py`), with provenance, a dump, `schema.json` and sha256 |
+| `sample_db_roundtrip.sh <legacy-tree> <legacy-venv> <new-tree> <new-venv> <out-dir>` | The sample database read and written by both codes, each in its own process (`sample_db_io.py`, through `provenance.py`). Compares the reads, the write outcomes and every stored value's format. |
+| `backend/migrations/check_baseline.py <db>` | Product tool. Before stamping, compares an existing database's `sqlite_master` with the baseline, read-only. Exits 0 on a match, 1 on a difference (with a diff), 2 if the file is missing or already versioned. |
+
+### Recipe
+
+1. **Before state** at the previous phase's tip: per-test pytest table, golden master, mypy, e2e.
+2. **Characterization first, on the old mapping and both locks:** the stored values per rule, read raw; the DDL as a literal snapshot; round-trip properties. Name the tests that pin behaviour the phase will change on purpose, and **replace** them in the change commit rather than editing them. The per-test table then shows exactly those rows.
+3. **Sample database from the untouched legacy code**, through its own API, in a worktree at the legacy SHA (`PYTHONDONTWRITEBYTECODE=1`, so the tree stays clean). Commit it with its sha256.
+4. **Formatting of the touched legacy files in its own commit** (ASTs compared).
+5. **The model swap:** one model whose DDL is the old DDL model's and whose insert defaults are the old imperative table's. Capture the repository's SQL (`before_cursor_execute`) before and after; it must be identical, parameters included.
+6. **Alembic last:** the revision by hand; tests for `upgrade head == create_all == snapshot`, downgrade, stamp-then-upgrade as a no-op, and the CLI once in a subprocess.
+7. **Both directions** with `sample_db_roundtrip.sh`, and a positive control for every new guard.
+
+### Stamping an existing database (the runtime still uses `create_all`)
+
+Run from the repository root, on the venv of this checkout:
+
+1. Back up the database file.
+2. `python backend/migrations/check_baseline.py <db>`. Continue **only on exit 0**. On exit 1 the database was made by an older model, for example without the CHECK constraints or with an id index; it needs its own migration, not a stamp.
+3. `DATABASE_URL=sqlite:///<db> python -m alembic stamp head`
+4. `DATABASE_URL=sqlite:///<db> python -m alembic current` shows `0001 (head)`.
+
+### Done means (Phase 4)
+
+| Check | Expected |
+|---|---|
+| DDL from `create_all`, `init_db.py`, `alembic upgrade head` | byte-identical to the snapshot |
+| pytest per test | new tests, plus exactly the replaced rows of the intended changes |
+| Repository SQL | identical, parameters included |
+| Golden master | 0 of 83 against the Phase 1 target |
+| Sample database | read identically by both codes; written by both; same storage format |
+| mypy in two fresh venvs; `pip-audit` | 0; 0 |
+| Positive controls | the DDL guard, the revision comparison and `check_baseline.py` each fail on a deliberate error |
+
+### Errors hit, and what resolved them
+
+| Symptom | Cause | Resolution |
+|---|---|---|
+| `init_db.py` in a worktree: provenance exit 3, `backend.app.models.todo` outside the tree | `app.*` import root plus the editable install of another checkout | Import root normalised (`15d0044`) |
+| `python -W error -m pytest` stops with INTERNALERROR | pytest-asyncio's own configuration warning, not the application | `pytest -W error` (the application's warnings only) |
+| super-linter red on `script.py.mako` (black, flake8, mypy) | The Mako template is parsed as Python | Exclude the template (owner's decision pending at the end of Phase 4) |

@@ -573,6 +573,63 @@ A 256-character title was rejected with 409 by the CHECK constraint (RULE-013) a
   `hypothesis` 6.168.5 and `sortedcontainers` 2.4.0 were added to the dev group. No existing lock entry moved, and the runtime export is identical (200 lines).
 - **Result:** both files are green on the target-lock venv and on the legacy-lock venv (SQLAlchemy 2.0.43, sqlalchemy-utils 0.42.0). Against the before state, the per-test table shows **16 new tests and 0 changed**.
 
+### Changes and proof per commit
+
+Every run used a fresh venv synced from the commit's lock (`uv sync --frozen --all-extras --dev`), with provenance: each process loaded `backend.app` from the tree under test only.
+
+| Commit | pytest per test (against the previous commit) | Golden master (against `target-lock.json`) | Other proof |
+|---|---|---|---|
+| `2ae6942` black on 3 files, 2 unused imports removed | 0 changed | 0 of 83 | ASTs identical, docstrings compared with black's normalization; the two imports are the only AST difference |
+| `7b54c2e` one declarative model, `Uuid`, `sqlalchemy-utils` removed | **4 rows replaced** (below), 469 identical | 0 of 83 | The repository's SQL and parameters are identical in all 7 operations (create, get, list, update, done, delete, hard delete); `uv lock` removes only `sqlalchemy-utils`; MovedIn20Warning gone |
+| `15d0044` `init_db.py` import root | 0 changed | 0 of 83 | **Before:** in a worktree, `init_db.py` loaded `app.*` from the worktree and `backend.app.models.todo` from the venv's other checkout (provenance exit 3). **After:** only `backend.*`, all from its own tree, also from another cwd. The DDL equals the snapshot. |
+| `d7f9092` `ConfigDict` (D-14) | 0 changed | 0 of 83 | `app.openapi()` byte-identical (11846 bytes); `pytest -W error --collect-only` collects all 473 tests. It stopped on PydanticDeprecatedSince20 before this commit and on MovedIn20Warning before `7b54c2e`. |
+| `053a4f3` Alembic baseline, `check_baseline.py` | 11 new | 0 of 83 | `uv lock` adds alembic 1.20.0 and mako 1.4.3, moves nothing; runtime export unchanged |
+
+**The two intended changes** (`7b54c2e`; the tests were replaced, not edited):
+- **RULE-037:** `test_legacy_model_default_for_deleted_is_not_a_boolean_and_cannot_be_stored` → `test_model_default_for_deleted_is_false_and_stored_as_0`. An entry built without `deleted` used to hold a `MappedColumn`, and storing it failed with `OperationalError: no such column: deleted`. It now defaults to `False`, as the brief asks. All 65 existing constructions pass `deleted` explicitly.
+- **D-03b, input range:** `test_legacy_repository_accepts_a_string_id[canonical, hex, upper]` → `test_repository_rejects_a_string_id[…]`. `UUIDType` converted strings to UUIDs; `sqlalchemy.Uuid` binds `uuid.UUID` only, so a string id now raises `StatementError`. This cannot be reached over HTTP: path parameters and schemas are typed `UUID`, and `UUIDValidator` returns `UUID`.
+
+**Coverage** 83.98 % → 83.47 %. The removed definitions (`ToDoORM`, the `Table`, the `Config` class) were statements that run on every import; they left the denominator (573 → 556 statements). The 88 missed statements are the same.
+
+### Exit checks at the tip (`053a4f3`)
+
+| Check | Result |
+|---|---|
+| DDL of a fresh database | **Equal to the snapshot** from `create_all`, from `init_db.py` and from `alembic upgrade head` (the `alembic_version` table aside) |
+| Legacy sample DB, both directions | **All checks pass** (`baseline/db/roundtrip/summary.txt`), see below |
+| pytest (`pytest-phase4-053a4f3.tsv`) | 483 passed, 1 skipped; against the Phase 1 target: **27 new, 0 missing or changed** |
+| Golden master (`target-lock-053a4f3.json`) | **0 of 83** against the Phase 1 target and against Phase 3 (`target-lock-4112dc5.json`) |
+| P0 contract tests | 12 of 12 pass; `test_p0_contracts.py` is byte-identical to Phase 3 |
+| mypy | 0 errors in two fresh venvs synced like CI (`uv sync --locked`), identical freezes (95 packages, no SQLAlchemy stubs, no `sqlalchemy-utils`) |
+| `pip-audit`, runtime export | **0** (62 pins; `sqlalchemy-utils` gone) |
+| `sqlalchemy` pin | `>=2.0.54,<2.1` unchanged; 2.0.54 installed |
+| Frontend and e2e (Node 24.21.0) | `tsc -b`, vitest 13/13, build, lint, `npm audit` 0; **e2e 13/13** against this backend |
+| super-linter v9 (`run_superlinter.sh`) | **red, only because of `backend/migrations/script.py.mako`**; green with that file excluded. **Open decision**, below the table |
+
+**super-linter and the Alembic template.** black, flake8 and mypy parse Alembic's Mako template `script.py.mako` as Python and fail on `${imports …}` (E999); mypy stops there and checks nothing else (`ci/superlinter-053a4f3.txt`).
+With the template added to `FILTER_REGEX_EXCLUDE` in a throwaway commit (never pushed, branch deleted), the run exits 0 with 15 linters, and mypy checks every changed file (`ci/superlinter-mako-excluded.txt`). Changing the workflow is outside Phase 4's file scope, so this is left to the owner.
+
+**The legacy sample DB in both directions** (`baseline/db/sample_db_roundtrip.sh`; legacy code `a2d59f1` on the legacy lock, new code `053a4f3`; `TZ=Etc/GMT-5`; on copies, and the committed file's sha256 is unchanged):
+- **(a)** Both codes read copy A identically: 10 rows with values and Python types, plus the service's list of 7 active todos.
+- **(b)** The new code writes to A through the service: two creates, an edit, a done, a delete, and a 256-character title, which the CHECK rejects with `ToDoAlreadyExistsError`. Both codes then read A identically: 12 rows, 8 listed.
+- **(c)** On copy B, the legacy code writes, then the new code. Both codes read B identically: 14 rows, 9 listed. Both sides' writes end the same way, step for step.
+- **Storage format:** every stored value of all 26 rows matches the legacy format: 22 rows written by the legacy code, 4 by the new code. That means ids as 32 lowercase hex digits, `created_at` as text with microseconds, `updated_at` as text in whole seconds, and flags as integer 0/1.
+
+**Positive controls** (`baseline/db/positive-controls.txt`; each reverted, `git status` clean):
+1. **One CHECK removed from the model:** the DDL guard, `upgrade head == create_all` and `check_baseline` on `create_all` fail (3 tests).
+2. **The title column changed to `String(200)` in revision 0001:** `upgrade head == create_all`, the CLI upgrade test and `check_baseline`'s revision test fail (3 tests).
+3. **The sample DB rebuilt without `description_length_check`, data unchanged:** `check_baseline.py` exits 1, and its diff shows the missing constraint. This is also a permanent test.
+
+**The stamp procedure, run once** on an unmodified copy of the sample DB:
+- `check_baseline.py` exit 0;
+- `alembic stamp head`;
+- `alembic current` → `0001 (head)`;
+- `check_baseline.py` afterwards exit 2 (already under Alembic);
+- `alembic upgrade head` is a no-op: rows and `toDo` schema unchanged.
+
 ## Change log
 
-_Empty. Phase 5 records each intentional behaviour change here, with its Q6 row ID._
+Phase 5 records each intentional behaviour change here, with its Q6 row ID. Two changes from Phase 4 are not Q6 rows; they are listed for traceability:
+
+- **Phase 4, `7b54c2e`, RULE-037:** an entry built without `deleted` defaults to `False` (it held a `MappedColumn`, and storing it failed). Brief §3 Phase 4 asks for this.
+- **Phase 4, `7b54c2e`, D-03b:** the repository binds `uuid.UUID` ids only; a string id raises `StatementError`. Not reachable over HTTP.

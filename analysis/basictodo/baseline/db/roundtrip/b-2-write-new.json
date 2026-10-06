@@ -1,0 +1,64 @@
+[
+ {
+  "step": "create with description",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000101",
+   "title": "Written by the new code",
+   "description": "round trip",
+   "created_at": "2026-10-07T02:23:04.844509",
+   "updated_at": "2026-10-06T21:23:04",
+   "deleted": false,
+   "done": false
+  }
+ },
+ {
+  "step": "create without description",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000102",
+   "title": "Also by the new code",
+   "description": null,
+   "created_at": "2026-10-07T02:23:04.878333",
+   "updated_at": "2026-10-06T21:23:04",
+   "deleted": false,
+   "done": false
+  }
+ },
+ {
+  "step": "edit a sample row",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000001",
+   "title": "Edited by the new code",
+   "description": "two litres",
+   "created_at": "2026-10-07T02:08:05.572804",
+   "updated_at": "2026-10-06T21:08:05",
+   "deleted": false,
+   "done": false
+  }
+ },
+ {
+  "step": "mark a sample row done",
+  "ok": true,
+  "result": {
+   "id": "5a3e0000-0000-4000-8000-000000000002",
+   "title": "Water the plants",
+   "description": null,
+   "created_at": "2026-10-07T02:08:05.581581",
+   "updated_at": "2026-10-06T21:08:05",
+   "deleted": false,
+   "done": true
+  }
+ },
+ {
+  "step": "delete a sample row",
+  "ok": true,
+  "result": true
+ },
+ {
+  "step": "256-character title (RULE-013)",
+  "ok": false,
+  "error": "ToDoAlreadyExistsError"
+ }
+]

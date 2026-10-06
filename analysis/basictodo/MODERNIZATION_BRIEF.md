@@ -320,13 +320,13 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
   - characterization tests at the builder/repository layer covering RULE-037, RULE-034 and RULE-035.
 
 **Exit criteria:**
-- [ ] The DDL of a fresh database equals the baseline snapshot, or the diff is approved here.
-- [ ] `alembic upgrade head` on an empty database produces the same DDL.
-- [ ] **The legacy sample DB opens, reads and writes under the new model, and stays readable by legacy code** (both directions).
-- [ ] The full suite and the golden master show **zero diffs** against the Phase 1 target baseline.
-- [ ] The P0 contract tests are green.
-- [ ] mypy reports 0 errors with the stubs removed. _(Pulled into Phase 3 by Q12 and met there; Phase 4 must keep it at 0.)_
-- [ ] `pyproject.toml` keeps `sqlalchemy>=2.0.54,<2.1`; the suite is green with `sqlalchemy-utils` removed, and `pip-audit` reports 0.
+- [x] The DDL of a fresh database equals the baseline snapshot, or the diff is approved here. _(Byte-identical from `create_all` and `init_db.py` at `053a4f3`: `BASELINE.md`, "Exit checks at the tip".)_
+- [x] `alembic upgrade head` on an empty database produces the same DDL. _(A permanent test since `053a4f3`; positive controls in `baseline/db/positive-controls.txt`.)_
+- [x] **The legacy sample DB opens, reads and writes under the new model, and stays readable by legacy code** (both directions). _(`baseline/db/roundtrip/summary.txt`: legacy `a2d59f1` and new `053a4f3`, each in its own process and venv.)_
+- [x] The full suite and the golden master show **zero diffs** against the Phase 1 target baseline. _(pytest: 27 new tests, 0 missing or changed; golden master 0 of 83. Two intended changes, RULE-037's default and D-03b's string ids, are recorded in `BASELINE.md`.)_
+- [x] The P0 contract tests are green. _(12 of 12; `test_p0_contracts.py` unchanged since Phase 3.)_
+- [x] mypy reports 0 errors with the stubs removed. _(Pulled into Phase 3 by Q12 and met there; Phase 4 must keep it at 0. At `053a4f3`: 0 in two fresh venvs synced like CI.)_
+- [x] `pyproject.toml` keeps `sqlalchemy>=2.0.54,<2.1`; the suite is green with `sqlalchemy-utils` removed, and `pip-audit` reports 0. _(`7b54c2e`; `pip-audit` 0 on 62 runtime pins.)_
 - [ ] `plugin/uplift-basictodo/phase-4` is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and python-app and e2e green on it (Q11).
 
 **Relative scale:** **S**. Persistence plus its direct consumers is about 0.26 KSLOC, index 0.67, 12%.
