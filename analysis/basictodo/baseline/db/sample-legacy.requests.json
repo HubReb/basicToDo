@@ -1,0 +1,201 @@
+[
+ {
+  "case": "active",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000001",
+   "title": "Buy milk",
+   "description": "two litres"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000001\",\"title\":\"Buy milk\",\"description\":\"two litres\",\"created_at\":\"2026-10-07T02:08:05.572804\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "active, no description",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000002",
+   "title": "Water the plants"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000002\",\"title\":\"Water the plants\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.581581\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000003",
+   "title": "Call the plumber",
+   "description": "kitchen sink"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000003\",\"title\":\"Call the plumber\",\"description\":\"kitchen sink\",\"created_at\":\"2026-10-07T02:08:05.587913\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "description NULL",
+  "method": "PUT",
+  "path": "/todo/5a3e0000-0000-4000-8000-000000000003",
+  "body": {
+   "description": null
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000003\",\"title\":\"Call the plumber\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.587913\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000004",
+   "title": "Pay rent",
+   "description": "by the 3rd"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000004\",\"title\":\"Pay rent\",\"description\":\"by the 3rd\",\"created_at\":\"2026-10-07T02:08:05.601681\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "done",
+  "method": "PUT",
+  "path": "/todo/5a3e0000-0000-4000-8000-000000000004",
+  "body": {
+   "done": true
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000004\",\"title\":\"Pay rent\",\"description\":\"by the 3rd\",\"created_at\":\"2026-10-07T02:08:05.601681\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":true}}"
+ },
+ {
+  "case": "",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000005",
+   "title": "Book train tickets",
+   "description": "Berlin to Hamburg"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000005\",\"title\":\"Book train tickets\",\"description\":\"Berlin to Hamburg\",\"created_at\":\"2026-10-07T02:08:05.611449\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "soft-deleted",
+  "method": "DELETE",
+  "path": "/todo/5a3e0000-0000-4000-8000-000000000005",
+  "body": null,
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":\"Deleted successfully\",\"error\":null}"
+ },
+ {
+  "case": "",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000006",
+   "title": "Return library books"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000006\",\"title\":\"Return library books\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.622592\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "soft-deleted, no description",
+  "method": "DELETE",
+  "path": "/todo/5a3e0000-0000-4000-8000-000000000006",
+  "body": null,
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":\"Deleted successfully\",\"error\":null}"
+ },
+ {
+  "case": "",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000007",
+   "title": "File the tax return",
+   "description": "for 2025"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000007\",\"title\":\"File the tax return\",\"description\":\"for 2025\",\"created_at\":\"2026-10-07T02:08:05.632812\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "",
+  "method": "PUT",
+  "path": "/todo/5a3e0000-0000-4000-8000-000000000007",
+  "body": {
+   "done": true
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000007\",\"title\":\"File the tax return\",\"description\":\"for 2025\",\"created_at\":\"2026-10-07T02:08:05.632812\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":true}}"
+ },
+ {
+  "case": "done and soft-deleted",
+  "method": "DELETE",
+  "path": "/todo/5a3e0000-0000-4000-8000-000000000007",
+  "body": null,
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":\"Deleted successfully\",\"error\":null}"
+ },
+ {
+  "case": "",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000008",
+   "title": "Draft title",
+   "description": "first wording"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000008\",\"title\":\"Draft title\",\"description\":\"first wording\",\"created_at\":\"2026-10-07T02:08:05.646775\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "edited",
+  "method": "PUT",
+  "path": "/todo/5a3e0000-0000-4000-8000-000000000008",
+  "body": {
+   "title": "Final title"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000008\",\"title\":\"Final title\",\"description\":\"first wording\",\"created_at\":\"2026-10-07T02:08:05.646775\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "255 characters, non-ASCII",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000009",
+   "title": "Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln."
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"5a3e0000-0000-4000-8000-000000000009\",\"title\":\"Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln.\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.656626\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "nil UUID (RULE-020)",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "00000000-0000-0000-0000-000000000000",
+   "title": "Nil id"
+  },
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"todo_entry\":{\"id\":\"00000000-0000-0000-0000-000000000000\",\"title\":\"Nil id\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.660739\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}}"
+ },
+ {
+  "case": "256 characters: CHECK rejects (RULE-013)",
+  "method": "POST",
+  "path": "/todo",
+  "body": {
+   "id": "5a3e0000-0000-4000-8000-000000000010",
+   "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "status": 409,
+  "response": "{\"detail\":\"ToDo already exists\"}"
+ },
+ {
+  "case": "list of active todos",
+  "method": "GET",
+  "path": "/todo?limit=100",
+  "body": null,
+  "status": 200,
+  "response": "{\"success\":true,\"data\":null,\"message\":null,\"error\":null,\"results\":7,\"todo_entries\":[{\"id\":\"5a3e0000-0000-4000-8000-000000000001\",\"title\":\"Buy milk\",\"description\":\"two litres\",\"created_at\":\"2026-10-07T02:08:05.572804\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false},{\"id\":\"5a3e0000-0000-4000-8000-000000000002\",\"title\":\"Water the plants\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.581581\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false},{\"id\":\"5a3e0000-0000-4000-8000-000000000003\",\"title\":\"Call the plumber\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.587913\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false},{\"id\":\"5a3e0000-0000-4000-8000-000000000004\",\"title\":\"Pay rent\",\"description\":\"by the 3rd\",\"created_at\":\"2026-10-07T02:08:05.601681\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":true},{\"id\":\"5a3e0000-0000-4000-8000-000000000008\",\"title\":\"Final title\",\"description\":\"first wording\",\"created_at\":\"2026-10-07T02:08:05.646775\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false},{\"id\":\"5a3e0000-0000-4000-8000-000000000009\",\"title\":\"Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln.\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.656626\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false},{\"id\":\"00000000-0000-0000-0000-000000000000\",\"title\":\"Nil id\",\"description\":null,\"created_at\":\"2026-10-07T02:08:05.660739\",\"updated_at\":\"2026-10-06T21:08:05\",\"deleted\":false,\"done\":false}]}"
+ }
+]

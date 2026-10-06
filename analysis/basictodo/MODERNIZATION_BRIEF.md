@@ -301,6 +301,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - **`sqlalchemy.Uuid`** replaces `sqlalchemy_utils.UUIDType` (D-03b; storage verified identical in both directions on SQLite). `sqlalchemy-utils` is removed. Both stub packages are already gone in Phase 3 (D-04, moved there by Q12).
 - **Housekeeping deltas:** D-13 and D-14. D-05 (mypy cleanup) moved to Phase 3 (Q12).
 - **Alembic** is initialised with a baseline revision that reproduces the current DDL exactly (CHECK constraints, index).
+  - **Decided 2026-10-06 (the owner, at Phase 4 planning):** the runtime keeps `create_all` in `main.py` and `init_db.py`; Alembic gets only the baseline revision and is run by hand, so `alembic` goes into the dev group.
+    An existing database is stamped once (`alembic stamp head`), and only after a check script confirms that its `sqlite_master` equals the baseline snapshot (the owner's addition). Running Alembic at runtime moves to Phase 5, together with the Q6.6 data migration.
 - `init_db.py`'s import root is normalised to `backend.app.*`.
 - **SQLAlchemy stays capped `<2.1`** (Q4). Cut C3 (2.1) is deferred to a later step. The `sqlalchemy.Uuid` swap **stays in scope**, because it is what makes 2.1 possible later.
 - **Behaviour is preserved:**
@@ -310,9 +312,9 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
   - RULE-037 (`deleted` default) becomes a real boolean default.
 
 **Entry criteria:**
-- [ ] Phase 1 exit criteria are met.
+- [x] Phase 1 exit criteria are met. _(PR #113; `BASELINE.md`, "Classification of differences".)_
 - [x] Q4 is decided: cap `sqlalchemy<2.1`; the `Uuid` swap stays in scope.
-- [ ] `BASELINE.md` contains:
+- [x] `BASELINE.md` contains: _("Data layer (Phase 4)", "Entry baseline": `baseline/db/`, `5cc9e06`, `1944856`)_
   - the **schema snapshot** (`sqlite_master` DDL) of a fresh legacy database;
   - a **sample legacy DB file** under `analysis/basictodo/baseline/`, with representative rows: active, done, and soft-deleted, with and without description;
   - characterization tests at the builder/repository layer covering RULE-037, RULE-034 and RULE-035.
@@ -564,9 +566,14 @@ Approval covers: Phase 2
 
 Approved by: the owner    Date: 2026-10-05
 Approval covers: Phase 3
+
+Approved by: the owner    Date: 2026-10-06
+Approval covers: Phase 4
 ```
 
 - **Phase 1** was approved on 2026-10-03 and executed on 2026-10-05: draft PR #113 is open, the exit criteria are met, `PLAYBOOK.md` is written, and the brief is revised with the pilot findings.
 - **Phase 2** was approved on 2026-10-05, after the pilot. Decision, verbatim: _"1. go"_, in answer to "Freigabe für Phase 2".
 - **Phase 3** was approved on 2026-10-05 after Phase 2 (PR #114) and the decision on Q12. Decision, verbatim: _"Phase 3: go (Phase 3 only)."_
-- **Phases 4–5** still need their own approval.
+- **Phase 4** was approved on 2026-10-06 after Phase 3 (PR #115). Decision, verbatim: _"dann go"_, in answer to "Phase 4 needs its own go."
+  At planning the owner chose _"Keep create_all"_ for the runtime schema creation and added the baseline check before `alembic stamp head` (§3 Phase 4, scope).
+- **Phase 5** still needs its own approval.

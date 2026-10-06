@@ -502,6 +502,77 @@ Not taken: `npm audit fix`, which downgrades the devtools from 5.104.1 to 5.102.
 
 **Exit criterion "all six workflows green" holds again at `a51d618`.**
 
+## Data layer (Phase 4)
+
+### Before state (`c30b4da`, 2026-10-06)
+
+The Phase 3 tip, in a fresh venv synced like CI (`uv sync --frozen --all-extras --dev`). This is the reference for every Phase 4 commit.
+
+| Check | Result |
+|---|---|
+| pytest (`run_suite.sh`) | 456 passed, 1 skipped, coverage 83.98 %; per test **identical** to `pytest-target-lock.tsv` (0 missing or changed, 0 new) |
+| Golden master (`run_golden_master.sh`) | **0 of 83** responses differ from the Phase 1 target capture `target-lock.json` |
+| mypy | 0 errors in 35 source files |
+| Frontend (`run_frontend_suite.sh`, Node 24.21.0) | `tsc -b`, vitest 13/13, build, lint, `npm audit` 0; **e2e 13/13** against this backend |
+
+Provenance: every process loaded `backend.app` from this tree only.
+
+### Entry baseline (Phase 4 entry criteria)
+
+**Schema snapshot.** `sqlite_master` of a fresh database, as `Base.metadata.create_all` (the `ToDoORM` DDL model) leaves it, is in `baseline/db/schema.json`:
+- the table `toDo`, with seven columns, the primary key and the two named CHECK constraints;
+- the index `ix_toDo_title`;
+- SQLite's primary-key index `sqlite_autoindex_toDo_1`.
+
+It is the same on three independent sources:
+- `legacy/basictodo` (`a2d59f1`) on the legacy lock (SQLAlchemy 2.0.43);
+- the Phase 3 tip on the target lock (SQLAlchemy 2.0.54);
+- the sample database below.
+
+The test `TestSchema::test_create_all_ddl_equals_the_baseline_snapshot` carries it as the literal `BASELINE_SCHEMA`.
+
+**Sample legacy database: `baseline/db/sample-legacy.db`**
+- **sha256:** `44a4cdcc23453ff00540272a641773a0f351ad8537c17e91943372121218cee1`; `sha256sum -c sample-legacy.db.sha256` verifies it.
+- **How it was made:** `make_sample_db.sh ../.envs/legacy-lock baseline/db`, run from a worktree at `a2d59f1`. That worktree's tree is identical to `legacy/basictodo` (`ccb2b97…`); the run wrote no bytecode, and the worktree stayed clean.
+  - The legacy `init_db.py` created the schema.
+  - The legacy server (FastAPI 0.115.12) received 19 requests on port 18766, each with the expected status (`sample-legacy.requests.json`).
+  - Provenance: `provenance-init_db.json`, `provenance-server.json`; tree `a2d59f1`, nothing loaded from outside it.
+- **Time zone:** the run used `TZ=Etc/GMT-5`, so `created_at` (local time) is five hours ahead of `updated_at` (the database's UTC clock).
+- **Text dump:** `sample-legacy.dump.txt`.
+
+| Id (suffix) | Case | Stored |
+|---|---|---|
+| `…0001` | active, with description | `deleted=0, done=0` |
+| `…0002` | active, description omitted | description **`''`**, not NULL (the builder's `validate_optional`) |
+| `…0003` | description cleared with `PUT {"description": null}` | description **NULL**, the only way to get one |
+| `…0004` | done (`PUT {"done": true}`) | `done=1` |
+| `…0005` | soft-deleted, with description | `deleted=1` |
+| `…0006` | soft-deleted, description omitted | `deleted=1`, description `''` |
+| `…0007` | done, then soft-deleted | `deleted=1, done=1` |
+| `…0008` | title edited | new title; `updated_at` unchanged (RULE-035) |
+| `…0009` | 255 characters, non-ASCII | stored in full |
+| nil UUID | RULE-020 (kept) | id `000…0` |
+
+A 256-character title was rejected with 409 by the CHECK constraint (RULE-013) and stored nothing. All ten rows carry `updated_at` = the insert time in UTC whole seconds, `created_at` in local time with microseconds.
+
+**Characterization tests at the builder/repository layer**, in `backend/tests/test_data_access/`:
+- **`5cc9e06`, `test_storage_characterization.py`, 12 tests:** the real builder, repository and service on a file-backed SQLite database, read back raw with `sqlite3`. The clock tests run in `Etc/GMT-5`, because CI's UTC would hide the two clocks.
+  - **RULE-034:** `created_at` is local naive time with microseconds; `done=0`.
+  - **RULE-035:** `updated_at` is the database's UTC clock in whole seconds at insert. It comes back on the created object (`RETURNING`), so the create response is not null. Edit, done and delete leave it unchanged.
+  - **RULE-037:** the creation path stores `deleted=0`.
+    - _Legacy, replaced in Phase 4:_ the model default for `deleted` is a `MappedColumn`. Storing an entry built without `deleted` fails with `OperationalError: no such column: deleted`, because the column object is rendered as SQL.
+  - **Ids:** stored as 32 lowercase hex digits.
+    - _Legacy, replaced in Phase 4:_ the repository also accepts string ids (canonical, hex, upper case), because `UUIDType` converts them.
+  - **DDL:** see the schema snapshot above.
+- **`1944856`, `test_storage_properties.py`, 4 hypothesis properties** (derandomized, no example database):
+  - any UUID, nil and max included: stored as its hex, read back equal;
+  - naive timestamps: exact;
+  - aware timestamps: the offset is dropped and the wall clock kept;
+  - flags: stored as 0/1, read back as booleans.
+
+  `hypothesis` 6.168.5 and `sortedcontainers` 2.4.0 were added to the dev group. No existing lock entry moved, and the runtime export is identical (200 lines).
+- **Result:** both files are green on the target-lock venv and on the legacy-lock venv (SQLAlchemy 2.0.43, sqlalchemy-utils 0.42.0). Against the before state, the per-test table shows **16 new tests and 0 changed**.
+
 ## Change log
 
 _Empty. Phase 5 records each intentional behaviour change here, with its Q6 row ID._
