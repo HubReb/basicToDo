@@ -463,6 +463,28 @@ Measured on `plugin/uplift-basictodo/phase-3` at `5dadbcd` against `plugin/uplif
   - for the npm cache of setup-node, as info only (the frontend job saved that key).
 - **Coverage comment:** posted. Diff coverage is not available because the cumulative diff against `base` is too large for GitHub's API (300-file limit), as on #114.
 
+### seroval advisories after the Phase 3 CI run (2026-10-06)
+
+The CI round on `dfb46a5` (docs only) turned two workflows red: Dependency review, and Super-Linter with Trivy as its only failing linter. Frontend, Python, CodeQL, E2E and the three push runs stayed green. The cause is two advisories against `seroval@1.5.6` in `frontend/package-lock.json`, published on 2026-10-05 at 23:40 UTC, 45 minutes after the last green run on `5dadbcd`:
+- GHSA-p6vx-979v-rg4c (CVE-2026-104846, critical, fixed in 1.6.2): `fromJSON()` invokes callables produced by plugins;
+- GHSA-jp82-f5mq-hwhp (CVE-2026-104845, high, fixed in 1.6.3): unbounded memory allocation during deserialization.
+
+**Origin:** Phase 2. `@tanstack/react-query-devtools` 5.104.1 → `@tanstack/query-devtools` → `solid-js` 1.9.15 → `seroval ~1.5.4`. solid-js 1.9.15 is the latest release, and its range excludes the fixed versions. `main`, `base` and `phase-1` contain no seroval. #114 still shows its green run from before the advisories; a new run there would fail the same way.
+
+**Reachability:** only solid-js's SSR build (`web/dist/server.js`) imports seroval, and the app does no server-side rendering. `ReactQueryDevtools` is a no-op unless `NODE_ENV` is `development`, and the production bundle contains no seroval.
+
+**Fix `94e5c7d`** (option A, the owner's choice): npm `overrides` for `seroval` and `seroval-plugins` (`^1.6.3`, resolved to 1.6.8). The lock changes in those two entries only. Measured locally with `run_frontend_suite.sh` on Node 24.21.0 and the Phase 3 backend venv:
+
+| Check | `dfb46a5` | `94e5c7d` |
+|---|---|---|
+| `tsc -b`, ESLint, build | exit 0 | exit 0 |
+| vitest and e2e per test | 13/13, 13/13 | identical |
+| `dist/` sha256 | identical to F2 | identical |
+| npm audit | 5 critical, one advisory chain | **0** |
+| super-linter v9 locally (`run_superlinter.sh`) | — | exit 0, 15 linters; Trivy: 0 in `frontend/package-lock.json` |
+
+Not taken: `npm audit fix`, which downgrades the devtools from 5.104.1 to 5.102.8 and drops 29 packages from the lock (the next `npm update` brings 5.104 back), and allow-listing both advisories in the two scanners. Evidence: `baseline/ci/ci-seroval-dfb46a5.txt`. The CI result on the pushed fix is recorded in the PR #115 description.
+
 ## Change log
 
 _Empty. Phase 5 records each intentional behaviour change here, with its Q6 row ID._

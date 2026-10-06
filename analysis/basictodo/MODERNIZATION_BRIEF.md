@@ -267,7 +267,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] Phase 2 has landed its `node-version` change, or the two phases agree in writing (in this file) that Phase 3 edits around it. _(`d1709cb`, PR #114)_
 
 **Exit criteria:**
-- [x] All six workflows are green on the `plugin/uplift-basictodo/phase-3` **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval"; Q11). They trigger because the base branch's first commit added it to every `pull_request` filter. _(PR #115 at `5dadbcd`, Super-Linter included: `BASELINE.md`, "Phase 3 CI".)_
+- [x] All six workflows are green on the `plugin/uplift-basictodo/phase-3` **draft PR against `plugin/uplift-basictodo/base`** ("do not merge, eval"; Q11). They trigger because the base branch's first commit added it to every `pull_request` filter. _(PR #115 at `5dadbcd`, Super-Linter included: `BASELINE.md`, "Phase 3 CI".
+  On `dfb46a5`, Dependency review and Trivy turned red on two seroval advisories published after that run; fixed in `94e5c7d`: `BASELINE.md`, "seroval advisories".)_
 - [x] Every `uses:` is pinned to an exact version or SHA. _(All 29 `uses:` lines: release commit SHA plus the exact version as a comment; `2ee51ba`, `d2e284b`.)_
 - [x] Top-level permissions are read-only. _(All six workflows: `contents: read`; write grants only at job level. `d2e284b` for `codeql.yml` and `super-linter.yml`, `5c46f21` for `dependency-review.yml`.)_
 - [x] Dependabot for `github-actions` is configured. _(Since `00d0d18`; the `codeql-action` group from `main` added in `fecb197`.)_

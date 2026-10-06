@@ -290,3 +290,4 @@ Deferred on purpose, with the phase that owns each item:
 | black 26 reformats files formatted with black 22 | super-linter v9 bundles black 26.5.1 | Format with the branch linter's versions |
 | flake8 E501 on a `noqa` comment carrying its own reason | The reason made the line too long | Reason on comment lines above; bare `# noqa: <code>` on the reported line |
 | zizmor clean, but the exit criterion "top-level read-only" failed for `dependency-review.yml` | `pull-requests: write` at workflow level | Moved to the job (`5c46f21`) |
+| Dependency review and Trivy red on a docs-only commit | Advisories published after the last green run (seroval, 2026-10-05) | Compare the advisory's publish date with the last green run. If the parent package's range excludes the fixed version, use npm `overrides`, prove a lock diff limited to the advisory's packages and identical gates (`94e5c7d`) |

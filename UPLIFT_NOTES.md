@@ -118,6 +118,7 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | `npm audit` | 35 (1 critical, 24 high) | **0** | **0** |
 | 8 persona-flow screens vs F0 | — | pixel-identical, styles identical | **pixel-identical, styles identical** |
 
+- **`npm audit` 0 held when measured.** On 2026-10-05 two seroval advisories (through the react-query devtools) made it 5 critical; fixed in Phase 3 (`94e5c7d`).
 - **F1's `dist/` change** is fully attributed. JS modules changed only in the bumped react/react-dom 19.3.0 and @tanstack 5.104.1. All app modules and the other 68 packages are identical, and the CSS is byte-identical.
 - **D-19 and D-24 do not show** in this app. The CSS diff is serialization only. The Chakra outline token loses to the unlayered legacy `button` rule in `src/index.css`. A positive control proves that the screenshot setup detects a one-line CSS change.
 
@@ -153,6 +154,7 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | `a752cf3` | `catch (e)` → `catch` in `e2e/smoke.spec.ts` | — (ESLint) | by hand |
 | `4112dc5` | mypy and ESLint blocking; `tsc -b`; pylint over `backend/app` | Q9 | by hand |
 | `5c46f21` | `pull-requests: write` of dependency review moved to job level | SEC-005 | by hand |
+| `94e5c7d` | npm `overrides`: `seroval` and `seroval-plugins` 1.5.6 → 1.6.8 | — (GHSA-p6vx-979v-rg4c, GHSA-jp82-f5mq-hwhp) | `package.json` by hand, `npm install`; two lock entries |
 
 ## Result
 
@@ -164,7 +166,8 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | pylint (report-only) | 3 modules | 15 modules |
 | super-linter | v4.10.0, red | v9.0.0, **green** locally and on PR #115 |
 | pytest per test, golden master, frontend gates, e2e | — | identical to the before state |
-| CI on the draft PR | #114: 5 of 6 green, Node 20 deprecation warning in all 10 jobs | **#115: 6 of 6 green**, no Node 20 warning; 151 s wall clock, 474 s runner time |
+| CI on the draft PR | #114: 5 of 6 green, Node 20 deprecation warning in all 10 jobs | **#115: 6 of 6 green** at `5dadbcd`, no Node 20 warning; 151 s wall clock, 474 s runner time. On `dfb46a5` Dependency review and Trivy red on new seroval advisories, fixed in `94e5c7d` |
+| npm audit (frontend) | 0 when measured; 5 critical after the seroval advisories of 2026-10-05 | **0** (`94e5c7d`) |
 
 - Each blocking gate (mypy, ESLint, `tsc -b`, super-linter) failed on a deliberate error and passed again after the revert.
 - On PR #115 the mypy and ESLint steps run clean, and nothing swallows their exit code any more. On #114 both exited 1 and were still reported as success (`baseline/ci/ci-gates-pr114-pr115.txt`).
@@ -176,3 +179,5 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 - **`analysis/` and `UPLIFT_NOTES.md` are excluded from super-linter.** They are modernization evidence, not product code.
 - **uv stays 0.7.16** in CI, and ESLint stays on major 9.
 - **The super-linter image is pinned by tag, not by digest.** The action at the pinned SHA references `ghcr.io/super-linter/super-linter:v9.0.0`, a mutable tag. On PR #115 it resolved to the image the local runs used. A digest pin would need `uses: docker://ghcr.io/super-linter/super-linter@sha256:…`, which is not part of this phase.
+- **The seroval override** in `frontend/package.json` goes outside the `~1.5.4` range of solid-js 1.9.15, the latest release. Only solid-js's SSR build uses seroval, and this app does no server-side rendering. Remove the override once solid-js depends on a fixed seroval. Evidence: `analysis/basictodo/BASELINE.md` ("seroval advisories") and `analysis/basictodo/baseline/ci/ci-seroval-dfb46a5.txt`.
+- **#114 (Phase 2) is affected as well.** It brought seroval in, and its last green run predates the advisories. The fix is on `phase-3` only.
