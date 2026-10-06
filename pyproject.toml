@@ -42,6 +42,7 @@ warn_unused_ignores = true
 
 [dependency-groups]
 dev = [
+    "alembic>=1.20.0",
     "black>=25.1.0",
     "factory-boy>=3.3.0",
     "httpx2>=2.13.1",
@@ -99,3 +100,10 @@ exclude_lines = [
 
 [tool.coverage.html]
 directory = "htmlcov"
+
+[tool.alembic]
+# Run from the repository root. The application still creates its schema
+# with create_all; stamp an existing database only after
+# backend/migrations/check_baseline.py accepts it (analysis/basictodo/PLAYBOOK.md).
+script_location = "%(here)s/backend/migrations"
+prepend_sys_path = ["."]
