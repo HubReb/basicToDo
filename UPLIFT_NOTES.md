@@ -166,7 +166,7 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 | pylint (report-only) | 3 modules | 15 modules |
 | super-linter | v4.10.0, red | v9.0.0, **green** locally and on PR #115 |
 | pytest per test, golden master, frontend gates, e2e | — | identical to the before state |
-| CI on the draft PR | #114: 5 of 6 green, Node 20 deprecation warning in all 10 jobs | **#115: 6 of 6 green** at `5dadbcd`, no Node 20 warning; 151 s wall clock, 474 s runner time. On `dfb46a5` Dependency review and Trivy red on new seroval advisories, fixed in `94e5c7d` |
+| CI on the draft PR | #114: 5 of 6 green, Node 20 deprecation warning in all 10 jobs | **#115: 6 of 6 green** at `5dadbcd`, no Node 20 warning; 151 s wall clock, 474 s runner time. On `dfb46a5` Dependency review and Trivy red on new seroval advisories, fixed in `94e5c7d`; **6 of 6 green again at `a51d618`** (141 s, 468 s) |
 | npm audit (frontend) | 0 when measured; 5 critical after the seroval advisories of 2026-10-05 | **0** (`94e5c7d`) |
 
 - Each blocking gate (mypy, ESLint, `tsc -b`, super-linter) failed on a deliberate error and passed again after the revert.

@@ -483,7 +483,24 @@ The CI round on `dfb46a5` (docs only) turned two workflows red: Dependency revie
 | npm audit | 5 critical, one advisory chain | **0** |
 | super-linter v9 locally (`run_superlinter.sh`) | — | exit 0, 15 linters; Trivy: 0 in `frontend/package-lock.json` |
 
-Not taken: `npm audit fix`, which downgrades the devtools from 5.104.1 to 5.102.8 and drops 29 packages from the lock (the next `npm update` brings 5.104 back), and allow-listing both advisories in the two scanners. Evidence: `baseline/ci/ci-seroval-dfb46a5.txt`. The CI result on the pushed fix is recorded in the PR #115 description.
+Not taken: `npm audit fix`, which downgrades the devtools from 5.104.1 to 5.102.8 and drops 29 packages from the lock (the next `npm update` brings 5.104 back), and allow-listing both advisories in the two scanners. Evidence: `baseline/ci/ci-seroval-dfb46a5.txt`.
+
+**CI on `a51d618`** (fix and docs pushed, 2026-10-06): all six workflows green.
+
+| Workflow | Result | Duration |
+|---|---|---|
+| Dependency review | ✅ no vulnerable package; `seroval` and `seroval-plugins` 1.6.8 listed as added | 27 s |
+| Frontend CI | ✅ | 34 s |
+| Python Application CI | ✅ 456 passed, 1 skipped, coverage 83.98 % | 54 s |
+| CodeQL | ✅ | 63 s |
+| End-to-End Tests | ✅ 13/13 | 71 s |
+| Super-Linter v9.0.0 | ✅ 15 linters pass; Trivy: 0 in all three lockfiles | 141 s |
+
+- **Duration:** 141 s wall clock, 468 s runner time across 10 jobs (`5dadbcd`: 151 s and 474 s). The push also ran Python (34 s), Frontend (37 s) and E2E (63 s), all green.
+- **No Node 20 deprecation warning.** The super-linter image resolved to the same index `sha256:7620fb6f…` as on `5dadbcd`.
+- **One cache race, in the e2e job:** the npm cache, as info only (the frontend job saved the key; the key is new because the lock changed). The coverage comment's diff coverage is unavailable, as before (300-file limit).
+
+**Exit criterion "all six workflows green" holds again at `a51d618`.**
 
 ## Change log
 
