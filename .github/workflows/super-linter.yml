@@ -65,6 +65,9 @@ jobs:
           VALIDATE_PYTHON_RUFF_FORMAT: false
           # Not linted: tsconfig files (as before); the modernization
           # evidence and notes under analysis/ and UPLIFT_NOTES.md, which are
-          # generated artifacts rather than product code; and the generated
-          # lockfiles. super-linter matches absolute paths, hence (^|/).
-          FILTER_REGEX_EXCLUDE: (.*tsconfig.*\.json|(^|/)analysis/|(^|/)UPLIFT_NOTES\.md$|(^|/)uv\.lock$|(^|/)package-lock\.json$)
+          # generated artifacts rather than product code; the generated
+          # lockfiles; and Alembic's revision template, a Mako file that the
+          # Python linters would parse as Python (only that file; the
+          # migrations themselves are linted). super-linter matches absolute
+          # paths, hence (^|/).
+          FILTER_REGEX_EXCLUDE: (.*tsconfig.*\.json|(^|/)analysis/|(^|/)UPLIFT_NOTES\.md$|(^|/)uv\.lock$|(^|/)package-lock\.json$|(^|/)backend/migrations/script\.py\.mako$)
