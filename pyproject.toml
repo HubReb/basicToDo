@@ -46,6 +46,7 @@ dev = [
     "black>=25.1.0",
     "factory-boy>=3.3.0",
     "httpx2>=2.13.1",
+    "hypothesis>=6.168.5",
     "mypy>=1.16.0",
     "pylint>=3.3.7",
     "pytest>=9.0.3",
