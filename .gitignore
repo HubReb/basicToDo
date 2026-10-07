@@ -291,3 +291,12 @@ dist/
 *.code-workspace
 
 config.json
+
+# SQLite databases, their side files and pre-migration backups (SEC-014).
+# The sample databases under analysis/ are committed evidence.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.bak
+!analysis/basictodo/baseline/db/*.db

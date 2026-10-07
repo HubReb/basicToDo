@@ -247,7 +247,11 @@ class TestUpgrade:
 
         messages = [record.getMessage() for record in records]
         assert "Converting created_at of 9 todos from Europe/Berlin to UTC" in messages
-        warnings = [r.getMessage() for r in records if r.levelno == logging.WARNING]
+        warnings = [
+            r.getMessage()
+            for r in records
+            if r.levelno == logging.WARNING and r.name == "basictodo.Migrations"
+        ]
         assert warnings == [
             f"todo {todo_id(4)}: 2026-03-29 02:30:00.000000 is a skipped hour in "
             "Europe/Berlin; read with fold=0",

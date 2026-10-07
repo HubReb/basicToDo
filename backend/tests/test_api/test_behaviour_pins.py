@@ -4,9 +4,10 @@ Keeps (brief §7 Q6), pinned through Phase 5:
 - RULE-024 / Q6.8: `done` accepts lax boolean spellings.
 - RULE-052 / Q6.10: the last write wins; there is no version check.
 
-Tests named "legacy" pin a behaviour that a Phase 5 commit changes on
-purpose (the Q6 or SEC id is in the test's docstring). That commit replaces
-the test, it does not edit it.
+Tests named "legacy" pinned a behaviour that a Phase 5 commit changes on
+purpose (the Q6 or SEC id is in the test's docstring). That commit replaced
+the test rather than editing it; TestPhase5Behaviour holds the
+replacements, and no legacy pin is left.
 
 The routes run against the real service and repository on a file-backed
 SQLite database, wired as in test_p0_contracts.py.
@@ -139,52 +140,6 @@ class TestKeepRule052LastWriteWins:
         assert stored(db_engine, todo_id).title == "Second edit"
 
 
-class TestLegacyBehaviourPhase5Changes:
-    def test_legacy_text_plain_body_is_a_422(self, client):
-        """SEC-003: a body sent as text/plain is not parsed, and the request gets 422."""
-        response = client.post(
-            "/todo",
-            content=json.dumps({"id": str(uuid.uuid4()), "title": "x"}),
-            headers={"Content-Type": "text/plain"},
-        )
-
-        assert response.status_code == 422
-
-    def test_legacy_any_host_is_served(self, client):
-        """SEC-003: no Host check; a foreign Host header is answered normally."""
-        assert client.get("/", headers={"Host": "evil.example"}).status_code == 200
-
-    def test_legacy_cors_allows_credentials_and_every_method(self, client):
-        """SEC-008: credentials allowed, methods and headers by wildcard."""
-        response = client.options(
-            "/todo",
-            headers={
-                "Origin": ALLOWED_ORIGIN,
-                "Access-Control-Request-Method": "PATCH",
-                "Access-Control-Request-Headers": "x-anything",
-            },
-        )
-
-        assert response.status_code == 200
-        assert response.headers["access-control-allow-credentials"] == "true"
-        assert "PATCH" in response.headers["access-control-allow-methods"]
-        assert response.headers["access-control-allow-headers"] == "x-anything"
-
-    def test_legacy_oversized_body_is_accepted(self, client, db_engine):
-        """Q8b (SEC-004): a 20,000-byte body is read and processed."""
-        todo_id = uuid.uuid4()
-        body = json.dumps({"id": str(todo_id), "title": "Padded"}).encode()
-
-        response = client.post(
-            "/todo",
-            content=body + b" " * (20000 - len(body)),
-            headers={"Content-Type": "application/json"},
-        )
-
-        assert response.status_code == 200
-        assert stored(db_engine, todo_id).title == "Padded"
-
-
 class TestPhase5Behaviour:
     """What Phase 5 changed, replacing the legacy pins above."""
 
@@ -247,3 +202,65 @@ class TestPhase5Behaviour:
             <= datetime.datetime.fromisoformat(second["updated_at"])
             <= after
         )
+
+    def test_a_text_plain_body_is_a_415(self, client, db_engine):
+        """SEC-003: a body must be declared application/json; nothing is stored."""
+        response = client.post(
+            "/todo",
+            content=json.dumps({"id": str(uuid.uuid4()), "title": "x"}),
+            headers={"Content-Type": "text/plain"},
+        )
+
+        assert response.status_code == 415
+        assert response.json() == {"detail": "Content-Type must be application/json"}
+        with db_engine.connect() as conn:
+            assert conn.execute(text('SELECT COUNT(*) FROM "toDo"')).scalar() == 0
+
+    def test_a_foreign_host_is_refused(self, client):
+        """SEC-003: only the configured Host names are answered."""
+        assert client.get("/", headers={"Host": "evil.example"}).status_code == 400
+
+    def test_cors_allows_the_needed_methods_and_headers_without_credentials(
+        self, client
+    ):
+        """SEC-008: no credentials; GET, POST, PUT, DELETE; Content-Type and Accept."""
+        allowed = client.options(
+            "/todo",
+            headers={
+                "Origin": ALLOWED_ORIGIN,
+                "Access-Control-Request-Method": "PUT",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+        refused = client.options(
+            "/todo",
+            headers={
+                "Origin": ALLOWED_ORIGIN,
+                "Access-Control-Request-Method": "PATCH",
+                "Access-Control-Request-Headers": "x-anything",
+            },
+        )
+
+        assert allowed.status_code == 200
+        assert "access-control-allow-credentials" not in allowed.headers
+        assert (
+            allowed.headers["access-control-allow-methods"] == "GET, POST, PUT, DELETE"
+        )
+        assert refused.status_code == 400
+        assert "PATCH" not in refused.headers.get("access-control-allow-methods", "")
+
+    def test_an_oversized_body_is_a_413_and_nothing_is_stored(self, client, db_engine):
+        """Q8b (SEC-004): a 20,000-byte body is refused before the route runs."""
+        todo_id = uuid.uuid4()
+        body = json.dumps({"id": str(todo_id), "title": "Padded"}).encode()
+
+        response = client.post(
+            "/todo",
+            content=body + b" " * (20000 - len(body)),
+            headers={"Content-Type": "application/json"},
+        )
+
+        assert response.status_code == 413
+        assert response.json() == {"detail": "Request body larger than 16384 bytes"}
+        with db_engine.connect() as conn:
+            assert conn.execute(text('SELECT COUNT(*) FROM "toDo"')).scalar() == 0

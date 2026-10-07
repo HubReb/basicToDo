@@ -34,6 +34,8 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Connection, Engine, make_url
 from sqlalchemy.pool import NullPool
 
+from backend.app.data_access.database_file import protect
+
 MIGRATIONS = Path(__file__).resolve().parents[2] / "migrations"
 BASELINE_REVISION = "0001"
 VERSION_TABLE = "alembic_version"
@@ -196,6 +198,8 @@ def _locking_engine(url: str) -> Engine:
     def _begin_immediate(connection: Connection) -> None:
         connection.exec_driver_sql("BEGIN IMMEDIATE")
 
+    # SEC-014: this engine is the one that creates a new database file.
+    protect(engine, url)
     return engine
 
 

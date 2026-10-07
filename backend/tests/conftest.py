@@ -22,6 +22,10 @@ from backend.app.logger import CustomLogger
 # set their own.
 os.environ["BASICTODO_LEGACY_TZ"] = "UTC"
 
+# TestClient sends the Host header "testserver". Set here, before any test
+# module imports backend.app.api.api, which reads the setting (SEC-003).
+os.environ["BASICTODO_TRUSTED_HOSTS"] = "localhost,127.0.0.1,testserver"
+
 
 # Session-scoped fixtures for shared components
 @pytest.fixture(scope="session")

@@ -107,6 +107,12 @@ The patch is the reviewed design. The Phase 5 commits apply it hunk by hunk, eac
 | F-01, F-14, F-19 | accepted (Q7, Q8, Q8a) | — |
 | F-07, F-09, F-10, F-18, F-21, F-22 | residual | `UPLIFT_NOTES.md` |
 
+**Deviations in the Phase 5 commits** (each with its tests and a positive control):
+- **SEC-014, R2 (security commit):** the 0600 handling lives in `backend/app/data_access/database_file.py` instead of `database.py`. Since the UTC commit (Q6.6), the engine that prepares the database at startup is the one that creates a new file, so both engines get it.
+  `do_connect` creates a missing file 0600 (`O_CREAT|O_EXCL`) before SQLite opens it; the check of an existing file and its warning run at an engine's first connection. A test records the mode at the moment SQLite has opened a new file: 0600.
+- **R4 (security commit):** `BASICTODO_PORT` is length-checked first; a 5,000-digit port gives `SettingsError`.
+- **R1, R3 (logging commit):** the log filter catches every exception while formatting; `loggable_url()` drops the query string as well as the password. `init_db.py` logs `loggable_url(DATABASE_URL)` rather than the patch's `engine.url.render_as_string(...)`.
+
 **Local checks of the patched tree** (before the review):
 - black and flake8 clean, mypy 0;
 - pytest: exactly the four SEC legacy pins flip (415, Host, CORS, body size), 504 pass;

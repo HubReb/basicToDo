@@ -1,6 +1,5 @@
 import os
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Generator
 
 from sqlalchemy import create_engine
@@ -8,6 +7,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
+from backend.app.data_access.database_file import DEFAULT_DATABASE_PATH, protect
 from backend.app.models.todo import Base
 
 __all__ = [
@@ -25,15 +25,8 @@ def get_safe_database_url() -> str:
     """Return a validated and safe database URL."""
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        # Use relative path from project root or current working directory
-        # This works in both local dev and CI environments
-        db_path = Path("backend/todo.db")
-
-        # Ensure parent directory exists
-        db_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Convert to absolute path for SQLite
-        db_url = f"sqlite:///{db_path.absolute()}"
+        # SEC-014: next to the backend package, not under the working directory.
+        db_url = f"sqlite:///{DEFAULT_DATABASE_PATH}"
     elif not db_url.startswith(("sqlite://", "postgresql://", "mysql://")):
         raise RuntimeError(f"Invalid or unsafe DATABASE_URL: {db_url}")
     return db_url
@@ -57,6 +50,8 @@ engine = create_engine(
     max_overflow=20,
     pool_pre_ping=True,
 )
+# SEC-014: a new database file is created 0600; an existing one is checked.
+protect(engine, DATABASE_URL)
 
 SessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine, expire_on_commit=False

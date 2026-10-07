@@ -4,12 +4,14 @@ from contextlib import asynccontextmanager
 from typing import Annotated, Any, AsyncIterator
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Query, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
+from backend.app.api.body_limit import MAX_BODY_BYTES, BodyLimitMiddleware
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
     ToDoNotFoundError,
@@ -25,6 +27,7 @@ from backend.app.schemas.api_responses.get_to_do_response import GetToDoResponse
 from backend.app.schemas.api_responses.to_do_response import ToDoResponse
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
+from backend.app.settings import load_settings
 
 
 @asynccontextmanager
@@ -42,17 +45,34 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 # FastAPI >= 0.142 would start exporting OpenTelemetry data as soon as an
 # OTEL_EXPORTER_OTLP_* variable is set; keep the legacy behaviour (no export).
 app = FastAPI(title="ToDo API", telemetry={"auto_configure": False}, lifespan=lifespan)
+settings = load_settings()
 
-# Configure CORS to allow frontend access
+# add_middleware puts each new middleware outside the previous ones. So the
+# Host check (SEC-003) runs first and answers a foreign Host before any body
+# is read, and CORS wraps the body limit (Q8b), so a 413 carries CORS headers.
+app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_BODY_BYTES)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=list(settings.cors_origins),
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Accept"],
 )
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.trusted_hosts))
 
 service = create_todo_service()
+
+
+def require_json(request: Request) -> None:
+    """SEC-003: requests with a body must declare it as application/json."""
+    media_type = (
+        request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    )
+    if media_type != "application/json":
+        raise HTTPException(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            "Content-Type must be application/json",
+        )
 
 
 def _sendable(value: Any) -> Any:
@@ -86,7 +106,7 @@ async def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/todo", response_model=ToDoResponse)
+@app.post("/todo", response_model=ToDoResponse, dependencies=[Depends(require_json)])
 async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
     try:
         todo = await service.create_todo(payload)
@@ -108,7 +128,9 @@ async def get_todo(todo_id: UUID) -> GetToDoResponse:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
 
 
-@app.put("/todo/{todo_id}", response_model=ToDoResponse)
+@app.put(
+    "/todo/{todo_id}", response_model=ToDoResponse, dependencies=[Depends(require_json)]
+)
 async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
     try:
         todo = await service.update_todo(todo_id, payload)
