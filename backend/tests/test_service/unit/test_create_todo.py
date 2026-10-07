@@ -1,5 +1,6 @@
 """Unit tests for ToDoService.create_todo() method."""
 
+import sqlite3
 import uuid
 from unittest.mock import MagicMock
 
@@ -8,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
+    ToDoRepositoryError,
     ToDoValidationError,
 )
 from backend.app.models.todo import ToDoEntryData
@@ -176,14 +178,31 @@ class TestCreateTodoRepositoryErrors:
     """Test create_todo repository error handling."""
 
     @pytest.mark.asyncio
-    async def test_create_already_exists(self, todo_service, mock_repository):
-        """Test creating a ToDo that already exists."""
+    async def test_create_duplicate_id_becomes_already_exists(
+        self, todo_service, mock_repository
+    ):
+        """Q6.3: only a primary-key clash means "already exists" (409)."""
         payload = create_todo_create_scheme(title="Duplicate", description="Desc")
         mock_repository.create_to_do.side_effect = IntegrityError(
-            "msg", "params", "orig"
+            "INSERT", {}, sqlite3.IntegrityError("UNIQUE constraint failed: toDo.id")
         )
 
         with pytest.raises(ToDoAlreadyExistsError):
+            await todo_service.create_todo(payload)
+
+    @pytest.mark.asyncio
+    async def test_create_other_integrity_error_is_a_repository_error(
+        self, todo_service, mock_repository
+    ):
+        """Q6.3: a CHECK or NOT NULL violation is not a duplicate (500, not 409)."""
+        payload = create_todo_create_scheme(title="Checked", description="Desc")
+        mock_repository.create_to_do.side_effect = IntegrityError(
+            "INSERT",
+            {},
+            sqlite3.IntegrityError("CHECK constraint failed: title_length_check"),
+        )
+
+        with pytest.raises(ToDoRepositoryError):
             await todo_service.create_todo(payload)
 
 

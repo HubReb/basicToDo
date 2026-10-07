@@ -1,9 +1,13 @@
 """FastAPI routes for ToDo operations."""
 
+from typing import Any
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
@@ -35,6 +39,31 @@ app.add_middleware(
 service = create_todo_service()
 
 
+def _sendable(value: Any) -> Any:
+    """The value with unpaired surrogates replaced by U+FFFD, so it encodes as UTF-8."""
+    if isinstance(value, str):
+        return value.encode("utf-16", "surrogatepass").decode("utf-16", "replace")
+    if isinstance(value, dict):
+        return {key: _sendable(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_sendable(item) for item in value]
+    return value
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_error(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """FastAPI's 422, except that echoed input is made sendable (Q6.2).
+
+    The default handler echoes the rejected input; an unpaired surrogate in
+    it made the 422 response itself fail with a 500.
+    """
+    return JSONResponse(
+        status_code=422, content={"detail": _sendable(jsonable_encoder(exc.errors()))}
+    )
+
+
 @app.get("/")
 async def health_check() -> dict[str, str]:
     """Health check endpoint for testing."""
@@ -49,7 +78,7 @@ async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
     except ToDoAlreadyExistsError:
         raise HTTPException(status.HTTP_409_CONFLICT, "ToDo already exists")
     except ToDoValidationError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bad request")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Invalid input")
     except ToDoRepositoryError:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 
@@ -71,7 +100,7 @@ async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
     except ToDoNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
     except ToDoValidationError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bad request")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Invalid input")
     except ToDoRepositoryError:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 
@@ -84,7 +113,7 @@ async def delete_todo(todo_id: UUID) -> DeleteToDoResponse:
     except ToDoNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
     except ToDoValidationError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bad request")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Invalid input")
     except ToDoRepositoryError:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal error")
 

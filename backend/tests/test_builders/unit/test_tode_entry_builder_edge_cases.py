@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from pydantic import ValidationError
 
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 
@@ -16,22 +17,10 @@ from backend.tests.test_builders.unit.test_todo_entry_builder import (  # noqa: 
 class TestToDoEntryBuilderEdgeCases:
     """Test ToDoEntryBuilder edge cases."""
 
-    @pytest.mark.asyncio
-    async def test_build_with_very_long_title(
-        self, builder, mock_uuid_validator, mock_field_validator  # noqa: F811
-    ):
-        """Test builder with very long title."""
-        test_uuid = uuid.uuid4()
-        long_title = "a" * 10000
-        payload = ToDoCreateScheme(id=test_uuid, title=long_title, description="Desc")
-
-        mock_uuid_validator.validate.return_value = test_uuid
-        mock_field_validator.validate_required.return_value = long_title
-        mock_field_validator.validate_optional.return_value = "Desc"
-
-        result = await builder.build_from_create_schema(payload)
-
-        assert result.title == long_title
+    def test_very_long_title_never_reaches_the_builder(self):
+        """Q6.2: the schema refuses a title over 255 characters."""
+        with pytest.raises(ValidationError):
+            ToDoCreateScheme(id=uuid.uuid4(), title="a" * 10000, description="Desc")
 
     @pytest.mark.asyncio
     async def test_build_with_unicode_characters(

@@ -2,7 +2,6 @@
 
 import datetime
 from unittest.mock import AsyncMock
-from uuid import uuid4
 
 from backend.app.business_logic.exceptions import (
     ToDoAlreadyExistsError,
@@ -132,50 +131,19 @@ class TestCreateTodo:
 
         assert response.status_code == 422
 
-    def test_create_todo_sql_injection_in_title_returns_400(
+    def test_create_todo_service_validation_error_returns_422(
         self, client, mock_service, sample_todo_id
     ):
-        """Test SQL injection attempt in title returns 400."""
-        mock_service.create_todo = AsyncMock(
-            side_effect=ToDoValidationError(
-                "Invalid characters or SQL keywords in input"
-            )
+        """Q6.3: a validation error from the service is a 422, not a 400."""
+        mock_service.create_todo = AsyncMock(side_effect=ToDoValidationError("invalid"))
+
+        response = client.post(
+            "/todo",
+            json={"id": str(sample_todo_id), "title": "Valid", "description": "Test"},
         )
-        sql_payloads = [
-            "'; DROP TABLE todo;--",
-            "Robert'); DROP TABLE students;--",
-            "1' OR '1'='1",
-            "admin'--",
-            "' UNION SELECT * FROM users--",
-        ]
 
-        for payload_text in sql_payloads:
-            payload = {"id": str(uuid4()), "title": payload_text, "description": "Test"}
-
-            response = client.post("/todo", json=payload)
-
-            assert (
-                response.status_code == 400
-            ), f"BUG: SQL injection validation returns {response.status_code} instead of 400 for: {payload_text}"
-
-    def test_create_todo_sql_injection_in_description_returns_400(
-        self, client, mock_service, sample_todo_id
-    ):
-        """Test SQL injection attempt in description returns 400."""
-        mock_service.create_todo = AsyncMock(
-            side_effect=ToDoValidationError(
-                "Invalid characters or SQL keywords in input"
-            )
-        )
-        payload = {
-            "id": str(sample_todo_id),
-            "title": "Test",
-            "description": "'; DELETE FROM todo;--",
-        }
-
-        response = client.post("/todo", json=payload)
-
-        assert response.status_code == 400
+        assert response.status_code == 422
+        assert response.json() == {"detail": "Invalid input"}
 
     def test_create_todo_with_emoji(self, client, mock_service, sample_todo_id):
         """Test creating todo with emoji characters."""

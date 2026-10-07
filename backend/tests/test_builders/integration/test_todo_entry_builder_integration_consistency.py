@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from pydantic import ValidationError
 
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.validators import ValidatorFactory
@@ -76,21 +77,22 @@ class TestToDoEntryBuilderBoundaryConditions:
 
         assert result.title == "X"
 
-    @pytest.mark.asyncio
-    async def test_build_with_very_long_text(self, builder):  # noqa: F811
-        """Test builder with very long title and description."""
-        test_uuid = uuid.uuid4()
-        long_title = "a" * 1000
-        long_desc = "b" * 5000
+    def test_over_length_text_never_reaches_the_builder(self):
+        """Q6.2: the schema refuses more than 255 characters."""
+        with pytest.raises(ValidationError):
+            ToDoCreateScheme(id=uuid.uuid4(), title="a" * 1000, description="b" * 5000)
 
+    @pytest.mark.asyncio
+    async def test_build_with_maximal_text(self, builder):  # noqa: F811
+        """Q6.2: 255 characters (code points, here 4-byte UTF-8) pass through."""
+        title, description = "\U0001f600" * 255, "\U0001f601" * 255
         payload = ToDoCreateScheme(
-            id=test_uuid, title=long_title, description=long_desc
+            id=uuid.uuid4(), title=title, description=description
         )
 
         result = await builder.build_from_create_schema(payload)
 
-        assert result.title == long_title
-        assert result.description == long_desc
+        assert (result.title, result.description) == (title, description)
 
     @pytest.mark.asyncio
     async def test_build_with_nil_uuid(self, builder):  # noqa: F811

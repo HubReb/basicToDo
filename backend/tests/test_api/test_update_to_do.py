@@ -110,22 +110,16 @@ class TestUpdateTodo:
 
         assert response.status_code == 422
 
-    def test_update_todo_sql_injection_returns_400(
+    def test_update_todo_service_validation_error_returns_422(
         self, client, mock_service, created_todo
     ):
-        """Test SQL injection attempt in update returns 400."""
-        # Mock service to raise validation error for SQL injection
-        mock_service.update_todo = AsyncMock(
-            side_effect=ToDoValidationError(
-                "Invalid characters or SQL keywords in input"
-            )
-        )
+        """Q6.3: a validation error from the service is a 422, not a 400."""
+        mock_service.update_todo = AsyncMock(side_effect=ToDoValidationError("invalid"))
 
-        update_payload = {"title": "'; DROP TABLE todo;--"}
+        response = client.put(f"/todo/{created_todo['id']}", json={"title": "Valid"})
 
-        response = client.put(f"/todo/{created_todo['id']}", json=update_payload)
-
-        assert response.status_code == 400
+        assert response.status_code == 422
+        assert response.json() == {"detail": "Invalid input"}
 
     def test_update_todo_empty_title_returns_422(
         self, client, mock_service, created_todo

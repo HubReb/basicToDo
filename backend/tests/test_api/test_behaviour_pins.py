@@ -150,24 +150,6 @@ class TestLegacyBehaviourPhase5Changes:
         assert response.status_code == 200
         assert tuple(stored(db_engine, todo_id))[::2] == ("Original", 1)
 
-    def test_legacy_nul_bypasses_the_length_limit(self, client, db_engine):
-        """Q6.2 (RULE-021): SQLite's length() stops at NUL, so 302 characters are stored."""
-        title = "a\x00" + "b" * 300
-
-        todo_id = create(client, title=title)
-
-        assert stored(db_engine, todo_id).title == title
-
-    def test_legacy_put_title_null_is_a_500(self, client):
-        """Q6.3: an explicit null title reaches the NOT NULL column and ends as a 500."""
-        todo_id = create(client)
-        # As uvicorn does: the unhandled error becomes a 500 response.
-        server = TestClient(app, raise_server_exceptions=False)
-
-        response = server.put(f"/todo/{todo_id}", json={"title": None})
-
-        assert response.status_code == 500
-
     def test_legacy_text_plain_body_is_a_422(self, client):
         """SEC-003: a body sent as text/plain is not parsed, and the request gets 422."""
         response = client.post(
@@ -211,3 +193,26 @@ class TestLegacyBehaviourPhase5Changes:
 
         assert response.status_code == 200
         assert stored(db_engine, todo_id).title == "Padded"
+
+
+class TestPhase5Behaviour:
+    """What Phase 5 changed, replacing the legacy pins above."""
+
+    def test_nul_in_a_title_is_rejected(self, client, db_engine):
+        """Q6.2 (RULE-021): NUL is a control character; nothing is stored."""
+        response = client.post(
+            "/todo", json={"id": str(uuid.uuid4()), "title": "a\x00" + "b" * 300}
+        )
+
+        assert response.status_code == 422
+        with db_engine.connect() as conn:
+            assert conn.execute(text('SELECT COUNT(*) FROM "toDo"')).scalar() == 0
+
+    def test_put_title_null_is_a_422(self, client, db_engine):
+        """Q6.3: an explicit null title is a validation error; the title stays."""
+        todo_id = create(client, title="Kept")
+
+        response = client.put(f"/todo/{todo_id}", json={"title": None})
+
+        assert response.status_code == 422
+        assert stored(db_engine, todo_id).title == "Kept"

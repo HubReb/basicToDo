@@ -1,15 +1,16 @@
 """Integration tests for ToDoService.update_todo() with real validators."""
 
+import sqlite3
 import datetime
 import uuid
 
 import pytest
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from backend.app.business_logic.exceptions import (
-    ToDoAlreadyExistsError,
     ToDoNotFoundError,
-    ToDoValidationError,
+    ToDoRepositoryError,
 )
 from backend.app.models.todo import ToDoEntryData
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
@@ -66,27 +67,11 @@ class TestUpdateTodoValidationIntegration:
         call_args = mock_repository.update_to_do.call_args[0][1]
         assert call_args.description == "Updated Desc"
 
-    @pytest.mark.asyncio
-    async def test_update_rejects_empty_title(self, todo_service):
-        """Test update_todo rejects empty title."""
-        todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(title="")
-
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.update_todo(todo_id, payload)
-
-        assert "title is required" in str(exc_info.value)
-
-    @pytest.mark.asyncio
-    async def test_update_rejects_whitespace_only_title(self, todo_service):
-        """Test update_todo rejects whitespace-only title."""
-        todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(title="   ")
-
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.update_todo(todo_id, payload)
-
-        assert "title is required" in str(exc_info.value)
+    @pytest.mark.parametrize("title", ["", "   "], ids=["empty", "whitespace"])
+    def test_update_blank_title_is_rejected_by_the_schema(self, title):
+        """Q6.3: a blank title is a schema error (422), as on create."""
+        with pytest.raises(ValidationError, match="title must not be null"):
+            TodoUpdateScheme(title=title)
 
 
 class TestUpdateTodoSQLLikeTextIntegration:
@@ -210,17 +195,19 @@ class TestUpdateTodoErrorHandlingIntegration:
             await todo_service.update_todo(todo_id, payload)
 
     @pytest.mark.asyncio
-    async def test_update_integrity_error_becomes_already_exists(
+    async def test_update_integrity_error_is_a_repository_error(
         self, todo_service, mock_repository
     ):
-        """Test update_todo converts IntegrityError to ToDoAlreadyExistsError."""
+        """Q6.3: an update cannot clash on the id; any IntegrityError is a 500."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(title="Duplicate")
+        payload = TodoUpdateScheme(title="Checked")
         mock_repository.update_to_do.side_effect = IntegrityError(
-            "msg", "params", "orig"
+            "UPDATE",
+            {},
+            sqlite3.IntegrityError("CHECK constraint failed: title_length_check"),
         )
 
-        with pytest.raises(ToDoAlreadyExistsError):
+        with pytest.raises(ToDoRepositoryError):
             await todo_service.update_todo(todo_id, payload)
 
 
