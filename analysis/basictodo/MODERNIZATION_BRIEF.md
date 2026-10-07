@@ -363,13 +363,23 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - TD-3 (logger), TD-7 (dead code: `config.py`, `config_dummy.json`, `services/`, `backend/backend/tests/**`, `LoadingOverlay.tsx`, `assets/react.svg`).
 - Correct the README and PlantUML documentation (the documentation gaps in `ASSESSMENT.md`).
 - Bring the hand-mirrored `types/todo.ts` in line with every API contract change from 6.3 and 6.4.
+- **Decided at Phase 5 planning (the owner, 2026-10-07)**, quoted where given verbatim:
+  - **Hardening pass:** on the uplifted tree (`phase-4` at `7e6ae13`, patch relative to the repository root), not on `legacy/`; the security-auditor subagent route instead of the 15–50-agent workflow; _"keep one independent refutation pass for every Critical/High finding (separate agent, no access to the finder's reasoning) before a fix is written."_
+  - **Q6.2 control characters:** titles reject every Unicode Cc character (tab and newline included); descriptions allow TAB, LF and CR and reject every other Cc character.
+  - **Existing databases at startup:** if the schema passes the baseline check, back up the file, stamp `0001` and run `upgrade head`; any other schema stops startup unchanged.
+  - **Q6.6 migration:** _"convert local → UTC per timestamp with zoneinfo rules for the zone the rows were written in (configurable, default the system zone), never a fixed offset. Tests with Europe/Berlin rows on both sides of a DST change, plus the ambiguous/non-existent hours.
+    Before migrating at startup, copy the SQLite file to <name>.pre-<revision>.bak; the migration runs in one transaction."_
+    The backup: _"create it with sqlite3.Connection.backup() (or VACUUM INTO), not a file copy; the check is an integrity_check on the backup plus row-by-row equality with the source, not byte equality with the .db file.
+    Add a test with a database in WAL mode that has uncommitted-to-main changes in its -wal file."_
+  - **Q6.7 existing rows:** _"the sample/test fixture gets rows with exactly "not implemented yet" (and one with that text plus more), only the exact match becomes NULL; record in the change log that the downgrade cannot restore it."_
+  - The defaults chosen in the approved plan (UTC storage format, zone resolution and its safety check, the order of the Q6.2 checks, the `BASICTODO_*` settings, the body-limit middleware, 415 by route dependency) are recorded with the commits in `BASELINE.md`.
 
 **Entry criteria:**
-- [ ] Phases 2, 3 and 4 exit criteria are met.
+- [x] Phases 2, 3 and 4 exit criteria are met. _(PRs #114, #115, #116; `BASELINE.md`, "Phase 2/3/4 CI".)_
 - [x] **Every row of Q6 is ticked keep or fix.** Q7 and Q8 are ticked.
 - [x] **Q8a is decided:** remove `slowapi`; no rate limiting in this pass.
-- [ ] **Q8b (request-body size cap) is decided.**
-- [ ] `/modernize-harden basictodo` has written `analysis/basictodo/SECURITY_FINDINGS.md` and `security_remediation.patch`, and both have been reviewed.
+- [x] **Q8b (request-body size cap) is decided.** _(2026-10-07: cap in middleware at 16 KiB, 413; §7.)_
+- [x] `/modernize-harden basictodo` has written `analysis/basictodo/SECURITY_FINDINGS.md` and `security_remediation.patch`, and both have been reviewed. _(No Critical/High finding, so no refutation agent was needed; 4 Medium checked against the code; patch review round 2: 16 of 16 RESOLVES.)_
 
 **Exit criteria:**
 - [ ] Each **fix** lands together with the characterization test(s) it intentionally flips, and the Q6 row ID is recorded in `BASELINE.md`'s change log.
@@ -473,7 +483,7 @@ Neither P0 rule is below High confidence, so **no phase is blocked on SME confir
 
 ## 7. Open Questions
 
-**Decisions recorded 2026-10-03** from the owner's written answers. Each decision is quoted verbatim. Q11 was revised in a follow-up answer the same day; both versions are kept below. **Q1, Q3 and Q10 gate Phase 1: all three are decided.** Q8a was decided in a further answer the same day. One item remains open: **Q8b** (gates Phase 5 only). Q11b was decided later the same day.
+**Decisions recorded 2026-10-03** from the owner's written answers. Each decision is quoted verbatim. Q11 was revised in a follow-up answer the same day; both versions are kept below. **Q1, Q3 and Q10 gate Phase 1: all three are decided.** Q8a was decided in a further answer the same day. Q11b was decided later the same day. Q8b, the last open item, was decided on 2026-10-07.
 
 **Target & versions**
 - [x] **Q1: Approve the target stack** in §1 as a same-stack uplift (not a rebuild or cross-stack transform).
@@ -523,9 +533,10 @@ Neither P0 rule is below High confidence, so **no phase is blocked on SME confir
   - [x] **Q8a: `slowapi`.** The Q8 recommendation offered two alternatives (drop the unused dependency, or wire in a limiter), so "accept" did not select one.
     - **Decision:** _"Remove slowapi (unused dependency). No rate limiting in this pass."_
     - **Consequence:** the rate-limiting part of SEC-004 is **explicitly accepted as-is** for this pass. Its pagination-bounds part is still fixed (Q6.4).
-  - [ ] **Q8b (open; gates Phase 5 only): request-body size cap (the third part of SEC-004).** SEC-004 also flags that request bodies have no size limit: a title of any size is read and regex-scanned before the DB rejects it. The Q8 recommendation list did not cover this part, so neither "accept" nor Q8a decides it. Without a decision, SEC-004 would stay open against Phase 5's exit criterion.
+  - [x] **Q8b: request-body size cap (the third part of SEC-004).** SEC-004 also flags that request bodies have no size limit: a title of any size is read and regex-scanned before the DB rejects it. The Q8 recommendation list did not cover this part, so neither "accept" nor Q8a decides it. Without a decision, SEC-004 would stay open against Phase 5's exit criterion.
     - **Fix:** reject oversized bodies, for example `Content-Length` above 16 KB, in middleware or at the proxy.
     - **Accept as-is:** rely on Q6.2's `max_length=255`, which rejects over-long fields only after the body has been parsed.
+    - **Decision (2026-10-07):** _"Q8b: cap the request body in middleware at 16 KiB, answer 413. Count streamed bytes so chunked requests without Content-Length are capped too. Tests: Content-Length over the limit, chunked body over the limit, and a maximal valid request (255-char title and description, 4-byte UTF-8) passes."_
 - [x] **Q9: CI gates (Phase 3).** Recommended: make mypy and ESLint blocking, run pylint over all of `backend/app`, and fix the `tsc --noEmit` step that checks 0 files.
   - **Decision:** _"Accept."_
 
@@ -571,6 +582,9 @@ Approval covers: Phase 3
 
 Approved by: the owner    Date: 2026-10-06
 Approval covers: Phase 4
+
+Approved by: the owner    Date: 2026-10-07
+Approval covers: Phase 5
 ```
 
 - **Phase 1** was approved on 2026-10-03 and executed on 2026-10-05: draft PR #113 is open, the exit criteria are met, `PLAYBOOK.md` is written, and the brief is revised with the pilot findings.
@@ -578,4 +592,4 @@ Approval covers: Phase 4
 - **Phase 3** was approved on 2026-10-05 after Phase 2 (PR #114) and the decision on Q12. Decision, verbatim: _"Phase 3: go (Phase 3 only)."_
 - **Phase 4** was approved on 2026-10-06 after Phase 3 (PR #115). Decision, verbatim: _"dann go"_, in answer to "Phase 4 needs its own go."
   At planning the owner chose _"Keep create_all"_ for the runtime schema creation and added the baseline check before `alembic stamp head` (§3 Phase 4, scope).
-- **Phase 5** still needs its own approval.
+- **Phase 5** was approved on 2026-10-07 after Phase 4 (PR #116), together with the decision on Q8b. Decision, verbatim: _"Phase 5: go (Phase 5 only)."_ The planning decisions are recorded in §3 Phase 5.

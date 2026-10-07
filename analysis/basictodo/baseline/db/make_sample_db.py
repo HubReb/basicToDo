@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """The Phase 4 sample database: rows written through the HTTP API.
 
-    make_sample_db.py populate <base-url> <requests.json>
-    make_sample_db.py describe <sample.db> <out-dir>
+    make_sample_db.py populate <base-url> <requests.json> [--placeholders]
+    make_sample_db.py describe <sample.db> <out-dir> [name]
 
 populate sends a fixed request sequence that leaves one row per case the
 data layer has to carry: active with and without description, description
@@ -10,12 +10,15 @@ NULL, done, soft-deleted with and without description, done and deleted,
 edited, a 255-character non-ASCII title and the nil UUID. An over-long title
 (RULE-013) is rejected and stores nothing. Every response must have the
 expected status, or the run stops. The ids are fixed; the timestamps are
-whatever the server writes.
+whatever the server writes. --placeholders adds two rows for Phase 5's
+Q6.7 migration, written as the old UI wrote them: the description exactly
+"not implemented yet", and that text with more after it.
 
-describe copies the database to <out-dir>/sample-legacy.db and writes, next
-to it, its sha256 (sha256sum format), a text dump (sqlite3 iterdump) and
-schema.json, the database's sqlite_master as [type, name, tbl_name, sql]
-rows ordered by type and name.
+describe copies the database to <out-dir>/<name>.db (name defaults to
+sample-legacy) and writes, next to it, its sha256 (sha256sum format), a
+text dump (sqlite3 iterdump) and the database's sqlite_master as [type,
+name, tbl_name, sql] rows ordered by type and name (schema.json for the
+default name, <name>.schema.json otherwise).
 
 Standard library only; run make_sample_db.sh rather than this file directly.
 """
@@ -118,11 +121,38 @@ SEQUENCE = [
     ("GET", "/todo?limit=100", None, 200, "list of active todos"),
 ]
 
+PLACEHOLDERS = [
+    (
+        "POST",
+        "/todo",
+        {
+            "id": todo_id(11),
+            "title": "Old UI todo",
+            "description": "not implemented yet",
+        },
+        200,
+        "placeholder description, exactly",
+    ),
+    (
+        "POST",
+        "/todo",
+        {
+            "id": todo_id(12),
+            "title": "Old UI todo with a note",
+            "description": "not implemented yet, see the notes",
+        },
+        200,
+        "placeholder text with more after it",
+    ),
+]
 
-def populate(base_url, out_path):
+
+def populate(base_url, out_path, placeholders=False):
     url = urllib.parse.urlsplit(base_url)
     log = []
-    for method, path, body, expected, case in SEQUENCE:
+    # The placeholder rows go before the final list request.
+    sequence = SEQUENCE[:-1] + (PLACEHOLDERS if placeholders else []) + SEQUENCE[-1:]
+    for method, path, body, expected, case in sequence:
         conn = http.client.HTTPConnection(url.hostname, url.port, timeout=30)
         payload = None if body is None else json.dumps(body)
         headers = {} if body is None else {"Content-Type": "application/json"}
@@ -150,18 +180,18 @@ def populate(base_url, out_path):
     print(f"populate: {len(log)} requests, all with the expected status")
 
 
-def describe(db_path, out_dir):
-    target = os.path.join(out_dir, "sample-legacy.db")
+def describe(db_path, out_dir, name="sample-legacy"):
+    target = os.path.join(out_dir, f"{name}.db")
     shutil.copyfile(db_path, target)
     with open(target, "rb") as f:
         digest = hashlib.sha256(f.read()).hexdigest()
     with open(target + ".sha256", "w", encoding="utf-8") as f:
-        f.write(f"{digest}  sample-legacy.db\n")
+        f.write(f"{digest}  {name}.db\n")
 
     conn = sqlite3.connect(f"file:{target}?mode=ro", uri=True)
     try:
         with open(
-            os.path.join(out_dir, "sample-legacy.dump.txt"), "w", encoding="utf-8"
+            os.path.join(out_dir, f"{name}.dump.txt"), "w", encoding="utf-8"
         ) as f:
             for line in conn.iterdump():
                 f.write(line + "\n")
@@ -173,7 +203,8 @@ def describe(db_path, out_dir):
         ).fetchone()
     finally:
         conn.close()
-    with open(os.path.join(out_dir, "schema.json"), "w", encoding="utf-8") as f:
+    schema_name = "schema.json" if name == "sample-legacy" else f"{name}.schema.json"
+    with open(os.path.join(out_dir, schema_name), "w", encoding="utf-8") as f:
         f.write(
             "[\n" + ",\n".join(" " + json.dumps(list(row)) for row in schema) + "\n]\n"
         )
@@ -183,9 +214,9 @@ def describe(db_path, out_dir):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 4 and sys.argv[1] == "populate":
-        populate(sys.argv[2], sys.argv[3])
-    elif len(sys.argv) == 4 and sys.argv[1] == "describe":
-        describe(sys.argv[2], sys.argv[3])
+    if len(sys.argv) in (4, 5) and sys.argv[1] == "populate":
+        populate(sys.argv[2], sys.argv[3], sys.argv[4:] == ["--placeholders"])
+    elif len(sys.argv) in (4, 5) and sys.argv[1] == "describe":
+        describe(sys.argv[2], sys.argv[3], *sys.argv[4:])
     else:
         sys.exit(__doc__)

@@ -1,0 +1,22 @@
+{
+ "process": "init_db.py",
+ "tree": "a2d59f1",
+ "tree_has_uncommitted_changes": false,
+ "python": "3.13.15",
+ "venv": "../.envs/legacy-lock",
+ "fastapi": "0.115.12",
+ "starlette": "0.46.2",
+ "app_modules_loaded": 8,
+ "app_modules_outside_tree": [],
+ "backend.app": "backend/app/__init__.py",
+ "modules": {
+  "app": "backend/app/__init__.py",
+  "app.data_access": "backend/app/data_access/__init__.py",
+  "app.data_access.database": "backend/app/data_access/database.py",
+  "app.logger": "backend/app/logger.py",
+  "backend": "backend/__init__.py",
+  "backend.app": "backend/app/__init__.py",
+  "backend.app.models": "backend/app/models/__init__.py",
+  "backend.app.models.todo": "backend/app/models/todo.py"
+ }
+}

@@ -1,0 +1,625 @@
+# Remediation patch for analysis/basictodo/SECURITY_FINDINGS.md (Phase 5), review round 2.
+# Base: plugin/uplift-basictodo/phase-5 at 72baf56 (product code identical to 7e6ae13).
+# Apply from the repository root: git apply analysis/basictodo/security_remediation.patch
+# No credential hunks; there is no security_remediation.local.patch.
+
+# SEC-014 (F-15): ignore SQLite databases, side files and pre-migration backups
+diff --git a/.gitignore b/.gitignore
+index 18004af..e2742c4 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -290,4 +290,13 @@ dist/
+ 
+ *.code-workspace
+ 
+-config.json
+\ No newline at end of file
++config.json
++
++# SQLite databases, their side files and pre-migration backups (SEC-014).
++# The sample databases under analysis/ are committed evidence.
++*.db
++*.db-journal
++*.db-wal
++*.db-shm
++*.bak
++!analysis/basictodo/baseline/db/*.db
+# SEC-003 (F-03): TrustedHostMiddleware and 415 for non-JSON bodies; SEC-008 (F-17): CORS without credentials, explicit methods and headers; SEC-004 (F-05, F-06): list bounds and the 16 KiB body cap
+diff --git a/backend/app/api/api.py b/backend/app/api/api.py
+index 09b509e..2dab98b 100644
+--- a/backend/app/api/api.py
++++ b/backend/app/api/api.py
+@@ -1,10 +1,13 @@
+ """FastAPI routes for ToDo operations."""
+ 
++from typing import Annotated
+ from uuid import UUID
+ 
+-from fastapi import FastAPI, HTTPException, status
++from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
+ from fastapi.middleware.cors import CORSMiddleware
++from fastapi.middleware.trustedhost import TrustedHostMiddleware
+ 
++from backend.app.api.body_limit import MAX_BODY_BYTES, BodyLimitMiddleware
+ from backend.app.business_logic.exceptions import (
+     ToDoAlreadyExistsError,
+     ToDoNotFoundError,
+@@ -18,30 +21,48 @@ from backend.app.schemas.api_responses.get_to_do_response import GetToDoResponse
+ from backend.app.schemas.api_responses.to_do_response import ToDoResponse
+ from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
+ from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
++from backend.app.settings import load_settings
+ 
+ # FastAPI >= 0.142 would start exporting OpenTelemetry data as soon as an
+ # OTEL_EXPORTER_OTLP_* variable is set; keep the legacy behaviour (no export).
+ app = FastAPI(title="ToDo API", telemetry={"auto_configure": False})
++settings = load_settings()
+ 
+-# Configure CORS to allow frontend access
++# add_middleware puts each new middleware outside the previous ones. So the
++# Host check (SEC-003) runs first and answers a foreign Host before any body
++# is read, and CORS wraps the body limit (Q8b), so a 413 carries CORS headers.
++app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_BODY_BYTES)
+ app.add_middleware(
+     CORSMiddleware,
+-    allow_origins=["http://localhost:5173"],
+-    allow_credentials=True,
+-    allow_methods=["*"],
+-    allow_headers=["*"],
++    allow_origins=list(settings.cors_origins),
++    allow_credentials=False,
++    allow_methods=["GET", "POST", "PUT", "DELETE"],
++    allow_headers=["Content-Type", "Accept"],
+ )
++app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.trusted_hosts))
+ 
+ service = create_todo_service()
+ 
+ 
++def require_json(request: Request) -> None:
++    """SEC-003: requests with a body must declare it as application/json."""
++    media_type = (
++        request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
++    )
++    if media_type != "application/json":
++        raise HTTPException(
++            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
++            "Content-Type must be application/json",
++        )
++
++
+ @app.get("/")
+ async def health_check() -> dict[str, str]:
+     """Health check endpoint for testing."""
+     return {"status": "ok"}
+ 
+ 
+-@app.post("/todo", response_model=ToDoResponse)
++@app.post("/todo", response_model=ToDoResponse, dependencies=[Depends(require_json)])
+ async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
+     try:
+         todo = await service.create_todo(payload)
+@@ -63,7 +84,9 @@ async def get_todo(todo_id: UUID) -> GetToDoResponse:
+         raise HTTPException(status.HTTP_404_NOT_FOUND, "ToDo not found")
+ 
+ 
+-@app.put("/todo/{todo_id}", response_model=ToDoResponse)
++@app.put(
++    "/todo/{todo_id}", response_model=ToDoResponse, dependencies=[Depends(require_json)]
++)
+ async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
+     try:
+         todo = await service.update_todo(todo_id, payload)
+@@ -90,6 +113,9 @@ async def delete_todo(todo_id: UUID) -> DeleteToDoResponse:
+ 
+ 
+ @app.get("/todo", response_model=ListToDoResponse)
+-async def list_todos(limit: int = 10, page: int = 1) -> ListToDoResponse:
++async def list_todos(
++    limit: Annotated[int, Query(ge=1, le=100)] = 10,
++    page: Annotated[int, Query(ge=1, le=1_000_000)] = 1,
++) -> ListToDoResponse:
+     todos = await service.get_all_todos(limit, page)
+     return ListToDoResponse(success=True, results=len(todos), todo_entries=todos)
+# SEC-004 / Q8b (F-06): 16 KiB request body cap, Content-Length and streamed bytes, JSON 413
+diff --git a/backend/app/api/body_limit.py b/backend/app/api/body_limit.py
+new file mode 100644
+index 0000000..106434d
+--- /dev/null
++++ b/backend/app/api/body_limit.py
+@@ -0,0 +1,86 @@
++"""Request body cap (Q8b, SEC-004): 16 KiB; anything larger gets 413."""
++
++import json
++
++from starlette.datastructures import Headers
++from starlette.types import ASGIApp, Message, Receive, Scope, Send
++
++MAX_BODY_BYTES = 16 * 1024
++
++
++class BodyLimitMiddleware:
++    """Reads the whole request body before the app runs, and refuses it above max_bytes.
++
++    A Content-Length above the limit is refused without reading anything.
++    Otherwise the body is read message by message and the bytes are counted,
++    so a chunked body without Content-Length is capped as well; at most the
++    limit plus the one message that crosses it is held. A Content-Length that
++    is not a plain decimal number is not trusted; the bytes are counted. The app then gets the body replayed as one
++    message. Either way no handler runs for an oversized body, also not one
++    that never reads it (DELETE), and both paths answer the same JSON 413.
++    """
++
++    def __init__(self, app: ASGIApp, max_bytes: int = MAX_BODY_BYTES) -> None:
++        self.app = app
++        self.max_bytes = max_bytes
++
++    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
++        if scope["type"] != "http":
++            await self.app(scope, receive, send)
++            return
++        declared = Headers(scope=scope).get("content-length")
++        if (
++            declared is not None
++            and declared.isascii()
++            and declared.isdigit()
++            and (len(declared) > 20 or int(declared) > self.max_bytes)
++        ):
++            await self._reject(send)
++            return
++
++        chunks: list[bytes] = []
++        size = 0
++        more_body = True
++        while more_body:
++            message = await receive()
++            if message["type"] == "http.disconnect":
++                return
++            body = message.get("body", b"")
++            size += len(body)
++            if size > self.max_bytes:
++                await self._reject(send)
++                return
++            chunks.append(body)
++            more_body = message.get("more_body", False)
++
++        replayed = False
++
++        async def replay() -> Message:
++            nonlocal replayed
++            if not replayed:
++                replayed = True
++                return {
++                    "type": "http.request",
++                    "body": b"".join(chunks),
++                    "more_body": False,
++                }
++            return await receive()
++
++        await self.app(scope, replay, send)
++
++    async def _reject(self, send: Send) -> None:
++        body = json.dumps(
++            {"detail": f"Request body larger than {self.max_bytes} bytes"},
++            separators=(",", ":"),
++        ).encode()
++        await send(
++            {
++                "type": "http.response.start",
++                "status": 413,
++                "headers": [
++                    (b"content-type", b"application/json"),
++                    (b"content-length", str(len(body)).encode()),
++                ],
++            }
++        )
++        await send({"type": "http.response.body", "body": body})
+# SEC-014 (F-16): default database next to the package; own files restricted to 0600, failures only reported
+diff --git a/backend/app/data_access/database.py b/backend/app/data_access/database.py
+index 2d098f5..54783a4 100644
+--- a/backend/app/data_access/database.py
++++ b/backend/app/data_access/database.py
+@@ -3,10 +3,12 @@ from contextlib import contextmanager
+ from pathlib import Path
+ from typing import Generator
+ 
+-from sqlalchemy import create_engine
++from sqlalchemy import create_engine, event
++from sqlalchemy.engine import make_url
+ from sqlalchemy.orm import Session, sessionmaker
+ from sqlalchemy.pool import QueuePool
+ 
++from backend.app.logger import CustomLogger
+ from backend.app.models.todo import Base
+ 
+ __all__ = [
+@@ -15,29 +17,28 @@ __all__ = [
+     "SessionLocal",
+     "engine",
+     "get_safe_database_url",
++    "restrict_to_owner",
+     "safe_session_scope",
+ ]
+ 
+ 
++# SEC-014: the default database sits next to the backend package, wherever
++# the process was started from (it used to follow the working directory).
++DEFAULT_DATABASE_PATH = Path(__file__).resolve().parents[2] / "todo.db"
++
++
+ def get_safe_database_url() -> str:
+     """Return a validated and safe database URL."""
+     db_url = os.getenv("DATABASE_URL")
+     if not db_url:
+-        # Use relative path from project root or current working directory
+-        # This works in both local dev and CI environments
+-        db_path = Path("backend/todo.db")
+-
+-        # Ensure parent directory exists
+-        db_path.parent.mkdir(parents=True, exist_ok=True)
+-
+-        # Convert to absolute path for SQLite
+-        db_url = f"sqlite:///{db_path.absolute()}"
++        db_url = f"sqlite:///{DEFAULT_DATABASE_PATH}"
+     elif not db_url.startswith(("sqlite://", "postgresql://", "mysql://")):
+         raise RuntimeError(f"Invalid or unsafe DATABASE_URL: {db_url}")
+     return db_url
+ 
+ 
+ DATABASE_URL = get_safe_database_url()
++_logger = CustomLogger("Database")
+ 
+ engine = create_engine(
+     DATABASE_URL,
+@@ -51,6 +52,48 @@ engine = create_engine(
+     pool_pre_ping=True,
+ )
+ 
++
++def restrict_to_owner(url: str) -> None:
++    """SEC-014: a SQLite database file is readable and writable by its owner only.
++
++    Applies to files this process owns: the default database, and a database
++    that is still empty (just created by SQLite). An existing database given
++    through DATABASE_URL keeps the mode its operator chose; group or other
++    access is only reported. A failing chmod is reported, never raised, so it
++    cannot break the connection.
++    """
++    parsed = make_url(url)
++    if parsed.get_backend_name() != "sqlite" or parsed.database in (
++        None,
++        "",
++        ":memory:",
++    ):
++        return
++    path = Path(parsed.database)
++    try:
++        info = path.stat()
++    except OSError:
++        return
++    if info.st_uid != os.geteuid() or not info.st_mode & 0o077:
++        return
++    if path.resolve() != DEFAULT_DATABASE_PATH and info.st_size > 0:
++        _logger.warning("Database file %s is accessible to group or others", path)
++        return
++    try:
++        path.chmod(0o600)
++    except OSError as exc:
++        _logger.warning(
++            "Could not restrict database file %s to its owner: %s", path, exc
++        )
++
++
++@event.listens_for(engine, "connect")
++def _restrict_database_file(
++    dbapi_connection: object, connection_record: object
++) -> None:
++    restrict_to_owner(DATABASE_URL)
++
++
+ SessionLocal = sessionmaker(
+     autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
+ )
+# TD-3 (F-20): one configured handler, no double printing; SEC-010 (F-08): every message neutralised
+diff --git a/backend/app/logger.py b/backend/app/logger.py
+index b9e92ce..92cd01c 100644
+--- a/backend/app/logger.py
++++ b/backend/app/logger.py
+@@ -1,34 +1,93 @@
+-"""Logger to log information, warnings and errors"""
++"""Application logging (TD-3) with neutralised messages (SEC-010).
+ 
+-from logging import Formatter, INFO, Logger, StreamHandler, getLogger
++Every CustomLogger writes through the standard logger "basictodo.<name>".
++One handler on "basictodo" formats the records; it is installed once, the
++first time a CustomLogger is created. "basictodo" does not propagate, so a
++configured root logger does not print the records a second time.
+ 
++A filter on each "basictodo.<name>" logger formats a record's message once,
++before any handler sees it. String and exception arguments are cut at
++MAX_VALUE_LENGTH characters first; other arguments keep their type, so %d
++still works. The formatted message, f-strings included, then has its
++control characters (C0, C1, U+2028, U+2029) and lone surrogates escaped, so
++logged input cannot start a new line or send terminal escapes.
++"""
+ 
+-class CustomLogger(Logger):
+-    """A custom logger to simplify logging"""
++import logging
++from typing import Any, TextIO
++
++ROOT = "basictodo"
++FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
++MAX_VALUE_LENGTH = 200
++
++
++def escape_controls(text: str) -> str:
++    """The text with control characters and lone surrogates escaped."""
++    out = []
++    for char in text:
++        code = ord(char)
++        if (
++            code < 0x20
++            or 0x7F <= code <= 0x9F
++            or code in (0x2028, 0x2029)
++            or 0xD800 <= code <= 0xDFFF
++        ):
++            out.append(f"\\x{code:02x}" if code <= 0xFF else f"\\u{code:04x}")
++        else:
++            out.append(char)
++    return "".join(out)
++
++
++def _cut(value: Any) -> Any:
++    if isinstance(value, (str, BaseException)):
++        text = str(value)
++        if len(text) > MAX_VALUE_LENGTH:
++            return f"{text[:MAX_VALUE_LENGTH]}... ({len(text)} chars)"
++        return text
++    return value
++
++
++class NeutraliseMessage(logging.Filter):
++    """Formats a record's message once, with cut values and escaped controls."""
++
++    def filter(self, record: logging.LogRecord) -> bool:
++        args = record.args
++        if isinstance(args, tuple):
++            args = tuple(_cut(arg) for arg in args)
++        elif isinstance(args, dict):
++            args = {key: _cut(arg) for key, arg in args.items()}
++        message = str(record.msg)
++        if args:
++            try:
++                message = message % args
++            except (TypeError, ValueError):
++                message = f"{message} (arguments: {args!r})"
++        record.msg = escape_controls(message)
++        record.args = None
++        return True
++
++
++class _Handler(logging.StreamHandler[TextIO]):
++    """The one handler of the "basictodo" logger."""
++
++
++def _configure() -> None:
++    root = logging.getLogger(ROOT)
++    if any(isinstance(handler, _Handler) for handler in root.handlers):
++        return
++    handler = _Handler()
++    handler.setFormatter(logging.Formatter(FORMAT))
++    root.addHandler(handler)
++    root.setLevel(logging.INFO)
++    root.propagate = False
++
++
++class CustomLogger(logging.LoggerAdapter[logging.Logger]):
++    """The application's logger for one component, e.g. CustomLogger("ToDoService")."""
+ 
+     def __init__(self, name: str) -> None:
+-        super().__init__(name)
+-        self.logger = getLogger(name)
+-        self.logger.setLevel(INFO)
+-
+-        # Create handler and set level
+-        handler = StreamHandler()
+-        handler.setLevel(INFO)
+-
+-        # Create formatter
+-        formatter = Formatter(
+-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+-        )
+-        handler.setFormatter(formatter)
+-
+-        # Add handler to logger
+-        if not self.logger.handlers:
+-            self.logger.addHandler(handler)
+-
+-    def log_missing_parameter(self, parameter_name: str) -> None:
+-        """Log a missing parameter."""
+-        self.logger.error("Parameter %s is None.", parameter_name)
+-
+-    def log_not_initialized(self, reference_name: str) -> None:
+-        """Log a reference to an uninitialized oject"""
+-        self.logger.error(" %s is not initialized.", reference_name)
+\ No newline at end of file
++        _configure()
++        logger = logging.getLogger(f"{ROOT}.{name}")
++        if not any(isinstance(f, NeutraliseMessage) for f in logger.filters):
++            logger.addFilter(NeutraliseMessage())
++        super().__init__(logger, {})
+# SEC-002 (F-02): bind address, port and reload from BASICTODO_*, default 127.0.0.1 without reload
+diff --git a/backend/app/main.py b/backend/app/main.py
+index a17a425..f3b7545 100644
+--- a/backend/app/main.py
++++ b/backend/app/main.py
+@@ -5,7 +5,15 @@ Backend for the ToDo app.
+ import uvicorn
+ 
+ from backend.app.data_access.database import Base, engine
++from backend.app.settings import load_settings
+ 
+ if __name__ == "__main__":
++    # SEC-002: 127.0.0.1 and no auto-reload unless BASICTODO_* says otherwise.
++    settings = load_settings()
+     Base.metadata.create_all(bind=engine)
+-    uvicorn.run("backend.app.api.api:app", host="0.0.0.0", port=8000, reload=True)
++    uvicorn.run(
++        "backend.app.api.api:app",
++        host=settings.host,
++        port=settings.port,
++        reload=settings.reload,
++    )
+# SEC-002, SEC-003, SEC-008 (F-02, F-03, F-17): BASICTODO_* settings with safe defaults
+diff --git a/backend/app/settings.py b/backend/app/settings.py
+new file mode 100644
+index 0000000..dd8200d
+--- /dev/null
++++ b/backend/app/settings.py
+@@ -0,0 +1,95 @@
++"""Runtime settings from BASICTODO_* environment variables.
++
++Safe defaults (SEC-002, SEC-003, SEC-008): the server binds to 127.0.0.1
++without auto-reload, answers only the Host names localhost and 127.0.0.1,
++and allows cross-origin calls from the Vite dev server only. The names are
++prefixed because generic ones such as HOST are set by some shells.
++"""
++
++import os
++import re
++from dataclasses import dataclass
++
++DEFAULT_HOST = "127.0.0.1"
++DEFAULT_PORT = 8000
++DEFAULT_TRUSTED_HOSTS = ("localhost", "127.0.0.1")
++DEFAULT_CORS_ORIGINS = ("http://localhost:5173",)
++# scheme://host[:port], nothing after it; the form a browser sends as Origin.
++ORIGIN = re.compile(
++    r"https?://[A-Za-z0-9.\-]+(:[0-9]{1,5})?|https?://\[[0-9A-Fa-f:]+\](:[0-9]{1,5})?"
++)
++
++
++class SettingsError(ValueError):
++    """A BASICTODO_* variable holds a value the application refuses to run with."""
++
++
++@dataclass(frozen=True)
++class Settings:
++    host: str
++    port: int
++    reload: bool
++    trusted_hosts: tuple[str, ...]
++    cors_origins: tuple[str, ...]
++
++
++def _value(name: str, default: str) -> str:
++    raw = os.environ.get(name)
++    if raw is None:
++        return default
++    value = raw.strip()
++    if not value:
++        raise SettingsError(f"{name} is set but empty")
++    return value
++
++
++def _list(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
++    raw = os.environ.get(name)
++    if raw is None:
++        return default
++    items = tuple(item.strip() for item in raw.split(","))
++    if any(not item for item in items):
++        raise SettingsError(
++            f"{name} must be a comma-separated list without empty entries"
++        )
++    if any("*" in item for item in items):
++        raise SettingsError(f"{name} must not contain wildcards")
++    return items
++
++
++def _flag(name: str) -> bool:
++    value = os.environ.get(name, "").strip().lower()
++    if value in ("", "0", "false", "no", "off"):
++        return False
++    if value in ("1", "true", "yes", "on"):
++        return True
++    raise SettingsError(f"{name} must be true or false")
++
++
++def load_settings() -> Settings:
++    host = _value("BASICTODO_HOST", DEFAULT_HOST)
++    if "*" in host:
++        raise SettingsError("BASICTODO_HOST must name an address")
++    port_text = _value("BASICTODO_PORT", str(DEFAULT_PORT))
++    if (
++        not (port_text.isascii() and port_text.isdigit())
++        or not 1 <= int(port_text) <= 65535
++    ):
++        raise SettingsError("BASICTODO_PORT must be a port number")
++    return Settings(
++        host=host,
++        port=int(port_text),
++        reload=_flag("BASICTODO_RELOAD"),
++        trusted_hosts=_list("BASICTODO_TRUSTED_HOSTS", DEFAULT_TRUSTED_HOSTS),
++        cors_origins=_origins(),
++    )
++
++
++def _origins() -> tuple[str, ...]:
++    origins = _list("BASICTODO_CORS_ORIGINS", DEFAULT_CORS_ORIGINS)
++    for origin in origins:
++        if not ORIGIN.fullmatch(origin):
++            raise SettingsError(
++                f"BASICTODO_CORS_ORIGINS: {origin!r} is not an origin (scheme://host[:port])"
++            )
++    return origins
+# SEC-010 / F-10 (exposed by the TD-3 fix): log the database URL without its password
+diff --git a/backend/scripts/init_db.py b/backend/scripts/init_db.py
+index 34bc28c..7571339 100755
+--- a/backend/scripts/init_db.py
++++ b/backend/scripts/init_db.py
+@@ -9,7 +9,7 @@ from pathlib import Path
+ repo_root = Path(__file__).resolve().parents[2]
+ sys.path.insert(0, str(repo_root))
+ 
+-from backend.app.data_access.database import Base, engine, DATABASE_URL  # noqa: E402
++from backend.app.data_access.database import Base, engine  # noqa: E402
+ from backend.app.logger import CustomLogger  # noqa: E402
+ 
+ logger = CustomLogger("DBInit")
+@@ -18,7 +18,11 @@ logger = CustomLogger("DBInit")
+ def init_database() -> None:
+     """Create all database tables using SQLAlchemy ORM."""
+     try:
+-        logger.info(f"Initializing database at: {DATABASE_URL}")
++        # The URL without its password: INFO lines are printed now (TD-3).
++        logger.info(
++            "Initializing database at: %s",
++            engine.url.render_as_string(hide_password=True),
++        )
+         Base.metadata.create_all(bind=engine)
+         logger.info("Database schema created successfully")
+ 
+# SEC-003 (F-03): allow TestClient's Host header in the test run
+diff --git a/backend/tests/conftest.py b/backend/tests/conftest.py
+index 412ebdb..703ccd3 100644
+--- a/backend/tests/conftest.py
++++ b/backend/tests/conftest.py
+@@ -1,5 +1,6 @@
+ """Root conftest.py with shared fixtures for all tests."""
+ 
++import os
+ import uuid
+ from contextlib import contextmanager
+ from typing import Generator
+@@ -16,6 +17,10 @@ from backend.app.data_access.database import Base
+ from backend.app.data_access.repository import ToDoRepository
+ from backend.app.logger import CustomLogger
+ 
++# TestClient sends the Host header "testserver". Set here, before any test
++# module imports backend.app.api.api, which reads the setting.
++os.environ["BASICTODO_TRUSTED_HOSTS"] = "localhost,127.0.0.1,testserver"
++
+ 
+ # Session-scoped fixtures for shared components
+ @pytest.fixture(scope="session")

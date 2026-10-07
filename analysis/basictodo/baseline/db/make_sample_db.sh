@@ -4,6 +4,8 @@
 # written through the HTTP API (make_sample_db.py). Meant for the legacy code
 # (a2d59f1) on the legacy lock.
 # Usage (from the root of the tree to run): make_sample_db.sh <venv> <out-dir>
+# SAMPLE_DB_NAME=<name> (default sample-legacy) names the output files;
+# SAMPLE_DB_PLACEHOLDERS=1 adds the two Q6.7 placeholder rows (Phase 5).
 set -euo pipefail
 ENV=$(realpath "$1")
 OUT=$(realpath -m "$2")
@@ -29,8 +31,13 @@ export PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}"
 # clock) stay visibly apart.
 export TZ=Etc/GMT-5
 
+NAME=${SAMPLE_DB_NAME:-sample-legacy}
+# The Phase 4 sample keeps its original record names.
+PREFIX=$([ "$NAME" = sample-legacy ] && echo "" || echo "$NAME-")
+EXTRA=$([ "${SAMPLE_DB_PLACEHOLDERS:-0}" = 1 ] && echo "--placeholders" || echo "")
+
 export DATABASE_URL="sqlite:///$TMP/sample.db"
-if ! "$ENV/bin/python" "$BASELINE/provenance.py" script "$OUT/provenance-init_db.json" \
+if ! "$ENV/bin/python" "$BASELINE/provenance.py" script "$OUT/provenance-${PREFIX}init_db.json" \
   backend/scripts/init_db.py > "$TMP/init_db.log" 2>&1; then
   cat "$TMP/init_db.log" >&2; exit 1
 fi
@@ -40,7 +47,7 @@ PORT=${SAMPLE_DB_PORT:-18766}
 if python3 -c "import socket, sys; socket.create_connection(('127.0.0.1', int(sys.argv[1])), 0.2)" "$PORT" 2>/dev/null; then
   echo "port $PORT is already in use" >&2; exit 1
 fi
-"$ENV/bin/python" "$BASELINE/provenance.py" serve "$OUT/provenance-server.json" -- \
+"$ENV/bin/python" "$BASELINE/provenance.py" serve "$OUT/provenance-${PREFIX}server.json" -- \
   backend.app.api.api:app --host 127.0.0.1 --port "$PORT" > "$TMP/server.log" 2>&1 &
 PID=$!
 trap 'kill $PID 2>/dev/null || true; wait $PID 2>/dev/null || true; rm -rf "$TMP"' EXIT
@@ -52,8 +59,8 @@ for _ in $(seq 1 100); do
 done
 grep '^provenance' "$TMP/server.log"
 
-python3 "$HERE/make_sample_db.py" populate "http://127.0.0.1:$PORT" "$OUT/sample-legacy.requests.json"
+python3 "$HERE/make_sample_db.py" populate "http://127.0.0.1:$PORT" "$OUT/$NAME.requests.json" $EXTRA
 
 # Stop the server before copying, so the file is complete and closed.
 kill $PID; wait $PID 2>/dev/null || true
-python3 "$HERE/make_sample_db.py" describe "$TMP/sample.db" "$OUT"
+python3 "$HERE/make_sample_db.py" describe "$TMP/sample.db" "$OUT" "$NAME"

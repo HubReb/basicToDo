@@ -1,0 +1,5 @@
+[
+ ["index", "ix_toDo_title", "toDo", "CREATE INDEX \"ix_toDo_title\" ON \"toDo\" (title)"],
+ ["index", "sqlite_autoindex_toDo_1", "toDo", null],
+ ["table", "toDo", "toDo", "CREATE TABLE \"toDo\" (\n\tid CHAR(32) NOT NULL, \n\ttitle VARCHAR(255) NOT NULL, \n\tdescription VARCHAR(255), \n\tcreated_at TIMESTAMP NOT NULL, \n\tupdated_at TIMESTAMP, \n\tdeleted BOOLEAN NOT NULL, \n\tdone BOOLEAN NOT NULL, \n\tPRIMARY KEY (id), \n\tCONSTRAINT title_length_check CHECK (length(title) <= 255), \n\tCONSTRAINT description_length_check CHECK (length(description) <= 255)\n)"]
+]
