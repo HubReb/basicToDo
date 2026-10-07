@@ -1,4 +1,5 @@
-""" Update todo entry data schema"""
+"""Update todo entry data schema"""
+
 from typing import Optional
 
 from pydantic import BaseModel

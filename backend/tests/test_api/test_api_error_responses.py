@@ -1,10 +1,13 @@
-""" Error response format tests"""
+"""Error response format tests"""
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from backend.app.business_logic.exceptions import (ToDoAlreadyExistsError, ToDoNotFoundError, ToDoValidationError)
-from backend.tests.test_api.test_setup_for_api_endpoins import (client, created_todo, mock_service)
+from backend.app.business_logic.exceptions import (
+    ToDoAlreadyExistsError,
+    ToDoNotFoundError,
+    ToDoValidationError,
+)
 
 
 class TestErrorResponses:
@@ -37,7 +40,7 @@ class TestErrorResponses:
         payload = {
             "id": created_todo["id"],
             "title": "Duplicate",
-            "description": "Test"
+            "description": "Test",
         }
         response = client.post("/todo", json=payload)
 
@@ -49,12 +52,15 @@ class TestErrorResponses:
         """Test 400 validation error has consistent format."""
         # Mock service to raise validation error
         mock_service.create_todo = AsyncMock(
-            side_effect=ToDoValidationError("Invalid characters or SQL keywords in input"))
+            side_effect=ToDoValidationError(
+                "Invalid characters or SQL keywords in input"
+            )
+        )
 
         payload = {
             "id": str(uuid4()),
             "title": "'; DROP TABLE todo;--",
-            "description": "Test"
+            "description": "Test",
         }
         response = client.post("/todo", json=payload)
 

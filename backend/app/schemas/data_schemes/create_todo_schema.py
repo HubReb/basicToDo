@@ -1,4 +1,5 @@
-""" Create todo entry data schema"""
+"""Create todo entry data schema"""
+
 from typing import Optional
 from uuid import UUID
 

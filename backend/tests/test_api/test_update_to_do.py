@@ -1,14 +1,11 @@
-""" PUT /todo/{todo_id} tests """
+"""PUT /todo/{todo_id} tests"""
+
 import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from backend.app.business_logic.exceptions import (
-    ToDoNotFoundError,
-    ToDoValidationError
-)
+from backend.app.business_logic.exceptions import ToDoNotFoundError, ToDoValidationError
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
-from backend.tests.test_api.test_setup_for_api_endpoins import (client, created_todo, mock_service)
 
 
 class TestUpdateTodo:
@@ -18,19 +15,21 @@ class TestUpdateTodo:
         """Test successful update returns 200."""
         # Mock service to return updated todo
         todo_id = uuid4()
-        mock_service.update_todo = AsyncMock(return_value=ToDoSchema(
-            id=todo_id,
-            title="Updated Title",
-            description="Updated Description",
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-            deleted=False,
-            done=False,
-        ))
+        mock_service.update_todo = AsyncMock(
+            return_value=ToDoSchema(
+                id=todo_id,
+                title="Updated Title",
+                description="Updated Description",
+                created_at=datetime.datetime.now(),
+                updated_at=datetime.datetime.now(),
+                deleted=False,
+                done=False,
+            )
+        )
 
         update_payload = {
             "title": "Updated Title",
-            "description": "Updated Description"
+            "description": "Updated Description",
         }
 
         response = client.put(f"/todo/{created_todo['id']}", json=update_payload)
@@ -45,19 +44,19 @@ class TestUpdateTodo:
         """Test marking todo as done."""
         # Mock service to return todo marked as done
         todo_id = uuid4()
-        mock_service.update_todo = AsyncMock(return_value=ToDoSchema(
-            id=todo_id,
-            title=created_todo["title"],
-            description=created_todo["description"],
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-            deleted=False,
-            done=True,
-        ))
+        mock_service.update_todo = AsyncMock(
+            return_value=ToDoSchema(
+                id=todo_id,
+                title=created_todo["title"],
+                description=created_todo["description"],
+                created_at=datetime.datetime.now(),
+                updated_at=datetime.datetime.now(),
+                deleted=False,
+                done=True,
+            )
+        )
 
-        update_payload = {
-            "done": True
-        }
+        update_payload = {"done": True}
 
         response = client.put(f"/todo/{created_todo['id']}", json=update_payload)
 
@@ -69,19 +68,19 @@ class TestUpdateTodo:
         """Test partial update with only some fields."""
         # Mock service to return updated todo with preserved description
         todo_id = uuid4()
-        mock_service.update_todo = AsyncMock(return_value=ToDoSchema(
-            id=todo_id,
-            title="Only Title Updated",
-            description=created_todo["description"],
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-            deleted=False,
-            done=False,
-        ))
+        mock_service.update_todo = AsyncMock(
+            return_value=ToDoSchema(
+                id=todo_id,
+                title="Only Title Updated",
+                description=created_todo["description"],
+                created_at=datetime.datetime.now(),
+                updated_at=datetime.datetime.now(),
+                deleted=False,
+                done=False,
+            )
+        )
 
-        update_payload = {
-            "title": "Only Title Updated"
-        }
+        update_payload = {"title": "Only Title Updated"}
 
         response = client.put(f"/todo/{created_todo['id']}", json=update_payload)
 
@@ -97,9 +96,7 @@ class TestUpdateTodo:
         mock_service.update_todo = AsyncMock(side_effect=ToDoNotFoundError())
 
         non_existent_id = uuid4()
-        update_payload = {
-            "title": "Updated"
-        }
+        update_payload = {"title": "Updated"}
 
         response = client.put(f"/todo/{non_existent_id}", json=update_payload)
 
@@ -107,36 +104,39 @@ class TestUpdateTodo:
 
     def test_update_todo_invalid_uuid_returns_422(self, client):
         """Test invalid UUID returns 422."""
-        update_payload = {
-            "title": "Updated"
-        }
+        update_payload = {"title": "Updated"}
 
         response = client.put("/todo/not-a-uuid", json=update_payload)
 
         assert response.status_code == 422
 
-    def test_update_todo_sql_injection_returns_400(self, client, mock_service, created_todo):
+    def test_update_todo_sql_injection_returns_400(
+        self, client, mock_service, created_todo
+    ):
         """Test SQL injection attempt in update returns 400."""
         # Mock service to raise validation error for SQL injection
         mock_service.update_todo = AsyncMock(
-            side_effect=ToDoValidationError("Invalid characters or SQL keywords in input"))
+            side_effect=ToDoValidationError(
+                "Invalid characters or SQL keywords in input"
+            )
+        )
 
-        update_payload = {
-            "title": "'; DROP TABLE todo;--"
-        }
+        update_payload = {"title": "'; DROP TABLE todo;--"}
 
         response = client.put(f"/todo/{created_todo['id']}", json=update_payload)
 
         assert response.status_code == 400
 
-    def test_update_todo_empty_title_returns_422(self, client, mock_service, created_todo):
+    def test_update_todo_empty_title_returns_422(
+        self, client, mock_service, created_todo
+    ):
         """Test updating with empty title returns 422."""
         # Mock service to raise validation error for empty title
-        mock_service.update_todo = AsyncMock(side_effect=ToDoValidationError("Title cannot be empty"))
+        mock_service.update_todo = AsyncMock(
+            side_effect=ToDoValidationError("Title cannot be empty")
+        )
 
-        update_payload = {
-            "title": ""
-        }
+        update_payload = {"title": ""}
 
         response = client.put(f"/todo/{created_todo['id']}", json=update_payload)
 
@@ -146,19 +146,19 @@ class TestUpdateTodo:
         """Test updating todo with emoji."""
         # Mock service to return updated todo with emoji
         todo_id = uuid4()
-        mock_service.update_todo = AsyncMock(return_value=ToDoSchema(
-            id=todo_id,
-            title="Updated with emoji 🎉",
-            description=created_todo["description"],
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-            deleted=False,
-            done=False,
-        ))
+        mock_service.update_todo = AsyncMock(
+            return_value=ToDoSchema(
+                id=todo_id,
+                title="Updated with emoji 🎉",
+                description=created_todo["description"],
+                created_at=datetime.datetime.now(),
+                updated_at=datetime.datetime.now(),
+                deleted=False,
+                done=False,
+            )
+        )
 
-        update_payload = {
-            "title": "Updated with emoji 🎉"
-        }
+        update_payload = {"title": "Updated with emoji 🎉"}
 
         response = client.put(f"/todo/{created_todo['id']}", json=update_payload)
 
