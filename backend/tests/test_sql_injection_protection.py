@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 
-from backend.app.business_logic.exceptions import (ToDoNotFoundError, ToDoValidationError)
+from backend.app.business_logic.exceptions import ToDoNotFoundError, ToDoValidationError
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
@@ -21,9 +21,7 @@ def todo_service(todo_service_with_real_db):
 async def test_create_valid_todo(todo_service):
     """Should create todo with normal text."""
     todo = ToDoCreateScheme(
-        id=uuid4(),
-        title="Buy milk",
-        description="Remember to buy almond milk"
+        id=uuid4(), title="Buy milk", description="Remember to buy almond milk"
     )
     result = await todo_service.create_todo(todo)
     assert result.title == "Buy milk"
@@ -33,20 +31,23 @@ async def test_create_valid_todo(todo_service):
 @pytest.mark.asyncio
 async def test_update_valid_todo(todo_service):
     """Should allow updating with valid text."""
-    todo = ToDoCreateScheme(id=uuid4(), title="Clean kitchen", description="Morning task")
+    todo = ToDoCreateScheme(
+        id=uuid4(), title="Clean kitchen", description="Morning task"
+    )
     created = await todo_service.create_todo(todo)
 
     update = TodoUpdateScheme(
         id=created.id,
         title="Clean kitchen (updated)",
         description="Before lunch",
-        done=False
+        done=False,
     )
     updated = await todo_service.update_todo(created.id, update)
     assert updated.title.endswith("(updated)")
 
 
 # --- 🚫 INJECTION ATTEMPTS --- #
+
 
 @pytest.mark.asyncio
 async def test_create_todo_with_sql_injection_attempt(todo_service):
@@ -57,15 +58,13 @@ async def test_create_todo_with_sql_injection_attempt(todo_service):
         "title'; DELETE FROM todo WHERE 'a'='a",
         "1; EXEC xp_cmdshell('rm -rf /')",
         "normal -- malicious comment",
-        "safe; UPDATE todo SET done=1"
+        "safe; UPDATE todo SET done=1",
     ]
 
     for payload in malicious_inputs:
         with pytest.raises(ToDoValidationError):
             todo = ToDoCreateScheme(
-                id=uuid4(),
-                title=payload,
-                description="attack test"
+                id=uuid4(), title=payload, description="attack test"
             )
             await todo_service.create_todo(todo)
 
@@ -77,10 +76,7 @@ async def test_update_todo_with_sql_injection(todo_service):
     created = await todo_service.create_todo(todo)
 
     bad_update = TodoUpdateScheme(
-        id=created.id,
-        title="; DROP TABLE toDo;",
-        description="none",
-        done=False
+        id=created.id, title="; DROP TABLE toDo;", description="none", done=False
     )
 
     with pytest.raises(ToDoValidationError):

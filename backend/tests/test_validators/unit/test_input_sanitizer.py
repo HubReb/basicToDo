@@ -1,9 +1,13 @@
 """Unit tests for InputSanitizer."""
+
 import pytest
 
 from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.business_logic.validators.input_sanitizer import InputSanitizer
-from backend.tests.test_data.constants import SQL_INJECTION_PATTERNS, VALID_STRINGS_WITH_SQL_LIKE_CONTENT
+from backend.tests.test_data.constants import (
+    SQL_INJECTION_PATTERNS,
+    VALID_STRINGS_WITH_SQL_LIKE_CONTENT,
+)
 
 
 @pytest.fixture
@@ -107,7 +111,9 @@ class TestInputSanitizerNonStringValues:
 class TestInputSanitizerSQLInjection:
     """Test InputSanitizer detects SQL injection patterns."""
 
-    def test_sql_injection_pattern(self, sanitizer, mock_logger, sql_pattern, description):
+    def test_sql_injection_pattern(
+        self, sanitizer, mock_logger, sql_pattern, description
+    ):
         """Test that SQL injection pattern is detected and rejected."""
         with pytest.raises(ToDoValidationError) as exc_info:
             sanitizer.validate(sql_pattern)

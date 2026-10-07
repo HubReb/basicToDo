@@ -1,4 +1,5 @@
 """Integration tests for InputSanitizer with real logger."""
+
 import pytest
 
 from backend.app.business_logic.exceptions import ToDoValidationError

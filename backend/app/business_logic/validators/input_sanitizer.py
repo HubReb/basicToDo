@@ -1,4 +1,5 @@
 """Input sanitizer for SQL injection protection."""
+
 import re
 from typing import Any
 
@@ -29,13 +30,17 @@ class InputSanitizer(ValidatorInterface):
 
         str_value: str
         if not isinstance(value, str):
-            self.logger.warning("InputSanitizer received non-string value: %s", type(value))
+            self.logger.warning(
+                "InputSanitizer received non-string value: %s", type(value)
+            )
             str_value = str(value)
         else:
             str_value = value
 
         if self._SQL_INJECTION_RE.search(str_value):
             self.logger.warning("SQL injection attempt detected: %s", str_value)
-            raise ToDoValidationError(f"Invalid characters or SQL keywords in input: {str_value!r}")
+            raise ToDoValidationError(
+                f"Invalid characters or SQL keywords in input: {str_value!r}"
+            )
 
         return str_value.strip()
