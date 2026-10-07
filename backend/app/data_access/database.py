@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Generator
 
 from sqlalchemy import create_engine
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
@@ -15,6 +16,7 @@ __all__ = [
     "SessionLocal",
     "engine",
     "get_safe_database_url",
+    "loggable_url",
     "safe_session_scope",
 ]
 
@@ -35,6 +37,11 @@ def get_safe_database_url() -> str:
     elif not db_url.startswith(("sqlite://", "postgresql://", "mysql://")):
         raise RuntimeError(f"Invalid or unsafe DATABASE_URL: {db_url}")
     return db_url
+
+
+def loggable_url(url: str) -> str:
+    """The URL without its password and query string, which may carry one."""
+    return make_url(url).set(query={}).render_as_string(hide_password=True)
 
 
 DATABASE_URL = get_safe_database_url()

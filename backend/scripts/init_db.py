@@ -9,7 +9,12 @@ from pathlib import Path
 repo_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(repo_root))
 
-from backend.app.data_access.database import Base, engine, DATABASE_URL  # noqa: E402
+from backend.app.data_access.database import (  # noqa: E402
+    DATABASE_URL,
+    Base,
+    engine,
+    loggable_url,
+)
 from backend.app.logger import CustomLogger  # noqa: E402
 
 logger = CustomLogger("DBInit")
@@ -18,7 +23,8 @@ logger = CustomLogger("DBInit")
 def init_database() -> None:
     """Create all database tables using SQLAlchemy ORM."""
     try:
-        logger.info(f"Initializing database at: {DATABASE_URL}")
+        # Without password and query: INFO lines are printed now (TD-3).
+        logger.info("Initializing database at: %s", loggable_url(DATABASE_URL))
         Base.metadata.create_all(bind=engine)
         logger.info("Database schema created successfully")
 
