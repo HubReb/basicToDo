@@ -19,10 +19,10 @@ class TestToDoEntryBuilderDataConsistency:
     """Test ToDoEntryBuilder maintains data consistency."""
 
     @pytest.mark.asyncio
-    async def test_build_same_payload_produces_consistent_structure(
+    async def test_build_same_payload_produces_consistent_structure_in_utc(
         self, builder  # noqa: F811
     ):
-        """Test same payload produces consistent structure."""
+        """Same payload, same structure; each build has its own UTC instant (Q6.6)."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid, title="Test Title", description="Test Description"
@@ -36,7 +36,10 @@ class TestToDoEntryBuilderDataConsistency:
         assert result1.description == result2.description
         assert result1.deleted == result2.deleted is False
         assert result1.done == result2.done is False
-        assert result1.updated_at == result2.updated_at is None
+        assert result1.updated_at == result1.created_at
+        assert result2.updated_at == result2.created_at
+        assert result1.created_at is not None and result2.created_at is not None
+        assert result1.created_at <= result2.created_at
 
     @pytest.mark.asyncio
     async def test_build_different_builders_same_result(self):

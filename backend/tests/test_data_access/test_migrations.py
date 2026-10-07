@@ -1,14 +1,18 @@
 """The Alembic baseline revision and the check that guards stamping.
 
-The application creates its schema with Base.metadata.create_all; revision
-0001 must create exactly the same schema, so that a database stamped at 0001
-and one upgraded to it are interchangeable for every later revision. Only a
-database whose schema check_baseline.py accepts may be stamped.
+Revision 0001 must create exactly the schema Base.metadata.create_all
+creates (the legacy code's), so that a database made before Alembic,
+stamped at 0001, and one upgraded to it are interchangeable for every
+later revision. Only a database whose schema check_baseline.py accepts may
+be stamped. Since Phase 5 the application runs the revisions at startup
+(backend/app/data_access/schema.py, tested in test_startup.py); 0002 changes
+data only (test_utc_migration.py), so the schema stays the baseline.
 
 Alembic's autogenerate comparison does not see CHECK constraints, so the
 schemas are compared byte for byte through sqlite_master instead.
 """
 
+import datetime
 import importlib.util
 import os
 import shutil
@@ -34,6 +38,8 @@ SAMPLE_DB = (
     REPO_ROOT / "analysis" / "basictodo" / "baseline" / "db" / "sample-legacy.db"
 )
 VERSION_TABLE = "alembic_version"
+# The zone make_sample_db.sh writes the sample databases in.
+SAMPLE_ZONE = "Etc/GMT-5"
 
 
 def load_check_baseline():
@@ -125,15 +131,30 @@ class TestBaselineRevision:
         assert schema(path) == []
         assert query(path, f"SELECT version_num FROM {VERSION_TABLE}") == []
 
-    def test_stamping_the_sample_database_makes_upgrade_head_a_no_op(self, sample_copy):
+    def test_stamping_the_sample_database_at_the_baseline_lets_upgrade_convert_it(
+        self, sample_copy, monkeypatch
+    ):
+        # Phase 5 replaced "stamp head, then upgrade head is a no-op": stamping
+        # head would now skip the data migration 0002 (Q6.6).
+        monkeypatch.setenv("BASICTODO_LEGACY_TZ", SAMPLE_ZONE)
         rows_before = query(sample_copy, 'SELECT * FROM "toDo" ORDER BY id')
         assert check_baseline.main(["check_baseline.py", str(sample_copy)]) == 0
 
-        run_alembic(sample_copy, command.stamp, "head")
+        run_alembic(sample_copy, command.stamp, "0001")
         run_alembic(sample_copy, command.upgrade, "head")
 
         assert schema(sample_copy) == BASELINE_SCHEMA
-        assert query(sample_copy, 'SELECT * FROM "toDo" ORDER BY id') == rows_before
+        five_hours = datetime.timedelta(hours=5)
+        assert query(sample_copy, 'SELECT * FROM "toDo" ORDER BY id') == [
+            row[:3]
+            + (
+                (datetime.datetime.fromisoformat(row[3]) - five_hours).strftime(
+                    "%Y-%m-%d %H:%M:%S.%f"
+                ),
+                *row[4:],
+            )
+            for row in rows_before
+        ]
         assert query(sample_copy, f"SELECT version_num FROM {VERSION_TABLE}") == [
             (head_revision(),)
         ]

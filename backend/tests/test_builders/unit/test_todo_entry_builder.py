@@ -34,10 +34,10 @@ class TestToDoEntryBuilderSuccess:
     """Test ToDoEntryBuilder successful builds."""
 
     @pytest.mark.asyncio
-    async def test_build_from_create_schema_success(
+    async def test_build_from_create_schema_success_in_utc(
         self, builder, mock_uuid_validator, mock_field_validator
     ):
-        """Test building ToDoEntryData from valid schema."""
+        """Q6.6: both timestamps are the same timezone-aware UTC instant."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid, title="Test Title", description="Test Description"
@@ -47,22 +47,21 @@ class TestToDoEntryBuilderSuccess:
         mock_field_validator.validate_required.return_value = "Test Title"
         mock_field_validator.validate_optional.return_value = "Test Description"
 
+        mock_now = datetime.datetime(2024, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
         with patch(
-            "backend.app.business_logic.builders.todo_entry_builder.datetime"
-        ) as mock_datetime:
-            mock_now = datetime.datetime(2024, 1, 1, 12, 0, 0)
-            mock_datetime.datetime.now.return_value = mock_now
-
+            "backend.app.business_logic.builders.todo_entry_builder.utc_now",
+            return_value=mock_now,
+        ):
             result = await builder.build_from_create_schema(payload)
 
-            assert isinstance(result, ToDoEntryData)
-            assert result.id == test_uuid
-            assert result.title == "Test Title"
-            assert result.description == "Test Description"
-            assert result.created_at == mock_now
-            assert result.updated_at is None
-            assert result.deleted is False
-            assert result.done is False
+        assert isinstance(result, ToDoEntryData)
+        assert result.id == test_uuid
+        assert result.title == "Test Title"
+        assert result.description == "Test Description"
+        assert result.created_at == mock_now
+        assert result.updated_at == mock_now
+        assert result.deleted is False
+        assert result.done is False
 
     @pytest.mark.asyncio
     async def test_build_calls_uuid_validator(
@@ -131,10 +130,10 @@ class TestToDoEntryBuilderSuccess:
         assert result.description == ""
 
     @pytest.mark.asyncio
-    async def test_build_sets_created_at_timestamp(
+    async def test_build_takes_both_timestamps_from_one_utc_now_call(
         self, builder, mock_uuid_validator, mock_field_validator
     ):
-        """Test builder sets created_at to current timestamp."""
+        """Q6.6: created_at and updated_at come from a single utc_now()."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")
 
@@ -142,16 +141,17 @@ class TestToDoEntryBuilderSuccess:
         mock_field_validator.validate_required.return_value = "Title"
         mock_field_validator.validate_optional.return_value = "Desc"
 
+        mock_now = datetime.datetime(
+            2024, 1, 15, 10, 30, 45, tzinfo=datetime.timezone.utc
+        )
         with patch(
-            "backend.app.business_logic.builders.todo_entry_builder.datetime"
-        ) as mock_datetime:
-            mock_now = datetime.datetime(2024, 1, 15, 10, 30, 45)
-            mock_datetime.datetime.now.return_value = mock_now
-
+            "backend.app.business_logic.builders.todo_entry_builder.utc_now",
+            return_value=mock_now,
+        ) as mock_utc_now:
             result = await builder.build_from_create_schema(payload)
 
-            assert result.created_at == mock_now
-            mock_datetime.datetime.now.assert_called_once()
+        assert (result.created_at, result.updated_at) == (mock_now, mock_now)
+        mock_utc_now.assert_called_once_with()
 
 
 class TestToDoEntryBuilderNonePayload:
@@ -284,10 +284,10 @@ class TestToDoEntryBuilderDefaults:
     """Test ToDoEntryBuilder sets correct default values."""
 
     @pytest.mark.asyncio
-    async def test_build_sets_updated_at_to_none(
+    async def test_build_sets_updated_at_to_created_at(
         self, builder, mock_uuid_validator, mock_field_validator
     ):
-        """Test builder sets updated_at to None for new entries."""
+        """Q6.6: a new entry's updated_at is its creation time, not None."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Title", description="Desc")
 
@@ -297,7 +297,8 @@ class TestToDoEntryBuilderDefaults:
 
         result = await builder.build_from_create_schema(payload)
 
-        assert result.updated_at is None
+        assert result.updated_at is not None
+        assert result.updated_at == result.created_at
 
     @pytest.mark.asyncio
     async def test_build_sets_deleted_to_false(

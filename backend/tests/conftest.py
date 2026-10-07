@@ -1,5 +1,6 @@
 """Root conftest.py with shared fixtures for all tests."""
 
+import os
 import uuid
 from contextlib import contextmanager
 from typing import Generator
@@ -15,6 +16,11 @@ from backend.app.business_logic.validators import ValidatorFactory
 from backend.app.data_access.database import Base
 from backend.app.data_access.repository import ToDoRepository
 from backend.app.logger import CustomLogger
+
+# The zone in which migration 0002 reads created_at values written before
+# Q6.6, so that no test depends on the machine's zone. The migration tests
+# set their own.
+os.environ["BASICTODO_LEGACY_TZ"] = "UTC"
 
 
 # Session-scoped fixtures for shared components

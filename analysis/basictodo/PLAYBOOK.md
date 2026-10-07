@@ -337,14 +337,16 @@ Deferred on purpose, with the phase that owns each item:
 6. **Alembic last:** the revision by hand; tests for `upgrade head == create_all == snapshot`, downgrade, stamp-then-upgrade as a no-op, and the CLI once in a subprocess.
 7. **Both directions** with `sample_db_roundtrip.sh`, and a positive control for every new guard.
 
-### Stamping an existing database (the runtime still uses `create_all`)
+### Stamping an existing database
 
-Run from the repository root, on the venv of this checkout:
+Since Phase 5 the application does this itself at startup (`init_db.py`, `main.py`; `backend/app/data_access/schema.py`): in one transaction it backs the file up to `<db>.pre-<revision>.bak`, checks the schema against the baseline, stamps `0001` and upgrades.
+`DATABASE_URL=sqlite:///<db> python backend/scripts/init_db.py` runs exactly that. By hand, from the repository root, on the venv of this checkout:
 
-1. Back up the database file.
+1. Back up the database with SQLite's backup API (`sqlite3 <db> ".backup <db>.bak"`), not a file copy: changes still in a `-wal` file are not in the `.db` file.
 2. `python backend/migrations/check_baseline.py <db>`. Continue **only on exit 0**. On exit 1 the database was made by an older model, for example without the CHECK constraints or with an id index; it needs its own migration, not a stamp.
-3. `DATABASE_URL=sqlite:///<db> python -m alembic stamp head`
-4. `DATABASE_URL=sqlite:///<db> python -m alembic current` shows `0001 (head)`.
+3. `DATABASE_URL=sqlite:///<db> python -m alembic stamp 0001`. **Never `stamp head`** (Phase 4 did, when `0001` was the head): it would mark the data migration `0002` as done without running it.
+4. `BASICTODO_LEGACY_TZ=<zone> DATABASE_URL=sqlite:///<db> python -m alembic upgrade head`, with the IANA zone the old code wrote `created_at` in (default: the system zone).
+5. `DATABASE_URL=sqlite:///<db> python -m alembic current` shows `0002 (head)`.
 
 ### Done means (Phase 4)
 

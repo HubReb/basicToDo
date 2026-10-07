@@ -12,6 +12,7 @@ The routes run against the real service and repository on a file-backed
 SQLite database, wired as in test_p0_contracts.py.
 """
 
+import datetime
 import json
 import uuid
 from contextlib import contextmanager
@@ -225,3 +226,24 @@ class TestPhase5Behaviour:
 
         assert response.status_code == 422
         assert tuple(stored(db_engine, todo_id))[::2] == ("Original", 0)
+
+    def test_timestamps_are_sent_in_utc_and_an_edit_refreshes_updated_at(self, client):
+        """Q6.6 (RULE-034/035): one UTC instant at creation, sent with "Z"; an edit moves updated_at."""
+        todo_id = uuid.uuid4()
+        before = datetime.datetime.now(datetime.timezone.utc)
+        created = client.post("/todo", json={"id": str(todo_id), "title": "Clock"})
+        edited = client.put(f"/todo/{todo_id}", json={"title": "Clock, edited"})
+        after = datetime.datetime.now(datetime.timezone.utc)
+
+        assert (created.status_code, edited.status_code) == (200, 200)
+        first, second = created.json()["todo_entry"], edited.json()["todo_entry"]
+        assert first["created_at"].endswith("Z")
+        assert first["updated_at"] == first["created_at"]
+        assert second["created_at"] == first["created_at"]
+        assert second["updated_at"].endswith("Z")
+        assert (
+            before
+            <= datetime.datetime.fromisoformat(first["created_at"])
+            <= datetime.datetime.fromisoformat(second["updated_at"])
+            <= after
+        )

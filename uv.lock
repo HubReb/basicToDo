@@ -139,6 +139,7 @@ name = "basictodo"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "alembic" },
     { name = "anyio" },
     { name = "fastapi", extra = ["standard"] },
     { name = "python-multipart" },
@@ -150,7 +151,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "alembic" },
     { name = "black" },
     { name = "factory-boy" },
     { name = "httpx2" },
@@ -168,6 +168,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "alembic", specifier = ">=1.20.0" },
     { name = "anyio", specifier = ">=4.14.2" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.142.2" },
     { name = "python-multipart", specifier = ">=0.0.31" },
@@ -179,7 +180,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "alembic", specifier = ">=1.20.0" },
     { name = "black", specifier = ">=25.1.0" },
     { name = "factory-boy", specifier = ">=3.3.0" },
     { name = "httpx2", specifier = ">=2.13.1" },

@@ -1,15 +1,15 @@
 """Alembic environment for the toDo schema.
 
-The application still creates its schema with Base.metadata.create_all
-(backend/app/main.py, backend/scripts/init_db.py). The revisions under
-versions/ are run by hand; an existing database is stamped only after
-check_baseline.py has accepted its schema.
+The application runs these revisions at startup, through
+backend/app/data_access/schema.py (prepare_database), on a connection it
+passes as config.attributes["connection"] inside its own transaction. An
+existing database made before Alembic is stamped at 0001 only if its
+schema is the baseline (check_baseline.py runs that check by hand).
 
-Configuration lives in pyproject.toml ([tool.alembic]); there is no
-alembic.ini, so this file reads no logging configuration and no
-sqlalchemy.url. The database is the application's: DATABASE_URL, or
-backend/todo.db under the working directory. A caller that already holds a
-connection passes it as config.attributes["connection"].
+The command-line configuration lives in pyproject.toml ([tool.alembic]);
+there is no alembic.ini, so this file reads no logging configuration and
+no sqlalchemy.url. Without a connection passed in, the database is the
+application's (DATABASE_URL or its default).
 """
 
 from alembic import context

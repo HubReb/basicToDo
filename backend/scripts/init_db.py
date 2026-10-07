@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize database schema for testing/deployment."""
+"""Prepare the database: create it, or bring it to the latest revision (Q6.6)."""
 
 import sys
 from pathlib import Path
@@ -9,38 +9,31 @@ from pathlib import Path
 repo_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(repo_root))
 
-from backend.app.data_access.database import (  # noqa: E402
-    DATABASE_URL,
-    Base,
-    engine,
-    loggable_url,
-)
+from backend.app.data_access.database import DATABASE_URL, loggable_url  # noqa: E402
+from backend.app.data_access.schema import SchemaError, prepare_database  # noqa: E402
 from backend.app.logger import CustomLogger  # noqa: E402
 
 logger = CustomLogger("DBInit")
 
 
 def init_database() -> None:
-    """Create all database tables using SQLAlchemy ORM."""
+    """Bring the configured database to the latest revision, or exit with 1."""
+    # Without password and query: INFO lines are printed now (TD-3).
+    logger.info("Preparing database at: %s", loggable_url(DATABASE_URL))
     try:
-        # Without password and query: INFO lines are printed now (TD-3).
-        logger.info("Initializing database at: %s", loggable_url(DATABASE_URL))
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database schema created successfully")
-
-        # Verify tables exist
-        from sqlalchemy import inspect
-
-        inspector = inspect(engine)
-        tables = inspector.get_table_names()
-        logger.info(f"Created tables: {tables}")
-
-        if "toDo" not in tables:
-            raise RuntimeError("Failed to create toDo table")
-
-    except Exception as e:
-        logger.error(f"Database initialization failed: {e}")
+        outcome = prepare_database(DATABASE_URL)
+    except SchemaError as exc:
+        # The schema diff is meant for the operator: printed as is, logged as one line.
+        print(exc, file=sys.stderr)
+        logger.error("Database not prepared: %s", exc)
         sys.exit(1)
+    except Exception as exc:
+        # A migration's message says what to set (for example the time zone);
+        # the log line is cut, so the operator gets it in full here.
+        print(f"Database preparation failed: {exc}", file=sys.stderr)
+        logger.error("Database preparation failed: %s", exc)
+        sys.exit(1)
+    logger.info("Database ready: %s", outcome)
 
 
 if __name__ == "__main__":

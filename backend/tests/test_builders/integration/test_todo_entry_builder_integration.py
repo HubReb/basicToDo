@@ -26,8 +26,8 @@ class TestToDoEntryBuilderRealWorldScenarios:
     """Test ToDoEntryBuilder in realistic scenarios."""
 
     @pytest.mark.asyncio
-    async def test_build_typical_todo_entry(self, builder):
-        """Test building a typical ToDo entry."""
+    async def test_build_typical_todo_entry_in_utc(self, builder):
+        """Test building a typical ToDo entry; its timestamps are one UTC instant (Q6.6)."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid,
@@ -42,7 +42,8 @@ class TestToDoEntryBuilderRealWorldScenarios:
         assert result.title == "Buy groceries for dinner"
         assert result.description == "Need to buy milk, eggs, and bread"
         assert isinstance(result.created_at, datetime.datetime)
-        assert result.updated_at is None
+        assert result.created_at.tzinfo is datetime.timezone.utc
+        assert result.updated_at == result.created_at
         assert result.deleted is False
         assert result.done is False
 
@@ -226,15 +227,17 @@ class TestToDoEntryBuilderTimestampGeneration:
     """Test ToDoEntryBuilder timestamp generation."""
 
     @pytest.mark.asyncio
-    async def test_build_generates_created_at_timestamp(self, builder):
-        """Test builder generates created_at timestamp."""
+    async def test_build_generates_a_utc_created_at_timestamp(self, builder):
+        """Q6.6: created_at is the current time, timezone-aware in UTC."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(id=test_uuid, title="Test", description="Desc")
 
-        before = datetime.datetime.now()
+        before = datetime.datetime.now(datetime.timezone.utc)
         result = await builder.build_from_create_schema(payload)
-        after = datetime.datetime.now()
+        after = datetime.datetime.now(datetime.timezone.utc)
 
+        assert result.created_at is not None
+        assert result.created_at.utcoffset() == datetime.timedelta(0)
         assert before <= result.created_at <= after
 
     @pytest.mark.asyncio

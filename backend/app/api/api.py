@@ -1,6 +1,7 @@
 """FastAPI routes for ToDo operations."""
 
-from typing import Annotated, Any
+from contextlib import asynccontextmanager
+from typing import Annotated, Any, AsyncIterator
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Query, Request, status
@@ -15,6 +16,8 @@ from backend.app.business_logic.exceptions import (
     ToDoRepositoryError,
     ToDoValidationError,
 )
+from backend.app.data_access.database import DATABASE_URL
+from backend.app.data_access.schema import assert_at_head
 from backend.app.factory import create_todo_service
 from backend.app.schemas.api_responses.delete_to_do_response import DeleteToDoResponse
 from backend.app.schemas.api_responses.get_list_to_do_response import ListToDoResponse
@@ -23,9 +26,22 @@ from backend.app.schemas.api_responses.to_do_response import ToDoResponse
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Serve only a database at the latest revision (Q6.6).
+
+    A database made before the UTC migration would otherwise be served with
+    local times labelled as UTC. backend/scripts/init_db.py and
+    backend/app/main.py prepare it.
+    """
+    assert_at_head(DATABASE_URL)
+    yield
+
+
 # FastAPI >= 0.142 would start exporting OpenTelemetry data as soon as an
 # OTEL_EXPORTER_OTLP_* variable is set; keep the legacy behaviour (no export).
-app = FastAPI(title="ToDo API", telemetry={"auto_configure": False})
+app = FastAPI(title="ToDo API", telemetry={"auto_configure": False}, lifespan=lifespan)
 
 # Configure CORS to allow frontend access
 app.add_middleware(

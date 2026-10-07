@@ -5,7 +5,7 @@ from typing import Callable, List, Optional, cast
 from sqlalchemy.exc import IntegrityError
 
 from backend.app.logger import CustomLogger
-from backend.app.models.todo import ToDoEntryData
+from backend.app.models.todo import ToDoEntryData, utc_now
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
 
@@ -64,6 +64,7 @@ class ToDoRepository(ToDoRepositoryInterface):
             return False
         with self.session_manager() as session:
             entry.deleted = True
+            entry.updated_at = utc_now()  # Q6.6: a soft delete is a change
             session.merge(entry)
         return True
 
@@ -86,8 +87,11 @@ class ToDoRepository(ToDoRepositoryInterface):
             )
             if not entry:
                 return None
-            for key, value in data.model_dump(exclude_unset=True).items():
+            changes = data.model_dump(exclude_unset=True)
+            for key, value in changes.items():
                 setattr(entry, key, value)
+            if changes:
+                entry.updated_at = utc_now()  # Q6.6; an empty update changes nothing
             try:
                 session.merge(entry)
             except IntegrityError as e:

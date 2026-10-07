@@ -1,5 +1,6 @@
 """Unit tests for ToDoService.create_todo() method."""
 
+import datetime
 import sqlite3
 import uuid
 from unittest.mock import MagicMock
@@ -235,8 +236,10 @@ class TestCreateTodoRepositoryInteraction:
         assert args[0].description == "Desc"
 
     @pytest.mark.asyncio
-    async def test_create_sets_default_values(self, todo_service, mock_repository):
-        """Test create_todo sets default values for new entry."""
+    async def test_create_sets_default_values_with_one_utc_instant(
+        self, todo_service, mock_repository
+    ):
+        """Test create_todo sets default values; both timestamps are one UTC instant (Q6.6)."""
         payload = create_todo_create_scheme(title="Test", description="Desc")
         mock_repository.create_to_do.return_value = None
 
@@ -245,5 +248,6 @@ class TestCreateTodoRepositoryInteraction:
         args = mock_repository.create_to_do.call_args[0]
         assert args[0].done is False
         assert args[0].deleted is False
-        assert args[0].updated_at is None
         assert args[0].created_at is not None
+        assert args[0].created_at.utcoffset() == datetime.timedelta(0)
+        assert args[0].updated_at == args[0].created_at

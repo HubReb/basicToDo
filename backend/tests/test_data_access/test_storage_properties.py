@@ -3,8 +3,12 @@
 What goes in through the ORM must come out unchanged, and must be stored in
 the format the legacy code writes: ids as 32 lowercase hex digits, timestamps
 as text with microseconds, booleans as 0/1. Like the characterization tests
-next to this module, these run unchanged against the legacy dual mapping and
-against the declarative model that replaces it in Phase 4.
+next to this module, these ran unchanged against the legacy dual mapping and
+against the declarative model that replaced it in Phase 4. Q6.6 (Phase 5)
+made timestamps UTC: an aware value is stored as its UTC wall clock and read
+back equal, a naive one is refused. The two legacy timestamp properties
+(naive values stored as given, aware values stored with their own wall clock
+and read back naive) were replaced, not edited.
 
 Hypothesis runs derandomized and without its example database, so every run
 draws the same examples and the per-test outcome table stays comparable.
@@ -20,6 +24,7 @@ import pytest
 from hypothesis import example, given, settings
 from hypothesis import strategies as st
 from sqlalchemy import create_engine
+from sqlalchemy.exc import StatementError
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.data_access.database import Base
@@ -29,7 +34,10 @@ from backend.app.models.todo import ToDoEntryData
 
 PROPERTY_SETTINGS = settings(deadline=None, derandomize=True, database=None)
 
-FIXED_CREATED_AT = datetime.datetime(2026, 10, 3, 14, 5, 0, 123456)
+# Timezone-aware since Q6.6: the model refuses naive timestamps.
+FIXED_CREATED_AT = datetime.datetime(
+    2026, 10, 3, 14, 5, 0, 123456, tzinfo=datetime.timezone.utc
+)
 
 # Fixed UTC offsets: aware values without DST gaps or folds.
 utc_offsets = st.timedeltas(
@@ -40,6 +48,12 @@ utc_offsets = st.timedeltas(
         datetime.timedelta(minutes=delta // datetime.timedelta(minutes=1))
     )
 )
+
+# A day inside datetime's range on both ends, so that the UTC value exists.
+AWARE_RANGE = {
+    "min_value": datetime.datetime(1, 1, 2),
+    "max_value": datetime.datetime(9999, 12, 30, 23, 59, 59, 999999),
+}
 
 
 class Storage:
@@ -130,8 +144,28 @@ def test_any_uuid_is_stored_as_its_hex_and_read_back_equal(storage, todo_id):
 
 
 @PROPERTY_SETTINGS
-@given(created_at=st.datetimes(), updated_at=st.datetimes())
-def test_naive_timestamps_are_stored_as_text_and_read_back_exactly(
+@given(created_at=st.datetimes())
+def test_naive_timestamps_are_refused(storage, created_at):
+    storage.clear()
+    entry = entry_for(uuid.uuid4(), created_at=created_at)
+
+    with pytest.raises(StatementError, match="timestamps must be timezone-aware"):
+        storage.repository.create_to_do(entry)
+    assert storage.raw('SELECT count(*) FROM "toDo"') == [(0,)]
+
+
+@PROPERTY_SETTINGS
+@given(
+    created_at=st.datetimes(timezones=utc_offsets, **AWARE_RANGE),
+    updated_at=st.datetimes(timezones=utc_offsets, **AWARE_RANGE),
+)
+@example(
+    created_at=datetime.datetime(
+        2026, 1, 1, 0, 30, tzinfo=datetime.timezone(datetime.timedelta(hours=1))
+    ),
+    updated_at=datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc),
+)
+def test_aware_timestamps_are_stored_as_utc_and_read_back_equal(
     storage, created_at, updated_at
 ):
     storage.clear()
@@ -140,26 +174,16 @@ def test_naive_timestamps_are_stored_as_text_and_read_back_exactly(
         entry_for(todo_id, created_at=created_at, updated_at=updated_at)
     )
 
+    utc = datetime.timezone.utc
     assert storage.raw('SELECT created_at, updated_at FROM "toDo"') == [
-        (stored_text(created_at), stored_text(updated_at))
+        (
+            stored_text(created_at.astimezone(utc)),
+            stored_text(updated_at.astimezone(utc)),
+        )
     ]
     entry = storage.load(todo_id)
     assert (entry.created_at, entry.updated_at) == (created_at, updated_at)
-
-
-@PROPERTY_SETTINGS
-@given(created_at=st.datetimes(timezones=utc_offsets))
-def test_aware_timestamps_lose_their_offset_and_keep_the_wall_clock(
-    storage, created_at
-):
-    storage.clear()
-    todo_id = uuid.uuid4()
-    storage.repository.create_to_do(entry_for(todo_id, created_at=created_at))
-
-    assert storage.raw('SELECT created_at FROM "toDo"') == [(stored_text(created_at),)]
-    entry = storage.load(todo_id)
-    assert entry.created_at == created_at.replace(tzinfo=None)
-    assert entry.created_at is not None and entry.created_at.tzinfo is None
+    assert entry.created_at is not None and entry.created_at.tzinfo is utc
 
 
 @PROPERTY_SETTINGS

@@ -22,8 +22,13 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
+# The app serves only a database at the latest revision (Q6.6), so the
+# subprocess prepares it first, as init_db.py and main.py do.
 APP_UNDER_TEST = """
+import os
 from fastapi.testclient import TestClient
+from backend.app.data_access.schema import prepare_database
+prepare_database(os.environ["DATABASE_URL"])
 from backend.app.api.api import app
 """
 

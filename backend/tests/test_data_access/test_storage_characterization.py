@@ -1,9 +1,11 @@
 """Characterization of what the data layer stores in the toDo table.
 
-RULE-034: a new ToDo gets created_at from the builder's datetime.now(), naive
-server-local time, stored with microseconds; done and deleted start false.
-RULE-035: updated_at is filled by the database clock (UTC, whole seconds) at
-insert and never refreshed afterwards.
+RULE-034 and RULE-035 as changed by Q6.6 (Phase 5): a new ToDo gets one UTC
+instant from the builder for both created_at and updated_at, stored as text
+without an offset ("YYYY-MM-DD HH:MM:SS.ffffff", which the model defines as
+UTC) whatever the server's zone; every change refreshes updated_at. The
+legacy pins (created_at in server-local time, updated_at from the database
+clock and never refreshed) were replaced, not edited.
 RULE-037: the creation path always persists deleted = false.
 
 Everything runs through the real builder and repository on a file-backed
@@ -67,13 +69,11 @@ BASELINE_SCHEMA = [
     ),
 ]
 
-# A zone without DST, five hours ahead of UTC, so that server-local time and
-# the database's UTC clock can be told apart (CI runners use UTC).
+# A zone without DST, five hours ahead of UTC, so that a server-local time
+# would be told apart from UTC (CI runners use UTC).
 LOCAL_ZONE = "Etc/GMT-5"
-LOCAL_OFFSET = datetime.timedelta(hours=5)
 
-LOCAL_FORMAT = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}$")
-DB_CLOCK_FORMAT = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
+STORED_FORMAT = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}$")
 
 
 @pytest.fixture
@@ -182,10 +182,13 @@ def build_entry(
     )
 
 
-def utc_now_whole_seconds() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc).replace(
-        tzinfo=None, microsecond=0
-    )
+def utc_now() -> datetime.datetime:
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
+def as_utc(stored: str) -> datetime.datetime:
+    """A stored timestamp, read as the model defines it: UTC."""
+    return datetime.datetime.fromisoformat(stored).replace(tzinfo=datetime.timezone.utc)
 
 
 class TestSchema:
@@ -202,17 +205,18 @@ class TestSchema:
 
 
 class TestCreatedAtRule034:
-    def test_created_at_is_local_naive_time_with_microseconds(
+    def test_created_at_is_stored_as_utc_with_microseconds(
         self, local_clock, session_builder, repository, db_path
     ):
-        before = datetime.datetime.now()
+        # Q6.6 replaced the legacy pin (naive server-local time).
+        before = utc_now()
         repository.create_to_do(build_entry(session_builder, uuid.uuid4()))
-        after = datetime.datetime.now()
+        after = utc_now()
 
         (row,) = raw_rows(db_path)
         assert row["created_at_type"] == "text"
-        assert LOCAL_FORMAT.match(row["created_at"])
-        assert before <= datetime.datetime.fromisoformat(row["created_at"]) <= after
+        assert STORED_FORMAT.match(row["created_at"])
+        assert before <= as_utc(row["created_at"]) <= after
 
     def test_new_todo_is_stored_not_done(self, session_builder, repository, db_path):
         repository.create_to_do(build_entry(session_builder, uuid.uuid4()))
@@ -222,55 +226,91 @@ class TestCreatedAtRule034:
 
 
 class TestUpdatedAtRule035:
-    def test_insert_stores_the_database_utc_clock_in_whole_seconds(
+    def test_insert_stores_updated_at_equal_to_created_at(
         self, local_clock, session_builder, repository, db_path
     ):
+        # Q6.6 replaced the legacy pin (the database's UTC clock, whole seconds).
         entry = build_entry(session_builder, uuid.uuid4())
-        assert entry.updated_at is None
+        assert entry.updated_at == entry.created_at
 
-        before = utc_now_whole_seconds()
         repository.create_to_do(entry)
-        after = utc_now_whole_seconds()
 
         (row,) = raw_rows(db_path)
         assert row["updated_at_type"] == "text"
-        assert DB_CLOCK_FORMAT.match(row["updated_at"])
-        stored = datetime.datetime.fromisoformat(row["updated_at"])
-        assert before <= stored <= after
-        # Two clocks: created_at is local (UTC+5 here), updated_at is UTC.
-        created = datetime.datetime.fromisoformat(row["created_at"])
-        assert abs((created - stored) - LOCAL_OFFSET) < datetime.timedelta(seconds=2)
+        assert STORED_FORMAT.match(row["updated_at"])
+        assert row["updated_at"] == row["created_at"]
 
-    def test_the_created_object_carries_the_stored_updated_at(
+    def test_the_created_object_carries_its_stored_timestamps_in_utc(
         self, local_clock, session_builder, repository, db_path
     ):
         entry = build_entry(session_builder, uuid.uuid4())
         repository.create_to_do(entry)
 
         (row,) = raw_rows(db_path)
-        assert entry.updated_at == datetime.datetime.fromisoformat(row["updated_at"])
+        assert entry.created_at == as_utc(row["created_at"])
+        assert entry.updated_at == as_utc(row["updated_at"])
+        found = repository.get_to_do_entry(entry.id)
+        assert found is not None
+        assert found.created_at == as_utc(row["created_at"])
+        assert found.created_at.tzinfo is datetime.timezone.utc
+        assert found.updated_at == as_utc(row["updated_at"])
 
-    def test_edit_done_and_delete_leave_updated_at_unchanged(
+    def test_edit_done_and_delete_refresh_updated_at(
         self, session_builder, repository, service, db_path
+    ):
+        # Q6.6 replaced the legacy pin (updated_at never refreshed).
+        todo_id = uuid.uuid4()
+        repository.create_to_do(build_entry(session_builder, todo_id))
+        (created,) = raw_rows(db_path)
+        old = "2000-01-01 00:00:00.000000"
+
+        set_raw_updated_at(db_path, todo_id, old)
+        before = utc_now()
+        asyncio.run(service.update_todo(todo_id, TodoUpdateScheme(title="Dry dishes")))
+        (row,) = raw_rows(db_path)
+        assert row["title"] == "Dry dishes"
+        assert before <= as_utc(row["updated_at"]) <= utc_now()
+
+        set_raw_updated_at(db_path, todo_id, old)
+        before = utc_now()
+        asyncio.run(service.update_todo(todo_id, TodoUpdateScheme(done=True)))
+        (row,) = raw_rows(db_path)
+        assert row["done"] == 1
+        assert before <= as_utc(row["updated_at"]) <= utc_now()
+
+        set_raw_updated_at(db_path, todo_id, old)
+        before = utc_now()
+        asyncio.run(service.delete_todo(todo_id))
+        (row,) = raw_rows(db_path)
+        assert row["deleted"] == 1
+        assert before <= as_utc(row["updated_at"]) <= utc_now()
+        assert STORED_FORMAT.match(row["updated_at"])
+        assert row["created_at"] == created["created_at"]
+
+    def test_an_update_without_fields_leaves_updated_at_unchanged(
+        self, session_builder, repository, db_path
     ):
         todo_id = uuid.uuid4()
         repository.create_to_do(build_entry(session_builder, todo_id))
-        set_raw_updated_at(db_path, todo_id, "2000-01-01 00:00:00")
+        set_raw_updated_at(db_path, todo_id, "2000-01-01 00:00:00.000000")
 
-        asyncio.run(service.update_todo(todo_id, TodoUpdateScheme(title="Dry dishes")))
+        repository.update_to_do(todo_id, TodoUpdateScheme())
+
         (row,) = raw_rows(db_path)
-        assert (row["title"], row["updated_at"]) == (
-            "Dry dishes",
-            "2000-01-01 00:00:00",
+        assert row["updated_at"] == "2000-01-01 00:00:00.000000"
+
+    def test_a_naive_timestamp_is_refused(self, repository, db_path):
+        entry = ToDoEntryData(
+            id=uuid.uuid4(),
+            title="Naive",
+            description=None,
+            created_at=datetime.datetime(2026, 10, 8, 12, 0),
+            updated_at=None,
         )
 
-        asyncio.run(service.update_todo(todo_id, TodoUpdateScheme(done=True)))
-        (row,) = raw_rows(db_path)
-        assert (row["done"], row["updated_at"]) == (1, "2000-01-01 00:00:00")
-
-        asyncio.run(service.delete_todo(todo_id))
-        (row,) = raw_rows(db_path)
-        assert (row["deleted"], row["updated_at"]) == (1, "2000-01-01 00:00:00")
+        with pytest.raises(StatementError, match="timestamps must be timezone-aware"):
+            repository.create_to_do(entry)
+        assert raw_rows(db_path) == []
 
 
 class TestDeletedRule037:
@@ -294,7 +334,8 @@ class TestDeletedRule037:
             id=uuid.uuid4(),
             title="No deleted flag",
             description=None,
-            created_at=datetime.datetime.now(),
+            # Q6.6: a timezone-aware value; the model refuses naive ones.
+            created_at=utc_now(),
             updated_at=None,
         )
         assert entry.deleted is False

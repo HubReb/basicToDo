@@ -9,6 +9,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.20.0",
     "anyio>=4.14.2",
     "fastapi[standard]>=0.142.2",
     "python-multipart>=0.0.31",
@@ -42,7 +43,6 @@ warn_unused_ignores = true
 
 [dependency-groups]
 dev = [
-    "alembic>=1.20.0",
     "black>=25.1.0",
     "factory-boy>=3.3.0",
     "httpx2>=2.13.1",
