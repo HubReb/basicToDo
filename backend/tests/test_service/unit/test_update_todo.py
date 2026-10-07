@@ -190,32 +190,58 @@ class TestUpdateTodoValidation:
         assert "title is required" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_update_with_sql_injection_title(self, todo_service):
-        """Test updating with SQL injection in title."""
+    async def test_update_keeps_sql_like_title(self, todo_service, mock_repository):
+        """SQL in a title is ordinary text and reaches the repository (Q6.1)."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
             id=todo_id, title="'; DROP TABLE todos; --", description="Desc"
         )
+        mock_repository.update_to_do.return_value = ToDoEntryData(
+            id=todo_id,
+            title="'; DROP TABLE todos; --",
+            description="Desc",
+            created_at=datetime.datetime.now(),
+            updated_at=None,
+            done=False,
+            deleted=False,
+        )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.update_todo(todo_id, payload)
+        result = await todo_service.update_todo(todo_id, payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert result.title == "'; DROP TABLE todos; --"
+        assert (
+            mock_repository.update_to_do.call_args.args[1].title
+            == "'; DROP TABLE todos; --"
+        )
 
     @pytest.mark.asyncio
-    async def test_update_with_sql_injection_description(self, todo_service):
-        """Test updating with SQL injection in description."""
+    async def test_update_keeps_sql_like_description(
+        self, todo_service, mock_repository
+    ):
+        """SQL in a description is ordinary text and reaches the repository (Q6.1)."""
         todo_id = uuid.uuid4()
         payload = TodoUpdateScheme(
             id=todo_id,
             title="Valid Title",
             description="Test /* */ SELECT * FROM users",
         )
+        mock_repository.update_to_do.return_value = ToDoEntryData(
+            id=todo_id,
+            title="Valid Title",
+            description="Test /* */ SELECT * FROM users",
+            created_at=datetime.datetime.now(),
+            updated_at=None,
+            done=False,
+            deleted=False,
+        )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.update_todo(todo_id, payload)
+        result = await todo_service.update_todo(todo_id, payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert result.description == "Test /* */ SELECT * FROM users"
+        assert (
+            mock_repository.update_to_do.call_args.args[1].description
+            == "Test /* */ SELECT * FROM users"
+        )
 
     @pytest.mark.asyncio
     async def test_update_validates_title_when_provided(

@@ -69,58 +69,32 @@ class TestCreateTodoValidationIntegration:
         assert result.description == "Trailing desc"
 
 
-class TestCreateTodoSQLInjectionIntegration:
-    """Integration tests for create_todo SQL injection protection."""
+class TestCreateTodoSQLLikeTextIntegration:
+    """SQL-like text is created as ordinary text (Q6.1); bound parameters keep it inert."""
 
     @pytest.mark.asyncio
-    async def test_create_blocks_sql_injection_in_title(self, todo_service):
-        """Test create_todo blocks SQL injection in title."""
-        todo_id = uuid.uuid4()
+    @pytest.mark.parametrize(
+        "title, description",
+        [
+            ("'; DROP TABLE todos; --", "Desc"),
+            ("Valid", "Test /* comment */ SELECT * FROM users"),
+            ("Test -- comment", "Desc"),
+            ("Test UNION SELECT * FROM users", "Desc"),
+        ],
+        ids=["drop table title", "select description", "double dash", "union select"],
+    )
+    async def test_create_keeps_sql_like_text(
+        self, todo_service, mock_repository, title, description
+    ):
         payload = ToDoCreateScheme(
-            id=todo_id, title="'; DROP TABLE todos; --", description="Desc"
+            id=uuid.uuid4(), title=title, description=description
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.create_todo(payload)
+        result = await todo_service.create_todo(payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
-
-    @pytest.mark.asyncio
-    async def test_create_blocks_sql_injection_in_description(self, todo_service):
-        """Test create_todo blocks SQL injection in description."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id,
-            title="Valid",
-            description="Test /* comment */ SELECT * FROM users",
-        )
-
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.create_todo(payload)
-
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
-
-    @pytest.mark.asyncio
-    async def test_create_blocks_double_dash_comment(self, todo_service):
-        """Test create_todo blocks SQL double dash comments."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id, title="Test -- comment", description="Desc"
-        )
-
-        with pytest.raises(ToDoValidationError):
-            await todo_service.create_todo(payload)
-
-    @pytest.mark.asyncio
-    async def test_create_blocks_union_select(self, todo_service):
-        """Test create_todo blocks UNION SELECT."""
-        todo_id = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=todo_id, title="Test UNION SELECT * FROM users", description="Desc"
-        )
-
-        with pytest.raises(ToDoValidationError):
-            await todo_service.create_todo(payload)
+        stored = mock_repository.create_to_do.call_args.args[0]
+        assert (stored.title, stored.description) == (title, description)
+        assert (result.title, result.description) == (title, description)
 
 
 class TestCreateTodoUUIDValidationIntegration:

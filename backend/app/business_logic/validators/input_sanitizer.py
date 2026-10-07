@@ -1,30 +1,24 @@
-"""Input sanitizer for SQL injection protection."""
+"""Input sanitizer: normalises text input."""
 
-import re
 from typing import Any
 
-from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.business_logic.validators.validator_interface import ValidatorInterface
 from backend.app.logger import CustomLogger
 
 
 class InputSanitizer(ValidatorInterface):
-    """Validates and sanitizes text input to prevent SQL injection attacks."""
+    """Normalises text input: strips surrounding whitespace.
 
-    _SQL_INJECTION_RE = re.compile(
-        r"(?i)(--|;|/\*|\*/|\bxp_cmdshell\b|\b(?:drop|delete|insert|update|exec(?:ute)?|union|select|shutdown|create|alter|rename|truncate|declare|OR)\b)"
-    )
+    It no longer rejects SQL keywords or operator tokens (Q6.1): that list
+    turned away ordinary titles such as "Tea or coffee" and protected
+    nothing, since every query binds its values as parameters.
+    """
 
     def __init__(self, logger: CustomLogger):
         self.logger = logger
 
     def validate(self, value: Any, *args: Any, **kwargs: Any) -> str | None:
-        """Sanitize input to prevent obvious SQL-injection patterns.
-
-        - Rejects operator tokens (e.g. ';', '--', '/*', '*/') anywhere in string.
-        - Rejects SQL keywords as whole words (so 'updated' is allowed).
-        - Returns stripped string if OK.
-        """
+        """Return the value as a stripped string, or None for None."""
         if value is None:
             return None
 
@@ -36,11 +30,5 @@ class InputSanitizer(ValidatorInterface):
             str_value = str(value)
         else:
             str_value = value
-
-        if self._SQL_INJECTION_RE.search(str_value):
-            self.logger.warning("SQL injection attempt detected: %s", str_value)
-            raise ToDoValidationError(
-                f"Invalid characters or SQL keywords in input: {str_value!r}"
-            )
 
         return str_value.strip()

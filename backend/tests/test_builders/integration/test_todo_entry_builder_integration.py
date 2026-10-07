@@ -172,21 +172,20 @@ class TestToDoEntryBuilderValidationIntegration:
         assert "title is required" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_build_rejects_sql_injection_in_title(self, builder):
-        """Test builder rejects SQL injection in title."""
+    async def test_build_keeps_sql_like_title(self, builder):
+        """SQL in a title is ordinary text (Q6.1)."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid, title="'; DROP TABLE todos; --", description="Desc"
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await builder.build_from_create_schema(payload)
+        entry = await builder.build_from_create_schema(payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert entry.title == "'; DROP TABLE todos; --"
 
     @pytest.mark.asyncio
-    async def test_build_rejects_sql_injection_in_description(self, builder):
-        """Test builder rejects SQL injection in description."""
+    async def test_build_keeps_sql_like_description(self, builder):
+        """SQL in a description is ordinary text (Q6.1)."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid,
@@ -194,10 +193,9 @@ class TestToDoEntryBuilderValidationIntegration:
             description="Test /* */ SELECT * FROM users",
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await builder.build_from_create_schema(payload)
+        entry = await builder.build_from_create_schema(payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert entry.description == "Test /* */ SELECT * FROM users"
 
     @pytest.mark.asyncio
     async def test_build_with_none_payload(self, builder):

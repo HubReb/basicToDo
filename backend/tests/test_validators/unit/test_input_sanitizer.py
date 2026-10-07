@@ -2,7 +2,6 @@
 
 import pytest
 
-from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.business_logic.validators.input_sanitizer import InputSanitizer
 from backend.tests.test_data.constants import (
     SQL_INJECTION_PATTERNS,
@@ -108,19 +107,15 @@ class TestInputSanitizerNonStringValues:
 
 
 @pytest.mark.parametrize("sql_pattern,description", SQL_INJECTION_PATTERNS)
-class TestInputSanitizerSQLInjection:
-    """Test InputSanitizer detects SQL injection patterns."""
+class TestInputSanitizerSQLLikeText:
+    """Q6.1: SQL keywords and operator tokens are ordinary text (no blocklist)."""
 
-    def test_sql_injection_pattern(
+    def test_sql_like_text_is_accepted_and_stripped(
         self, sanitizer, mock_logger, sql_pattern, description
     ):
-        """Test that SQL injection pattern is detected and rejected."""
-        with pytest.raises(ToDoValidationError) as exc_info:
-            sanitizer.validate(sql_pattern)
-
-        assert "Invalid characters or SQL keywords in input" in str(exc_info.value)
-        mock_logger.warning.assert_called_once()
-        assert "SQL injection attempt detected" in str(mock_logger.warning.call_args)
+        """The value comes back stripped; nothing is rejected or logged."""
+        assert sanitizer.validate(f"  {sql_pattern}  ") == sql_pattern.strip()
+        mock_logger.warning.assert_not_called()
 
 
 class TestInputSanitizerEdgeCases:

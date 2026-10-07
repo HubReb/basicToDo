@@ -89,50 +89,43 @@ class TestUpdateTodoValidationIntegration:
         assert "title is required" in str(exc_info.value)
 
 
-class TestUpdateTodoSQLInjectionIntegration:
-    """Integration tests for update_todo SQL injection protection."""
+class TestUpdateTodoSQLLikeTextIntegration:
+    """SQL-like text is passed on as ordinary text (Q6.1); bound parameters keep it inert."""
 
     @pytest.mark.asyncio
-    async def test_update_blocks_sql_injection_in_title(self, todo_service):
-        """Test update_todo blocks SQL injection in title."""
+    @pytest.mark.parametrize(
+        "fields",
+        [
+            {"title": "'; DROP TABLE todos; --"},
+            {"title": "Valid", "description": "Test /* comment */ UNION SELECT"},
+            {"title": "Test -- comment"},
+            {"description": "Test; DROP TABLE"},
+        ],
+        ids=[
+            "drop table title",
+            "union select description",
+            "double dash",
+            "semicolon",
+        ],
+    )
+    async def test_update_keeps_sql_like_text(
+        self, todo_service, mock_repository, fields
+    ):
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(title="'; DROP TABLE todos; --")
-
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.update_todo(todo_id, payload)
-
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
-
-    @pytest.mark.asyncio
-    async def test_update_blocks_sql_injection_in_description(self, todo_service):
-        """Test update_todo blocks SQL injection in description."""
-        todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(
-            title="Valid", description="Test /* comment */ UNION SELECT"
+        mock_repository.update_to_do.return_value = ToDoEntryData(
+            id=todo_id,
+            title=fields.get("title", "Old"),
+            description=fields.get("description"),
+            created_at=datetime.datetime.now(),
+            updated_at=None,
+            done=False,
+            deleted=False,
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.update_todo(todo_id, payload)
+        await todo_service.update_todo(todo_id, TodoUpdateScheme(**fields))
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
-
-    @pytest.mark.asyncio
-    async def test_update_blocks_double_dash_in_title(self, todo_service):
-        """Test update_todo blocks double dash comments in title."""
-        todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(title="Test -- comment")
-
-        with pytest.raises(ToDoValidationError):
-            await todo_service.update_todo(todo_id, payload)
-
-    @pytest.mark.asyncio
-    async def test_update_blocks_semicolon_in_description(self, todo_service):
-        """Test update_todo blocks semicolon in description."""
-        todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(description="Test; DROP TABLE")
-
-        with pytest.raises(ToDoValidationError):
-            await todo_service.update_todo(todo_id, payload)
+        sent = mock_repository.update_to_do.call_args.args[1]
+        assert sent.model_dump(exclude_unset=True) == fields
 
 
 class TestUpdateTodoDoneIntegration:

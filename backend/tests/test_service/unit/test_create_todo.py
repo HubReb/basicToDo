@@ -82,28 +82,30 @@ class TestCreateTodoValidation:
     """Test create_todo validation."""
 
     @pytest.mark.asyncio
-    async def test_create_with_sql_injection_title(self, todo_service):
-        """Test creating ToDo rejects SQL injection in title."""
+    async def test_create_keeps_sql_like_title(self, todo_service, mock_repository):
+        """SQL in a title is ordinary text and reaches the repository (Q6.1)."""
         payload = create_todo_create_scheme(
             title="'; DROP TABLE todos; --", description="Desc"
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.create_todo(payload)
+        result = await todo_service.create_todo(payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert result.title == "'; DROP TABLE todos; --"
+        mock_repository.create_to_do.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_with_sql_injection_description(self, todo_service):
-        """Test creating ToDo rejects SQL injection in description."""
+    async def test_create_keeps_sql_like_description(
+        self, todo_service, mock_repository
+    ):
+        """SQL in a description is ordinary text and reaches the repository (Q6.1)."""
         payload = create_todo_create_scheme(
             title="Valid Title", description="Test /* */ SELECT * FROM users"
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await todo_service.create_todo(payload)
+        result = await todo_service.create_todo(payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert result.description == "Test /* */ SELECT * FROM users"
+        mock_repository.create_to_do.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_create_with_empty_title(self, todo_service):

@@ -2,7 +2,6 @@
 
 import pytest
 
-from backend.app.business_logic.exceptions import ToDoValidationError
 from backend.app.business_logic.validators.input_sanitizer import InputSanitizer
 from backend.app.logger import CustomLogger
 
@@ -67,37 +66,32 @@ class TestInputSanitizerRealWorldScenarios:
 
 
 class TestInputSanitizerAttackVectors:
-    """Test InputSanitizer against common attack vectors."""
+    """Former attack vectors: since Q6.1 ordinary text, safe through bound parameters."""
 
-    def test_block_sql_injection_in_todo_title(self, sanitizer):
-        """Test blocking SQL injection attempt in ToDo title."""
+    def test_keeps_sql_like_title_as_text(self, sanitizer):
+        """SQL in a title is ordinary text (Q6.1)."""
         malicious_title = "'; DROP TABLE todos; --"
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate(malicious_title)
+        assert sanitizer.validate(malicious_title) == malicious_title.strip()
 
-    def test_block_sql_injection_in_description(self, sanitizer):
-        """Test blocking SQL injection in description."""
+    def test_keeps_sql_like_description_as_text(self, sanitizer):
+        """SQL in a description is ordinary text (Q6.1)."""
         malicious_desc = "Test /* */ SELECT password FROM users"
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate(malicious_desc)
+        assert sanitizer.validate(malicious_desc) == malicious_desc.strip()
 
-    def test_block_union_based_injection(self, sanitizer):
-        """Test blocking UNION-based SQL injection."""
+    def test_keeps_union_select_as_text(self, sanitizer):
+        """A UNION SELECT string is ordinary text (Q6.1)."""
         attack = "1' UNION SELECT username, password FROM users--"
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate(attack)
+        assert sanitizer.validate(attack) == attack.strip()
 
-    def test_block_time_based_injection(self, sanitizer):
-        """Test blocking time-based SQL injection."""
+    def test_keeps_waitfor_delay_as_text(self, sanitizer):
+        """A WAITFOR DELAY string is ordinary text (Q6.1)."""
         attack = "1'; WAITFOR DELAY '00:00:05'--"
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate(attack)
+        assert sanitizer.validate(attack) == attack.strip()
 
-    def test_block_stacked_queries(self, sanitizer):
-        """Test blocking stacked query injection."""
+    def test_keeps_stacked_query_as_text(self, sanitizer):
+        """A stacked-query string is ordinary text (Q6.1)."""
         attack = "value'; DELETE FROM todos WHERE '1'='1"
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate(attack)
+        assert sanitizer.validate(attack) == attack.strip()
 
 
 class TestInputSanitizerDataConsistency:
@@ -144,17 +138,14 @@ class TestInputSanitizerBoundaryConditions:
         result = sanitizer.validate("ORDERED")  # 7 chars like 'EXECUTE'
         assert result == "ORDERED"
 
-    def test_whitespace_around_sql_keyword(self, sanitizer):
-        """Test that isolated SQL keywords are caught."""
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate("  DROP  ")
+    def test_sql_keyword_alone_is_text(self, sanitizer):
+        """A lone SQL keyword is ordinary text, stripped (Q6.1)."""
+        assert sanitizer.validate("  DROP  ") == "  DROP  ".strip()
 
-    def test_sql_keyword_at_start(self, sanitizer):
-        """Test SQL keyword at start of string."""
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate("DROP this idea")
+    def test_sql_keyword_at_start_is_text(self, sanitizer):
+        """A SQL keyword at the start is ordinary text (Q6.1)."""
+        assert sanitizer.validate("DROP this idea") == "DROP this idea".strip()
 
-    def test_sql_keyword_at_end(self, sanitizer):
-        """Test SQL keyword at end of string."""
-        with pytest.raises(ToDoValidationError):
-            sanitizer.validate("Please DROP")
+    def test_sql_keyword_at_end_is_text(self, sanitizer):
+        """A SQL keyword at the end is ordinary text (Q6.1)."""
+        assert sanitizer.validate("Please DROP") == "Please DROP".strip()
