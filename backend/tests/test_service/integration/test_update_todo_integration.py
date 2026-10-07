@@ -149,36 +149,25 @@ class TestUpdateTodoDoneIntegration:
         assert result.done is True
 
     @pytest.mark.asyncio
-    async def test_update_with_done_true_calls_get_entry(
+    async def test_update_with_done_true_needs_no_separate_read(
         self, todo_service, mock_repository
     ):
-        """Test update with done=True calls get_to_do_entry."""
+        """Q6.5: done:true is one update like any other edit; no prior read."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(done=True)
-        mock_entry = ToDoEntryData(
+        mock_repository.update_to_do.return_value = ToDoEntryData(
             id=todo_id,
-            title="Test",
-            description="Desc",
-            created_at=datetime.datetime.now(),
-            updated_at=None,
-            done=False,
-            deleted=False,
-        )
-        mock_updated_entry = ToDoEntryData(
-            id=todo_id,
-            title="Test",
+            title="Renamed",
             description="Desc",
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
             deleted=False,
         )
-        mock_repository.get_to_do_entry.return_value = mock_entry
-        mock_repository.update_to_do.return_value = mock_updated_entry
 
-        await todo_service.update_todo(todo_id, payload)
+        await todo_service.update_todo(todo_id, TodoUpdateScheme(done=True))
 
-        mock_repository.get_to_do_entry.assert_called_once()
+        mock_repository.get_to_do_entry.assert_not_called()
+        mock_repository.update_to_do.assert_called_once()
 
 
 class TestUpdateTodoErrorHandlingIntegration:

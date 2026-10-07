@@ -139,17 +139,6 @@ class TestKeepRule052LastWriteWins:
 
 
 class TestLegacyBehaviourPhase5Changes:
-    def test_legacy_done_true_discards_other_edits(self, client, db_engine):
-        """Q6.5 (RULE-032): done:true marks done and ignores the title sent with it."""
-        todo_id = create(client, title="Original")
-
-        response = client.put(
-            f"/todo/{todo_id}", json={"done": True, "title": "Renamed"}
-        )
-
-        assert response.status_code == 200
-        assert tuple(stored(db_engine, todo_id))[::2] == ("Original", 1)
-
     def test_legacy_text_plain_body_is_a_422(self, client):
         """SEC-003: a body sent as text/plain is not parsed, and the request gets 422."""
         response = client.post(
@@ -216,3 +205,23 @@ class TestPhase5Behaviour:
 
         assert response.status_code == 422
         assert stored(db_engine, todo_id).title == "Kept"
+
+    def test_done_true_applies_the_other_edits_too(self, client, db_engine):
+        """Q6.5 (RULE-032): done:true and a title are both written."""
+        todo_id = create(client, title="Original")
+
+        response = client.put(
+            f"/todo/{todo_id}", json={"done": True, "title": "Renamed"}
+        )
+
+        assert response.status_code == 200
+        assert tuple(stored(db_engine, todo_id))[::2] == ("Renamed", 1)
+
+    def test_done_true_with_an_invalid_title_changes_nothing(self, client, db_engine):
+        """Q6.5 (RULE-023): the other fields are validated first; done is not set alone."""
+        todo_id = create(client, title="Original")
+
+        response = client.put(f"/todo/{todo_id}", json={"done": True, "title": "   "})
+
+        assert response.status_code == 422
+        assert tuple(stored(db_engine, todo_id))[::2] == ("Original", 0)

@@ -57,10 +57,8 @@ class ToDoService:
     async def update_todo(
         self, to_do_id: uuid.UUID, payload: TodoUpdateScheme
     ) -> ToDoSchema:
-        if payload.done:
-            updated_entry = await self.mark_to_do_as_done(to_do_id)
-            return updated_entry
-
+        # Q6.5: done:true no longer skips the other fields. Every field sent is
+        # validated and written in the same update, done included.
         if payload.title is not None:
             payload.title = self.field_validator.validate_required(
                 payload.title, field_name="title"

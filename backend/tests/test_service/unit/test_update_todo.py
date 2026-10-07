@@ -110,37 +110,28 @@ class TestUpdateTodoWithDone:
     """Test update_todo with done=True."""
 
     @pytest.mark.asyncio
-    async def test_update_with_done_true_calls_mark_as_done(
+    async def test_update_with_done_true_writes_every_field_at_once(
         self, todo_service, mock_repository
     ):
-        """Test updating with done=True calls mark_to_do_as_done."""
+        """Q6.5: done:true and a title go to the repository in one update."""
         todo_id = uuid.uuid4()
-        payload = TodoUpdateScheme(done=True)
-        mock_entry = ToDoEntryData(
+        payload = TodoUpdateScheme(done=True, title=" Renamed ")
+        mock_repository.update_to_do.return_value = ToDoEntryData(
             id=todo_id,
-            title="Test",
-            description="Desc",
-            created_at=datetime.datetime.now(),
-            updated_at=None,
-            done=False,
-            deleted=False,
-        )
-        mock_updated_entry = ToDoEntryData(
-            id=todo_id,
-            title="Test",
+            title="Renamed",
             description="Desc",
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             done=True,
             deleted=False,
         )
-        mock_repository.get_to_do_entry.return_value = mock_entry
-        mock_repository.update_to_do.return_value = mock_updated_entry
 
         result = await todo_service.update_todo(todo_id, payload)
 
-        assert result.done is True
-        mock_repository.get_to_do_entry.assert_called_once()
+        assert (result.done, result.title) == (True, "Renamed")
+        sent = mock_repository.update_to_do.call_args.args[1]
+        assert sent.model_dump(exclude_unset=True) == {"done": True, "title": "Renamed"}
+        mock_repository.get_to_do_entry.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_update_with_done_false_normal_update(
