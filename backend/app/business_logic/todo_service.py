@@ -93,6 +93,11 @@ class ToDoService:
         return result
 
     @handle_service_exceptions
+    async def count_todos(self) -> int:
+        """The number of active todos (Q6.4)."""
+        return self.repository.count_to_do_entries()
+
+    @handle_service_exceptions
     async def mark_to_do_as_done(self, to_do_id: uuid.UUID) -> ToDoSchema:
         """Mark a todo as done."""
         entry = self.repository.get_to_do_entry(to_do_id)

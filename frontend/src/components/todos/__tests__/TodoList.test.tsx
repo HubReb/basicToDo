@@ -39,6 +39,7 @@ describe('TodoList', () => {
       success: true,
       todo_entries: [],
       results: 0,
+      total: 0,
     })
   })
 

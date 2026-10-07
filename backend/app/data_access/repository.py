@@ -38,6 +38,10 @@ class ToDoRepositoryInterface(ABC):
     ) -> List[ToDoEntryData]:
         pass
 
+    @abstractmethod
+    def count_to_do_entries(self) -> int:
+        pass
+
 
 class ToDoRepository(ToDoRepositoryInterface):
     """Repository for ToDos (SQL-injection-safe)"""
@@ -107,9 +111,19 @@ class ToDoRepository(ToDoRepositoryInterface):
         with self.session_manager() as session:
             return cast(
                 List[ToDoEntryData],
-                session.query(ToDoEntryData)
-                .filter(ToDoEntryData.deleted.is_(False))
+                session.query(ToDoEntryData).filter(ToDoEntryData.deleted.is_(False))
+                # Q6.4: newest first; the id decides between equal times.
+                .order_by(ToDoEntryData.created_at.desc(), ToDoEntryData.id.desc())
                 .offset(skip)
                 .limit(limit)
                 .all(),
+            )
+
+    def count_to_do_entries(self) -> int:
+        """The number of active (not deleted) todos."""
+        with self.session_manager() as session:
+            return int(
+                session.query(ToDoEntryData)
+                .filter(ToDoEntryData.deleted.is_(False))
+                .count()
             )

@@ -59,7 +59,11 @@ export interface GetTodoResponse extends ApiResponse {
  * List Todos response - matches backend ListToDoResponse
  */
 export interface TodoListResponse extends ApiResponse {
+  /** Number of todos on this page */
   results: number;
+  /** Number of active todos on all pages */
+  total: number;
+  /** Newest first */
   todo_entries: Todo[];
 }
 

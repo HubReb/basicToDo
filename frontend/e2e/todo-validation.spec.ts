@@ -1,19 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+import { deleteAllTodos } from './cleanup';
+
 test.describe('Todo Validation', () => {
   test.beforeEach(async ({ page, request }) => {
     // Clean up test database before each test
-    const response = await request.get('http://localhost:8000/todo?limit=1000&page=1');
-    const data = await response.json();
-
-    if (data.todo_entries && data.todo_entries.length > 0) {
-      // Delete all todos
-      await Promise.all(
-        data.todo_entries.map((todo: { id: string }) =>
-          request.delete(`http://localhost:8000/todo/${todo.id}`)
-        )
-      );
-    }
+    await deleteAllTodos(request);
 
     await page.goto('/');
   });

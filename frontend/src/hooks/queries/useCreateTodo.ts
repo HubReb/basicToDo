@@ -32,6 +32,7 @@ export const useCreateTodo = () => {
           ...old,
           todo_entries: [optimisticTodo, ...old.todo_entries],
           results: old.results + 1,
+          total: old.total + 1,
         }
       })
 

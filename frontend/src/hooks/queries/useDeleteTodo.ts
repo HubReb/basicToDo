@@ -22,6 +22,7 @@ export const useDeleteTodo = () => {
           ...old,
           todo_entries: old.todo_entries.filter((todo) => todo.id !== id),
           results: old.results - 1,
+          total: old.total - 1,
         }
       })
 

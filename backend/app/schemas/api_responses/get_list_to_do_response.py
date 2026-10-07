@@ -12,6 +12,8 @@ class ListToDoResponse(ApiResponse):
     """List of ToDos"""
 
     results: Optional[int] = 0
+    # Q6.4: the number of active todos in all pages; results is this page's.
+    total: int
     todo_entries: List[ToDoSchema]
 
     @field_validator("todo_entries")

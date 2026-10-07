@@ -4,6 +4,8 @@ import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
+import pytest
+
 from backend.app.schemas.data_schemes.todo_schema import ToDoSchema
 
 
@@ -200,115 +202,33 @@ class TestListTodos:
         # Deleted todo should not be in list
         assert str(todo_id) not in returned_ids
 
-    def test_list_todos_negative_limit_returns_error(self, client, mock_service):
-        """Test negative limit returns error or is handled."""
-        # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(
-            return_value=[
-                ToDoSchema(
-                    id=uuid4(),
-                    title="Test",
-                    description="Test",
-                    created_at=datetime.datetime.now(),
-                    updated_at=None,
-                    deleted=False,
-                    done=False,
-                )
-            ]
-        )
+    @pytest.mark.parametrize(
+        "query",
+        [
+            "limit=-1",
+            "limit=0",
+            "limit=101",
+            "limit=1000",
+            "page=-1",
+            "page=0",
+            "page=1000001",
+        ],
+    )
+    def test_list_todos_out_of_bounds_is_a_422(self, client, mock_service, query):
+        """Q6.4 / SEC-004: limit 1 to 100, page 1 to 1,000,000; the service is not called."""
+        mock_service.get_all_todos = AsyncMock(return_value=[])
 
-        response = client.get("/todo?limit=-1")
+        response = client.get(f"/todo?{query}")
 
-        # Should either reject with 422 or handle gracefully
-        assert response.status_code in [200, 422]
+        assert response.status_code == 422
+        mock_service.get_all_todos.assert_not_called()
 
-    def test_list_todos_zero_limit(self, client, mock_service):
-        """Test limit=0 is handled."""
-        # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(
-            return_value=[
-                ToDoSchema(
-                    id=uuid4(),
-                    title="Test",
-                    description="Test",
-                    created_at=datetime.datetime.now(),
-                    updated_at=None,
-                    deleted=False,
-                    done=False,
-                )
-            ]
-        )
+    @pytest.mark.parametrize("query", ["limit=1", "limit=100", "page=1000000"])
+    def test_list_todos_at_the_bounds_is_accepted(self, client, mock_service, query):
+        """Q6.4: the bounds themselves are valid."""
+        mock_service.get_all_todos = AsyncMock(return_value=[])
 
-        response = client.get("/todo?limit=0")
-
-        # Should either reject with 422 or handle in some way
-        assert response.status_code in [200, 422]
-
-    def test_list_todos_negative_page_returns_error(self, client, mock_service):
-        """Test negative page returns error or is handled."""
-        # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(
-            return_value=[
-                ToDoSchema(
-                    id=uuid4(),
-                    title="Test",
-                    description="Test",
-                    created_at=datetime.datetime.now(),
-                    updated_at=None,
-                    deleted=False,
-                    done=False,
-                )
-            ]
-        )
-
-        response = client.get("/todo?page=-1")
-
-        # Should either reject or handle gracefully
-        assert response.status_code in [200, 422]
-
-    def test_list_todos_zero_page_returns_error(self, client, mock_service):
-        """Test page=0 returns error or is handled."""
-        # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(
-            return_value=[
-                ToDoSchema(
-                    id=uuid4(),
-                    title="Test",
-                    description="Test",
-                    created_at=datetime.datetime.now(),
-                    updated_at=None,
-                    deleted=False,
-                    done=False,
-                )
-            ]
-        )
-
-        response = client.get("/todo?page=0")
-
-        # Should either reject or handle gracefully
-        assert response.status_code in [200, 422]
-
-    def test_list_todos_very_large_limit(self, client, mock_service):
-        """Test very large limit is handled."""
-        # Mock service to return a todo (in case it gets called)
-        mock_service.get_all_todos = AsyncMock(
-            return_value=[
-                ToDoSchema(
-                    id=uuid4(),
-                    title="Test",
-                    description="Test",
-                    created_at=datetime.datetime.now(),
-                    updated_at=None,
-                    deleted=False,
-                    done=False,
-                )
-            ]
-        )
-
-        response = client.get("/todo?limit=10000")
-
-        # Should either cap or reject
-        assert response.status_code in [200, 422]
+        assert client.get(f"/todo?{query}").status_code == 200
 
     def test_list_todos_returns_json_content_type(self, client, mock_service):
         """Test list endpoint returns JSON."""

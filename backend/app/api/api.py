@@ -1,9 +1,9 @@
 """FastAPI routes for ToDo operations."""
 
-from typing import Any
+from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -119,6 +119,13 @@ async def delete_todo(todo_id: UUID) -> DeleteToDoResponse:
 
 
 @app.get("/todo", response_model=ListToDoResponse)
-async def list_todos(limit: int = 10, page: int = 1) -> ListToDoResponse:
+async def list_todos(
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
+    page: Annotated[int, Query(ge=1, le=1_000_000)] = 1,
+) -> ListToDoResponse:
+    """The active todos, newest first: `limit` per page (1 to 100), `total` over all pages."""
     todos = await service.get_all_todos(limit, page)
-    return ListToDoResponse(success=True, results=len(todos), todo_entries=todos)
+    total = await service.count_todos()
+    return ListToDoResponse(
+        success=True, results=len(todos), total=total, todo_entries=todos
+    )
