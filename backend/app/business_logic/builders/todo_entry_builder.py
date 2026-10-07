@@ -1,4 +1,5 @@
 """Builder for creating ToDoEntryData objects."""
+
 import datetime
 
 from backend.app.business_logic.builders.builder_interface import BuilderInterface
@@ -16,7 +17,9 @@ class ToDoEntryBuilder(BuilderInterface):
         self.uuid_validator = uuid_validator
         self.field_validator = field_validator
 
-    async def build_from_create_schema(self, payload: ToDoCreateScheme) -> ToDoEntryData:
+    async def build_from_create_schema(
+        self, payload: ToDoCreateScheme
+    ) -> ToDoEntryData:
         """Create a sanitized ToDoEntryData object from create schema."""
         if not payload:
             raise ToDoValidationError("Invalid payload: payload cannot be None")
