@@ -1,38 +1,38 @@
 # basicToDo
 
-A simple ToDo application to be enhanced over time. *This is in an early beta state with rapid development and breaking changes. This serves as a playground to extend my knowledge and experience of the used tech stage. As such, it it as is and not intended for production usage.*
+A simple todo application to be enhanced over time. _This is in an early beta state with rapid development and breaking changes. This serves as a playground to extend my knowledge and experience of the used tech stage. As such, it it as is and not intended for production usage._
 
 ## Basic functionality
 
 ![image](images/basicApp.png)
 
-The app lists the ToDo items on the main screen, the newest first.
+The app lists the todo items on the main screen, the newest first.
 
 ### Add an item
 
 Enter an item into the editline and hit 'enter'. A title can have up to 255 characters.
 
-![image](images/basicAppAddToDo.png)
+![image](images/basicAppAddtodo.png)
 
 ### Update an item
 
 Hit 'Edit' on an item, change its title and hit 'Save'.
 
-![image](images/basicAppAddUpdateToDo.png)
+![image](images/basicAppAddUpdatetodo.png)
 
 ### Delete an item
 
 Hit 'Delete Todo' on an item and confirm. The item disappears from the list, and a message confirms the deletion once the server has done it.
 
-Deleting is a *soft delete*: the item is marked as deleted and stays in the database. A deleted item is no longer listed, shown or changed, it cannot be restored, and its id cannot be used again.
+Deleting is a _soft delete_: the item is marked as deleted and stays in the database. A deleted item is no longer listed, shown or changed, it cannot be restored, and its ID cannot be used again.
 
-![image](images/basicAppDeleteToDo.png)
+![image](images/basicAppDeletetodo.png)
 
 ## Installation
 
 ### Frontend
 
-Enter the folder *frontend* and run
+Enter the folder _frontend_ and run
 
 ```bash
 npm ci
@@ -61,7 +61,7 @@ uv run python -m backend.app.main
 
 It prepares the database (see [Database](#database)) and serves the API on `http://127.0.0.1:8000`; the API documentation is at `http://127.0.0.1:8000/docs`.
 
-Run the frontend in the folder *frontend*:
+Run the frontend in the folder _frontend_:
 
 ```bash
 npm run dev
@@ -75,16 +75,16 @@ The development server runs on `http://localhost:5173` and calls the API at `VIT
 
 The backend reads these environment variables:
 
-| Variable | Default | Meaning |
-|---|---|---|
-| `DATABASE_URL` | `sqlite:///<repository>/backend/todo.db` | The SQLite database file |
-| `BASICTODO_HOST` | `127.0.0.1` | The address the server listens on |
-| `BASICTODO_PORT` | `8000` | The port |
-| `BASICTODO_RELOAD` | off | Restart on code changes (`true` for development) |
-| `BASICTODO_TRUSTED_HOSTS` | `localhost,127.0.0.1` | The host names the server answers; other `Host` headers get 400 |
-| `BASICTODO_CORS_ORIGINS` | `http://localhost:5173` | The origins a browser may call the API from |
-| `BASICTODO_LEGACY_TZ` | the system time zone | The time zone a database from before the UTC change was written in (see [Database](#database)) |
-| `BASICTODO_LEGACY_TZ_CHECK` | on | `off` converts such a database even if its times do not fit the zone |
+| Variable                    | Default                                  | Meaning                                                                                        |
+| --------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`              | `sqlite:///<repository>/backend/todo.db` | The SQLite database file                                                                       |
+| `BASICTODO_HOST`            | `127.0.0.1`                              | The address the server listens on                                                              |
+| `BASICTODO_PORT`            | `8000`                                   | The port                                                                                       |
+| `BASICTODO_RELOAD`          | off                                      | Restart on code changes (`true` for development)                                               |
+| `BASICTODO_TRUSTED_HOSTS`   | `localhost,127.0.0.1`                    | The hostnames the server answers; other `Host` headers get 400                                 |
+| `BASICTODO_CORS_ORIGINS`    | `http://localhost:5173`                  | The origins a browser may call the API from                                                    |
+| `BASICTODO_LEGACY_TZ`       | the system time zone                     | The time zone a database from before the UTC change was written in (see [Database](#database)) |
+| `BASICTODO_LEGACY_TZ_CHECK` | on                                       | `off` converts such a database even if its times do not fit the zone                           |
 
 Empty values and wildcards (`*`) are refused. Request bodies are limited to 16 KiB (413 above), and a request with a body must be sent as `application/json` (415 otherwise).
 
@@ -110,7 +110,7 @@ If the converted times do not fit the stored `updated_at` values, the zone is pr
 
 ## Testing
 
-Both the backend and frontend have their own testsuite. The backend uses *pytest* and the frontend *vitest*, and *Playwright* tests both together.
+Both the backend and frontend have their own testsuite. The backend uses _pytest_ and the frontend _vitest_, and _Playwright_ tests both together.
 
 ### Frontend Testing
 
@@ -144,13 +144,13 @@ The frontend is currently written in
 
 - TypeScript
 - React (+ TanStack Query, Chakra UI)
-- *vite*
+- _vite_
 
 The look of the app will undergo severe changes in the future to improve both UI and UX.
 
 ### Backend Stack
 
-The backend is written in *python* with a SQLite database. The stack is as follows:
+The backend is written in _python_ with a SQLite database. The stack is as follows:
 
 - SQLite database
 - SQLAlchemy and Alembic
@@ -166,16 +166,16 @@ These further improvements define the next milestone.
 
 ### UX improvements
 
-- Purge: a dialog to delete all ToDos marked as deleted from the database for good.
-- Restore: Restore a ToDo marked as deleted.
-- Mark as done: Mark a ToDo as done in the UI (the API supports it already).
+- Purge: a dialog to delete all todos marked as deleted from the database for good.
+- Restore: Restore a todo marked as deleted.
+- Mark as done: Mark a todo as done in the UI (the API supports it already).
 - Light model in addition to current dark mode.
 
 ### Features
 
-- Tracking of time to complete for all ToDos to analyze and predict further time to complete (AI)
-- Suggestions of new ToDos
-- Subtasks: Add subtasks to a ToDo entry to break big tasks into smaller ones.
+- Tracking of time to complete for all todos to analyze and predict further time to complete (AI)
+- Suggestions of new todos
+- Subtasks: Add subtasks to a todo entry to break big tasks into smaller ones.
 - Reminder: Set a date to have the task finished and be reminded of the upcoming deadline.
 
 The backend will also undergo further restructuring and changes to improve stability and quality.

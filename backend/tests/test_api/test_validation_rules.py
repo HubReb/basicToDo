@@ -227,7 +227,9 @@ def title_is_valid(value: str) -> bool:
 @settings(deadline=None, derandomize=True, database=None, max_examples=300)
 @given(
     st.text(
-        alphabet=st.characters(categories=("Cc", "Cs", "Ll", "Lu", "Zs", "So", "Nd")),
+        alphabet=st.characters(
+            categories=("Cc", "Cs", "Ll", "Lu", "Zs", "So", "Nd")  # codespell:ignore
+        ),
         max_size=270,
     )
 )
