@@ -108,6 +108,13 @@ async def health_check() -> dict[str, str]:
 
 @app.post("/todo", response_model=ToDoResponse, dependencies=[Depends(require_json)])
 async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
+    """Create a todo under the UUID `id` the client chose.
+
+    The title is required: 1 to 255 characters after stripping, without
+    control characters. The description is optional: up to 255 characters;
+    tab and line breaks are allowed. 409 if the id is taken, also by a
+    deleted todo; 422 for invalid input; 415 unless the body is JSON.
+    """
     try:
         todo = await service.create_todo(payload)
         return ToDoResponse(success=True, todo_entry=todo)
@@ -121,6 +128,7 @@ async def create_todo(payload: ToDoCreateScheme) -> ToDoResponse:
 
 @app.get("/todo/{todo_id}", response_model=GetToDoResponse)
 async def get_todo(todo_id: UUID) -> GetToDoResponse:
+    """One todo. A deleted or unknown id gives 404."""
     try:
         todo = await service.get_todo(todo_id)
         return GetToDoResponse(success=True, todo_entry=todo)
@@ -132,6 +140,12 @@ async def get_todo(todo_id: UUID) -> GetToDoResponse:
     "/todo/{todo_id}", response_model=ToDoResponse, dependencies=[Depends(require_json)]
 )
 async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
+    """Change the fields sent, and only those: `title`, `description`, `done`.
+
+    A `description` of null clears it; `title` and `done` cannot be null.
+    `updated_at` moves whenever a field is set. 404 for a deleted or unknown
+    todo; 422 for invalid input; 415 unless the body is JSON.
+    """
     try:
         todo = await service.update_todo(todo_id, payload)
         return ToDoResponse(success=True, todo_entry=todo)
@@ -145,6 +159,11 @@ async def update_todo(todo_id: UUID, payload: TodoUpdateScheme) -> ToDoResponse:
 
 @app.delete("/todo/{todo_id}", response_model=DeleteToDoResponse)
 async def delete_todo(todo_id: UUID) -> DeleteToDoResponse:
+    """Soft delete: the todo is marked as deleted and kept in the database.
+
+    From then on it is not listed, read or changed, and a second delete
+    gives 404. It cannot be restored, and its id stays taken.
+    """
     try:
         await service.delete_todo(todo_id)
         return DeleteToDoResponse(success=True, message="Deleted successfully")
