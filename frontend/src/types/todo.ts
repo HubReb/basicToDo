@@ -75,8 +75,19 @@ export interface DeleteTodoResponse extends ApiResponse {
 }
 
 /**
- * API Error response structure
+ * One problem in a 422 response - FastAPI's validation error
+ */
+export interface ValidationIssue {
+  loc: (string | number)[];
+  msg: string;
+  type: string;
+  /** The rejected value; never shown */
+  input?: unknown;
+}
+
+/**
+ * API Error response structure: a message, or the problems of a 422
  */
 export interface ApiError {
-  detail: string;
+  detail: string | ValidationIssue[];
 }
