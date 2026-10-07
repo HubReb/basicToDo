@@ -45,10 +45,10 @@ export const TodoForm = () => {
       return
     }
 
+    // No description: the UI has no field for one yet (Q6.7).
     const todoData = {
       id: uuid(),
       title: item.trim(),
-      description: "not implemented yet",
     }
 
     createTodo.mutate(todoData, {

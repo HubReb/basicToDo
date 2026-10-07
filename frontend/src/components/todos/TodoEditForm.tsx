@@ -48,7 +48,8 @@ export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) 
       return
     }
 
-    const updateData = { id, data: { title: title.trim(), description: "not implemented yet" } }
+    // Only the title: a description left out keeps the stored one (Q6.7).
+    const updateData = { id, data: { title: title.trim() } }
 
     updateTodo.mutate(updateData, {
       onSuccess: () => {
