@@ -98,6 +98,9 @@ async function shot(name) {
   await page.mouse.move(1279, 799);
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
+  // Let running transitions (the error border) finish; screenshot() only
+  // fast-forwards the ones it can see at that moment.
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   await page.screenshot({ path: path.join(outDir, `${name}.png`), animations: "disabled", caret: "hide" });
   fs.writeFileSync(path.join(outDir, `${name}.styles.json`),
     JSON.stringify(await stylesOfAllElements(), null, 1) + "\n");
@@ -112,6 +115,14 @@ const toast = (title) => page.getByText(title, { exact: true });
 
 try {
   // Capture a new todo
+  // The innermost element that holds a title and that row's Edit button
+  // (TodoItem renders both inside one div).
+  const row = (title) =>
+    page
+      .locator("div")
+      .filter({ hasText: title })
+      .filter({ has: page.getByRole("button", { name: "Edit" }) })
+      .last();
   await page.goto(BASE);
   await page.getByText("No todos yet. Add one above!").waitFor();
   await shot("01-list-empty");
@@ -136,8 +147,9 @@ try {
   for (const [, title] of SEED) await page.getByText(title).waitFor();
   await shot("04-list-several");
 
-  // Rename a todo
-  await page.getByRole("button", { name: "Edit" }).first().click();
+  // Rename a todo. Rows are chosen by title, not by position, so a change of
+  // list order changes screen 04 only.
+  await row("Buy milk").getByRole("button", { name: "Edit" }).click();
   await page.getByPlaceholder("Edit todo").waitFor();
   await shot("05-edit-open");
   await page.getByPlaceholder("Edit todo").fill("Buy oat milk");
@@ -149,7 +161,7 @@ try {
   // Delete a todo
   await page.reload();
   await page.getByText("Buy oat milk").waitFor();
-  await page.getByRole("button", { name: "Delete" }).first().click();
+  await row("Buy oat milk").getByRole("button", { name: "Delete" }).click();
   await toast("Todo deleted").waitFor();
   await page.getByText("Buy oat milk").waitFor({ state: "detached" });
   await shot("07-delete-done");

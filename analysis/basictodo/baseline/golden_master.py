@@ -32,7 +32,12 @@ capture's time window, read from the local clock and from the UTC clock,
 with a tolerance of TOLERANCE_S seconds. The record keeps the result per
 JSON path as "local", "utc", "local=utc" (the machine's offset was 0) or
 "neither", never the offset itself, so captures on both sides of a DST
-change stay comparable.
+change stay comparable. A timestamp that carries an offset is converted to
+UTC and compared with the UTC window: "utc" or "neither".
+
+Requests may override the Host header, and a request given as chunks is
+sent with Transfer-Encoding: chunked and no Content-Length (http.client
+does this for an iterable body). The record stores the joined bytes.
 
 Headers are compared as a sorted list of [lowercased name, value]; their
 order on the wire is not compared.
@@ -41,6 +46,7 @@ Provenance: run_golden_master.sh passes the records provenance.py wrote
 inside init_db and inside the server process. They are stored next to the
 responses and printed by diff, but never compared.
 """
+
 import datetime
 import difflib
 import http.client
@@ -60,8 +66,8 @@ OTHER_ORIGIN = "http://evil.example"
 JSON = {"Content-Type": "application/json"}
 
 
-def req(label, method, path, body=None, headers=None, raw=None):
-    """One request. body is JSON-encoded; raw is sent as-is."""
+def req(label, method, path, body=None, headers=None, raw=None, chunks=None):
+    """One request. body is JSON-encoded; raw is sent as-is; chunks are sent chunked."""
     hdrs = dict(headers or {})
     data = None
     if body is not None:
@@ -75,7 +81,14 @@ def req(label, method, path, body=None, headers=None, raw=None):
         "path": path,
         "headers": hdrs,
         "body": data,
+        "chunks": chunks,
     }
+
+
+def padded(todo_id, size):
+    """A valid create body, padded with JSON whitespace to exactly size bytes."""
+    data = json.dumps({"id": todo_id, "title": "Padded"}).encode()
+    return data + b" " * (size - len(data))
 
 
 def sequence():
@@ -331,6 +344,178 @@ def sequence():
     add(req("GET docs", "GET", "/docs"))
     add(req("GET redoc", "GET", "/redoc"))
     add(req("GET docs oauth2-redirect", "GET", "/docs/oauth2-redirect"))
+    # Phase 5 additions (appended, so the requests above keep their state)
+    emoji = "\U0001f600" * 255
+    add(req("GET root bad Host", "GET", "/", headers={"Host": "evil.example"}))
+    add(
+        req(
+            "POST body 16384 bytes",
+            "POST",
+            "/todo",
+            raw=padded("66666666-2222-3333-4444-000000000001", 16384),
+            headers=JSON,
+        )
+    )
+    add(
+        req(
+            "POST body 16385 bytes",
+            "POST",
+            "/todo",
+            raw=padded("66666666-2222-3333-4444-000000000002", 16385),
+            headers=JSON,
+        )
+    )
+    add(
+        req(
+            "POST body 16385 bytes CORS allowed",
+            "POST",
+            "/todo",
+            raw=padded("66666666-2222-3333-4444-000000000003", 16385),
+            headers={**JSON, "Origin": ALLOWED_ORIGIN},
+        )
+    )
+    big = padded("66666666-2222-3333-4444-000000000004", 20000)
+    add(
+        req(
+            "POST body 20000 bytes chunked",
+            "POST",
+            "/todo",
+            chunks=[big[i : i + 4096] for i in range(0, len(big), 4096)],
+            headers=JSON,
+        )
+    )
+    add(
+        req(
+            "POST create for big DELETE",
+            "POST",
+            "/todo",
+            {"id": "66666666-2222-3333-4444-000000000005", "title": "Remove me"},
+        )
+    )
+    add(
+        req(
+            "DELETE with 20000-byte body",
+            "DELETE",
+            "/todo/66666666-2222-3333-4444-000000000005",
+            raw=b" " * 20000,
+            headers=JSON,
+        )
+    )
+    add(
+        req(
+            "POST maximal valid request (4-byte UTF-8, ensure_ascii)",
+            "POST",
+            "/todo",
+            raw=json.dumps(
+                {
+                    "id": "66666666-2222-3333-4444-000000000006",
+                    "title": emoji,
+                    "description": emoji,
+                }
+            ).encode(),
+            headers=JSON,
+        )
+    )
+    add(
+        req(
+            "POST maximal valid request (4-byte UTF-8, raw)",
+            "POST",
+            "/todo",
+            raw=json.dumps(
+                {
+                    "id": "66666666-2222-3333-4444-000000000007",
+                    "title": emoji,
+                    "description": emoji,
+                },
+                ensure_ascii=False,
+            ).encode(),
+            headers=JSON,
+        )
+    )
+    add(
+        req(
+            "POST JSON body without Content-Type",
+            "POST",
+            "/todo",
+            raw=b'{"id":"66666666-2222-3333-4444-000000000008","title":"x"}',
+        )
+    )
+    add(
+        req(
+            "PUT text/plain body",
+            "PUT",
+            f"/todo/{ID2}",
+            raw=b'{"title":"Plain"}',
+            headers={"Content-Type": "text/plain"},
+        )
+    )
+    add(req("PUT title null", "PUT", f"/todo/{ID2}", {"title": None}))
+    add(
+        req(
+            "PUT done and title",
+            "PUT",
+            f"/todo/{ID_EXTRA_FIELD}",
+            {"done": True, "title": "Done and renamed"},
+        )
+    )
+    add(
+        req(
+            "POST NUL in title",
+            "POST",
+            "/todo",
+            {"id": "66666666-2222-3333-4444-000000000009", "title": "a\u0000bc"},
+        )
+    )
+    add(
+        req(
+            "POST lone surrogate title",
+            "POST",
+            "/todo",
+            raw=b'{"id":"66666666-2222-3333-4444-000000000010","title":"\\ud800"}',
+            headers=JSON,
+        )
+    )
+    add(
+        req(
+            "POST tab in title",
+            "POST",
+            "/todo",
+            {"id": "66666666-2222-3333-4444-000000000011", "title": "a\tb"},
+        )
+    )
+    add(
+        req(
+            "POST U+001C at the end of the title",
+            "POST",
+            "/todo",
+            {"id": "66666666-2222-3333-4444-000000000012", "title": "ab\u001c"},
+        )
+    )
+    add(
+        req(
+            "POST multiline description",
+            "POST",
+            "/todo",
+            {
+                "id": "66666666-2222-3333-4444-000000000013",
+                "title": "Lines",
+                "description": "one\ntwo\tthree\r\n",
+            },
+        )
+    )
+    add(
+        req(
+            "POST title 255 chars between spaces",
+            "POST",
+            "/todo",
+            {
+                "id": "66666666-2222-3333-4444-000000000014",
+                "title": " " + "s" * 255 + " ",
+            },
+        )
+    )
+    add(req("GET list limit=100", "GET", "/todo?limit=100"))
+    add(req("GET list limit=101", "GET", "/todo?limit=101"))
     return s
 
 
@@ -400,7 +585,14 @@ def timestamp_basis(body, window):
     basis = {}
     for path, value in json_strings(parsed):
         m = ISO_FULL.match(value)
-        if not m or m.group("off"):
+        if not m:
+            continue
+        if m.group("off"):
+            ts = datetime.datetime.fromisoformat(value).astimezone(
+                datetime.timezone.utc
+            )
+            ts = ts.replace(tzinfo=None)
+            basis[path] = "utc" if utc_start - tol <= ts <= utc_end + tol else "neither"
             continue
         ts = datetime.datetime.fromisoformat(value)
         is_local = local_start - tol <= ts <= local_end + tol
@@ -408,11 +600,7 @@ def timestamp_basis(body, window):
         basis[path] = (
             "local=utc"
             if is_local and is_utc
-            else "local"
-            if is_local
-            else "utc"
-            if is_utc
-            else "neither"
+            else "local" if is_local else "utc" if is_utc else "neither"
         )
     return basis
 
@@ -431,7 +619,12 @@ def capture(base_url, out_path, provenance_paths=()):
     raw = []
     for r in sequence():
         conn = http.client.HTTPConnection(url.hostname, url.port, timeout=30)
-        conn.request(r["method"], r["path"], body=r["body"], headers=r["headers"])
+        if r["chunks"] is not None:
+            conn.request(
+                r["method"], r["path"], body=iter(r["chunks"]), headers=r["headers"]
+            )
+        else:
+            conn.request(r["method"], r["path"], body=r["body"], headers=r["headers"])
         resp = conn.getresponse()
         body = resp.read().decode("utf-8", errors="replace")
         local_now, utc_now = now_pair()
@@ -449,7 +642,12 @@ def capture(base_url, out_path, provenance_paths=()):
                     "method": r["method"],
                     "path": r["path"],
                     "headers": r["headers"],
-                    "body": r["body"].decode() if r["body"] is not None else None,
+                    "body": (
+                        r["body"].decode()
+                        if r["body"] is not None
+                        else b"".join(r["chunks"]).decode() if r["chunks"] else None
+                    ),
+                    "chunked": r["chunks"] is not None,
                 },
                 "status": status,
                 "reason": reason,
