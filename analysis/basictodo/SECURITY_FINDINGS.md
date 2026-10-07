@@ -194,3 +194,40 @@ A second `security-auditor` reviewed the patch over the wire (uvicorn with httpt
 | R4 | A port with more than 4,300 digits raises `ValueError` instead of `SettingsError` | length check first |
 
 **Not touched by the patch:** `database.py:36` echoes a rejected `DATABASE_URL` with its password (F-10/SEC-012, residual). The e2e cleanup with `limit=1000` is handled by the pagination commit.
+
+## Verify on the tip (Phase 5)
+
+A separate `security-auditor` checked the tip independently (product code of `47877f8`, identical at `eb178e3`). It read this document and probed the code: 216 focused tests; `init_db.py` and the server from `main.py` on 127.0.0.1; raw-socket HTTP probes; Python probes for R1–R4, the database file and the migration and backup code; `pip-audit` (59 runtime pins) and `npm audit --omit=dev`, both 0.
+
+**Verdict: no open High or Medium finding beyond the accepted ones** (F-01/SEC-001; F-19/Q8a is the accepted Low).
+
+| Status | Findings |
+|---|---|
+| FIXED | F-02, F-03, F-04, F-05, F-06, F-08, F-11, F-12, F-15 (history purge residual), F-16, F-17, F-20 |
+| PARTLY FIXED | F-13: control characters rejected; bidi (Cf) still accepted, as documented |
+| ACCEPTED | F-01 (SEC-001), F-14 (Q7), F-19 (Q8a) |
+| RESIDUAL | F-07, F-09, F-10, F-18, F-21, F-22 |
+
+**Probes beyond the tests:**
+- A foreign Host with a 20,000-byte body gets 400, not 413, so the body is never read.
+- Pipelined and keep-alive requests are each checked.
+- CL+TE, a 21-digit Content-Length and `+5` get 400 from uvicorn.
+- A request hidden in an unread oversized body is not processed.
+- GET with a 20,000-byte body gets 413.
+- A preflight from `null`, for PATCH or for a custom header gets 400.
+
+**R1–R4: verified.**
+- **R1:** every exception while formatting gives the fallback line, with one Info nit (N-3).
+- **R2:** a new file exists 0600 and empty before SQLite opens it; the `-journal` is 0600; an existing 0644 file with content gets one warning per engine and keeps its mode.
+- **R3:** userinfo and query passwords are rendered as `***` or dropped.
+- **R4:** ports of 4,301 and 5,000 digits give `SettingsError`.
+
+**New observations, all Informational** (none at Medium or above; residual, not fixed in this pass):
+
+| # | CWE | Location | Observation |
+|---|---|---|---|
+| N-1 | 89 | `schema.py` `_rows` | Table and column names from the database's own `sqlite_master` are quoted without doubling `"`. A crafted table name gave an `OperationalError`, rollback, backup removed, `toDo` intact. Not reachable through the API; whoever can craft the file controls the data anyway. Fix: `name.replace('"', '""')`. |
+| N-2 | 367 | `schema.py` `_backup` | The backup is created exclusively 0600, closed, then reopened by name. A planted symlink is refused (`SchemaError`, target untouched); only a writer of the database's directory could race the reopen, and could replace the database anyway. |
+| N-3 | 755 | `logger.py` `NeutraliseMessage` | The fallback formats `repr(record.msg)`; a message object whose `__str__` and `__repr__` both raise escapes the filter. Every call site passes a string literal. Fix: a second `try` with a constant message. |
+| N-4 | 150 | `init_db.py` | Exception and schema-diff text goes to stderr unescaped; it comes from the operator's database file or environment, not from API input. |
+| N-5 | 346 | Starlette `TrustedHostMiddleware` | Two Host headers (the allowed one first) or an absolute-form target naming another host get 200. A browser cannot send either, so DNS rebinding is not affected; any other client that reaches the port is covered by F-01. |

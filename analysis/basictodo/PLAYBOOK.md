@@ -367,3 +367,69 @@ Since Phase 5 the application does this itself at startup (`init_db.py`, `main.p
 | `init_db.py` in a worktree: provenance exit 3, `backend.app.models.todo` outside the tree | `app.*` import root plus the editable install of another checkout | Import root normalised (`15d0044`) |
 | `python -W error -m pytest` stops with INTERNALERROR | pytest-asyncio's own configuration warning, not the application | `pytest -W error` (the application's warnings only) |
 | super-linter red on `script.py.mako` (black, flake8, mypy) | The Mako template is parsed as Python | Exclude that file only (`5ffc86b`) |
+
+## Behaviour changes and hardening: approved fixes, data migration, security
+
+**Proven on:** the Phase 4 tip (FastAPI 0.142, SQLAlchemy 2.0.54, Alembic 1.20, React 19). The owner's Q6 fixes, a data migration of existing rows (local time → UTC), Alembic at startup, and the hardening items Q8 put in scope.
+
+**Result:** branch `plugin/uplift-basictodo/phase-5`, commits `e791a9c` to `eb178e3`.
+
+**Idea:** here behaviour is **meant** to change, so the proof is a **classification**: every flipped test and every changed response is traced to one commit and one decision ID, and nothing else may change.
+
+### Environment facts
+
+| Fact | Consequence |
+|---|---|
+| pysqlite commits DDL on its own, outside the transaction | For an atomic migration: `isolation_level=None` on connect and `BEGIN IMMEDIATE` on the engine's `begin` event. Alembic then runs inside that transaction (its `begin_transaction` is a no-op on a connection already in one). |
+| SQLite refuses a backup from the connection that holds the write lock (`SQLITE_LOCKED`); Python's `backup()` then loops forever | Take the write lock first, then back up through a second, read-only connection (`file:…?mode=ro`). It sees what is only in the `-wal` file; a file copy does not. |
+| `zoneinfo` with `fold=0` | An ambiguous time is its first occurrence; a time in the spring gap gets the offset before the change, so converting it back gives a time one hour later |
+| `datetime.astimezone()` without a zone uses a fixed offset | Never use it for stored data; resolve an IANA zone (`ZoneInfo`, `ZoneInfo.from_file("/etc/localtime")`) |
+| TanStack Query v5: callbacks passed to `mutate()` do not run after the component unmounted; `useMutation`'s own callbacks do | A toast for a row that an optimistic update removes belongs in the hook |
+| FastAPI's default 422 handler echoes the input; an unpaired surrogate in it makes the response fail to encode (500) | A custom `RequestValidationError` handler that replaces surrogates |
+| TestClient sends a chunked body as one ASGI message | Count streamed bytes with a hand-written `receive` and against a real uvicorn |
+| `http.client` with an explicit `Transfer-Encoding: chunked` header sends the parts unframed unless `encode_chunked=True` | Pass it |
+| SQLite creates a database file 0644 under the usual umask; a chmod at connect leaves a window | Create the file 0600 in the engine's `do_connect` hook before SQLite opens it; SQLite gives `-wal`, `-shm` and `-journal` the database file's mode |
+| The Python template's `lib/` rule in `.gitignore` also ignores `frontend/src/lib/` | Add new files there with `git add -f` (as `toaster.ts` was), or ask the owner for a negation |
+| A fresh `uv run` creates `.venv` with the lock's black (26.10), not the branch linter's 26.5.1 | Format only with `uvx black==26.5.1`; never run a formatter over the whole tree |
+| super-linter lints every changed file in full | A rewritten README meets textlint's terminology ("todo", "ID", "hostnames") and Prettier; codespell checks touched files such as `.gitignore` |
+
+### Recipe
+
+1. **Gate A, on the unchanged tip:** extend the harness first (golden master requests for every planned change, screens by title), then capture P4. Hardening pass with a separate review. Pin each keep, and pin each planned change as `test_legacy_*`.
+2. **Gate B, one commit per decision row:** formatting of touched legacy files in a `style:` commit before (ASTs compared); the change; the tests that pinned the old behaviour **replaced**, not edited; per-test table and golden master against the previous capture; every difference classified by ID in the commit message.
+3. **A positive control for every new guard:** remove the guard once, run its tests, and see one fail; revert. A guard whose removal no test notices needs another test (here: the pre-create of the database file, hidden by the later chmod).
+4. **Gate C, on the tip:** P4 → P5 attribution for pytest and the golden master, OpenAPI diff and `types/todo.ts`, mypy in two fresh venvs, `pip-audit`, `npm audit`, e2e, super-linter, screens with a review page, an independent hardening verify. Stop before the push.
+
+### Startup migration rules
+
+- Back up only after `BEGIN IMMEDIATE`, with SQLite's backup API, exclusively created (`O_CREAT|O_EXCL`, 0600); check it with `integrity_check` and row by row against the source, before anything is written; on any error roll back and delete it.
+- Stamp `0001` only if `sqlite_master` equals the baseline; never `stamp head` by hand.
+- A data migration that reads existing values needs a plausibility check that can stop it (here: converted `created_at` within 30 minutes of `updated_at`) and an override.
+- The app's lifespan refuses a database that is not at head, so a server started without `init_db.py` cannot serve unconverted rows.
+
+### Done means (Phase 5)
+
+| Check | Expected |
+|---|---|
+| pytest per test P4 → P5 | every change attributed to a commit and a decision ID; the P0 test file byte-identical and green |
+| Golden master P4 → P5 | every difference attributed; keeps unchanged |
+| OpenAPI P4 → P5 | only intended changes; `types/todo.ts` matches |
+| Migration | sample databases converted row by row; DST both ways; downgrade (except the gap hour); every startup path; backup checks; WAL; atomicity; wrong zone stops |
+| Hardening verify on the tip | no open High or Medium beyond the accepted ones |
+| mypy (two fresh venvs), `pip-audit`, `npm audit`, e2e, super-linter | 0, 0, 0, green, exit 0 |
+| Screens | every difference attributed; review page for the owner's UAT |
+
+### Errors hit, and what resolved them
+
+| Symptom | Cause | Resolution |
+|---|---|---|
+| A golden master request for a large DELETE failed at P4 | Its todo was titled "Delete me", which the legacy blocklist rejected | Title "Remove me" |
+| Screen 08 differed by 17 pixels between identical runs | Captured while a border animation ran | Wait for `document.getAnimations()` to finish |
+| A legacy pin for a 500 raised in the test instead | TestClient re-raises server exceptions | `TestClient(app, raise_server_exceptions=False)` |
+| 422 for a lone surrogate became a 500 | The default handler echoes the input, which cannot be encoded | Custom 422 handler (`_sendable`) |
+| flake8 F401/F811 in API tests | Fixtures imported from another test module | A `conftest.py` that re-exports them |
+| The backup probe hung | Backup from the connection holding the write lock | A second, read-only connection |
+| mypy "Statement is unreachable" after `assert isinstance(dbapi, sqlite3.Connection)` | The DBAPI protocol type does not overlap `sqlite3.Connection` | `cast()` |
+| `uv run black` reformatted 30 untouched files | The fresh `.venv` had black 26.10 | Reverted; `uvx black==26.5.1` on touched files only |
+| `titleLength.ts` missing from `git status` | `.gitignore`'s `lib/` | `git add -f` |
+| super-linter red after the README rewrite | markdownlint MD060, Prettier, textlint terminology, codespell | Fixed in `eb178e3` |

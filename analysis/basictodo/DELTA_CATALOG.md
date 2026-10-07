@@ -241,3 +241,16 @@ Note 9: Chakra's subtree is `@chakra-ui`, `@ark-ui`, `@zag-js`, `@pandacss`, `@i
 | 23 | **Alembic autogenerate does not see CHECK constraints;** `[tool.alembic]` works without `alembic.ini` only if `env.py` reads neither logging config nor `sqlalchemy.url`. | Hand-written revision; `sqlite_master` compared byte for byte; `env.py` takes the application's URL. |
 | 24 | **Aware timestamps lose their offset** when stored; the wall clock is kept. | Pinned by a property test; input for Q6.6. |
 | 25 | **super-linter v9 parses Alembic's `script.py.mako` as Python** (black, flake8, mypy E999; mypy then checks nothing else). | That file only is excluded (`5ffc86b`, a scope exception by the owner); the run is green. |
+
+### Phase 5 findings (hardening and behaviour changes, 2026-10-08)
+
+| # | Finding | Effect |
+|---|---|---|
+| 26 | **pysqlite commits DDL on its own**, so an Alembic run on a default connection is not atomic: a failing revision leaves a half-versioned file. | `isolation_level=None` and `BEGIN IMMEDIATE` on the startup engine (`7158735`); an atomicity test and a positive control. |
+| 27 | **SQLite's backup API refuses the connection that holds the write lock** (`SQLITE_LOCKED`), and Python's `backup()` then loops. A file copy misses what is only in the `-wal` file. | Backup through a second, read-only connection after `BEGIN IMMEDIATE`; a WAL test. |
+| 28 | **TanStack Query v5 runs `mutate()` callbacks only while the component is mounted.** The optimistic delete unmounted the row, so the failure toast never appeared (RULE-046). | Toasts in `useDeleteTodo`'s own callbacks (`2e55652`). |
+| 29 | **FastAPI 0.142's default 422 handler echoes the input;** an unpaired surrogate in it made the 422 a 500. | Custom handler (`0d03cef`). |
+| 30 | **Starlette's own body limit is not enough for Q8b:** two different 413 bodies, and a DELETE handler still runs. TestClient sends a chunked body as one message. | Own middleware (`8f5bf11`); counting tested with a hand-written ASGI `receive` and against uvicorn. |
+| 31 | **FastAPI 0.142 already answers 422 to a body without Content-Type;** `text/plain` too. | A route dependency gives 415 for POST and PUT; OpenAPI unchanged. |
+| 32 | **The lock resolves black 26.10, super-linter v9 bundles 26.5.1;** a fresh `uv run black` reformats untouched files. | Formatting only with `uvx black==26.5.1` on touched files (PLAYBOOK). |
+| 33 | **super-linter lints a rewritten Markdown file in full** (markdownlint, Prettier, textlint terminology) and codespell checks every touched file. | Fixed in `eb178e3`; the README now says "todo". |

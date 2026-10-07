@@ -1,0 +1,90 @@
+P4 7e6ae13 -> P5 eb178e3 (product code as 47877f8; 0 of 104 differ between them): 68 of 104 responses differ
+POST create ok                                             200->200  Q6.6
+POST create ok 2                                           200->200  Q6.6
+POST title 255 chars                                       200->200  Q6.6
+POST title 256 chars                                       409->422  Q6.2/Q6.3
+POST description 256 chars                                 409->422  Q6.2/Q6.3
+POST text/plain body                                       422->415  SEC/Q8b
+POST no body                                               422->415  SEC/Q8b
+POST SQL keyword title                                     400->200  Q6.1, Q6.6
+POST quirk 'Todo to delete' (blocklist)                    400->200  Q6.1, Q6.6
+POST unknown extra field                                   200->200  Q6.6
+POST uppercase id                                          200->200  Q6.6
+PUT done='yes'                                             200->200  Q6.6
+PUT done='on'                                              200->200  Q6.6
+PUT done='1'                                               200->200  Q6.6
+PUT done=1                                                 200->200  Q6.6
+PUT done='true'                                            200->200  Q6.6
+PUT done='TRUE'                                            200->200  Q6.6
+PUT done='y'                                               200->200  Q6.6
+PUT done='t'                                               200->200  Q6.6
+PUT done=1.0                                               200->200  Q6.6
+PUT done='false'                                           200->200  Q6.6
+PUT done=0                                                 200->200  Q6.6
+PUT done='off'                                             200->200  Q6.6
+PUT done='no'                                              200->200  Q6.6
+PUT done=None                                              500->422  Q6.2/Q6.3
+PUT title update                                           200->200  Q6.6
+PUT empty object                                           200->200  Q6.6
+PUT whitespace title                                       400->422  Q6.2/Q6.3
+GET one                                                    200->200  Q6.6
+GET one uppercase id                                       200->200  Q6.6
+GET one urn id                                             200->200  Q6.6
+GET one hex id without dashes                              200->200  Q6.6
+GET list                                                   200->200  Q6.1, Q6.4, Q6.6
+GET list limit=-1                                          200->422  Q6.1, Q6.4
+GET list page=0                                            200->422  Q6.1, Q6.4
+GET list limit=' 2 '                                       200->200  Q6.4, Q6.6
+GET list limit=2 page=2                                    200->200  Q6.1, Q6.4, Q6.6
+OPTIONS preflight allowed                                  200->200  SEC/Q8b
+OPTIONS preflight allowed DELETE                           200->200  SEC/Q8b
+OPTIONS preflight disallowed origin                        400->400  SEC/Q8b
+OPTIONS preflight 127.0.0.1 origin                         400->400  SEC/Q8b
+GET list CORS allowed                                      200->200  Q6.1, Q6.4, Q6.6, SEC/Q8b
+GET list CORS disallowed                                   200->200  Q6.1, Q6.4, Q6.6, SEC/Q8b
+GET 404 CORS allowed                                       404->404  SEC/Q8b
+POST 422 CORS allowed                                      422->422  SEC/Q8b
+GET list after delete                                      200->200  Q6.1, Q6.4, Q6.6
+GET openapi.json                                           200->200  Q6.2/Q6.3, Q6.4, Q7 docs
+GET root bad Host                                          200->400  SEC/Q8b
+POST body 16384 bytes                                      200->200  Q6.6
+POST body 16385 bytes                                      200->413  Q6.6, SEC/Q8b
+POST body 16385 bytes CORS allowed                         200->413  Q6.6, SEC/Q8b
+POST body 20000 bytes chunked                              200->413  Q6.6, SEC/Q8b
+POST create for big DELETE                                 200->200  Q6.6
+DELETE with 20000-byte body                                200->413  SEC/Q8b
+POST maximal valid request (4-byte UTF-8, ensure_ascii)    200->200  Q6.6
+POST maximal valid request (4-byte UTF-8, raw)             200->200  Q6.6
+POST JSON body without Content-Type                        422->415  SEC/Q8b
+PUT text/plain body                                        422->415  SEC/Q8b
+PUT title null                                             500->422  Q6.2/Q6.3
+PUT done and title                                         200->200  Q6.5, Q6.6
+POST NUL in title                                          200->422  Q6.2/Q6.3
+POST lone surrogate title                                  500->422  Q6.2/Q6.3
+POST tab in title                                          200->422  Q6.2/Q6.3
+POST U+001C at the end of the title                        200->422  Q6.2/Q6.3
+POST multiline description                                 200->200  Q6.6
+POST title 255 chars between spaces                        200->200  Q6.6
+GET list limit=100                                         200->200  Q6.1, Q6.2/Q6.3, Q6.5, Q6.4, Q6.6, SEC/Q8b
+GET list limit=101                                         200->422  Q6.1, Q6.2/Q6.3, Q6.5, Q6.4
+
+changes per commit (a response can change in several): {'Q6.6': 43, 'Q6.2/Q6.3': 12, 'SEC/Q8b': 18, 'Q6.1': 11, 'Q6.4': 11, 'Q7 docs': 1, 'Q6.5': 3}
+unchanged: 36
+  keep check PUT done='yes': status 200->200, done True -> True
+  keep check PUT done='on': status 200->200, done True -> True
+  keep check PUT done='1': status 200->200, done True -> True
+  keep check PUT done=1: status 200->200, done True -> True
+  keep check PUT done='true': status 200->200, done True -> True
+  keep check PUT done='TRUE': status 200->200, done True -> True
+  keep check PUT done='y': status 200->200, done True -> True
+  keep check PUT done='t': status 200->200, done True -> True
+  keep check PUT done=1.0: status 200->200, done True -> True
+  keep check PUT done='false': status 200->200, done False -> False
+  keep check PUT done=0: status 200->200, done False -> False
+  keep check PUT done='off': status 200->200, done False -> False
+  keep check PUT done='no': status 200->200, done False -> False
+  keep check PUT done='maybe': status 422->422, done - -> -
+  keep check PUT done=2: status 422->422, done - -> -
+  keep check PUT done=None: status 500->422, done - -> -
+  keep check PUT done=[]: status 422->422, done - -> -
+  keep check PUT done={}: status 422->422, done - -> -

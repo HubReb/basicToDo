@@ -1,0 +1,145 @@
+pytest per test, Phase 4 tip 7e6ae13 -> Phase 5 tip eb178e3
+484 tests (Counter({'passed': 483, 'skipped': 1})) -> 736 tests (Counter({'passed': 736}))
+Each net change is attributed to the commit where it happened (per-commit runs, run_suite.sh).
+Runs without a commit row (c11 2c8cb68, c13 2e55652: frontend only; c15 42c8deb: lock only) change no test.
+
+commit   ID                              removed  added  status changed
+72baf56  pins (Gate A)                        0     25      0
+cf4e345  TD-3, SEC-010                        0     21      0
+26fca96  style                                0      0      0
+a0244c2  Q6.1                                68     68      1
+8cd8fc4  style                                0      0      0
+0d03cef  Q6.2, Q6.3                          16     61      0
+ddf6d70  Q6.5                                 3      4      0
+d329bb3  style                                0      0      0
+7f203ca  Q6.4, SEC-004                        5     14      0
+c9c2082  style                                0      0      0
+7158735  Q6.6, Q6.7                          14     79      0
+8f5bf11  SEC-002/-003/-008/-014, Q8b          4     90      0
+e7fa753  Q8a, TD-7                            0      0      0
+47877f8  docs (Q7)                            0      0      0
+eb178e3  style (super-linter)                 0      0      0
+
+Legacy pins added at 72baf56 and replaced by the commit that changed the behaviour:
+  0d03cef Q6.2, Q6.3: test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_nul_bypasses_the_length_limit
+  0d03cef Q6.2, Q6.3: test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_put_title_null_is_a_500
+  ddf6d70 Q6.5: test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_done_true_discards_other_edits
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_any_host_is_served
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_cors_allows_credentials_and_every_method
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_oversized_body_is_accepted
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_text_plain_body_is_a_422
+
+Status changes:
+  a0244c2 Q6.1: test_validators.integration.test_field_validator_integration.TestFieldValidatorOptionalRealWorld::test_validate_optional_multiline_description: skipped -> passed
+
+Removed per commit (replaced by new tests in the same commit; the new IDs are in the run tables):
+  a0244c2 Q6.1: - test_builders.integration.test_todo_entry_builder_integration.TestToDoEntryBuilderValidationIntegration::test_build_rejects_sql_injection_in_description
+  a0244c2 Q6.1: - test_builders.integration.test_todo_entry_builder_integration.TestToDoEntryBuilderValidationIntegration::test_build_rejects_sql_injection_in_title
+  a0244c2 Q6.1: - test_service.integration.test_create_todo_integration.TestCreateTodoSQLInjectionIntegration::test_create_blocks_double_dash_comment
+  a0244c2 Q6.1: - test_service.integration.test_create_todo_integration.TestCreateTodoSQLInjectionIntegration::test_create_blocks_sql_injection_in_description
+  a0244c2 Q6.1: - test_service.integration.test_create_todo_integration.TestCreateTodoSQLInjectionIntegration::test_create_blocks_sql_injection_in_title
+  a0244c2 Q6.1: - test_service.integration.test_create_todo_integration.TestCreateTodoSQLInjectionIntegration::test_create_blocks_union_select
+  a0244c2 Q6.1: - test_service.integration.test_update_todo_integration.TestUpdateTodoSQLInjectionIntegration::test_update_blocks_double_dash_in_title
+  a0244c2 Q6.1: - test_service.integration.test_update_todo_integration.TestUpdateTodoSQLInjectionIntegration::test_update_blocks_semicolon_in_description
+  a0244c2 Q6.1: - test_service.integration.test_update_todo_integration.TestUpdateTodoSQLInjectionIntegration::test_update_blocks_sql_injection_in_description
+  a0244c2 Q6.1: - test_service.integration.test_update_todo_integration.TestUpdateTodoSQLInjectionIntegration::test_update_blocks_sql_injection_in_title
+  a0244c2 Q6.1: - test_service.unit.test_create_todo.TestCreateTodoValidation::test_create_with_sql_injection_description
+  a0244c2 Q6.1: - test_service.unit.test_create_todo.TestCreateTodoValidation::test_create_with_sql_injection_title
+  a0244c2 Q6.1: - test_service.unit.test_update_todo.TestUpdateTodoValidation::test_update_with_sql_injection_description
+  a0244c2 Q6.1: - test_service.unit.test_update_todo.TestUpdateTodoValidation::test_update_with_sql_injection_title
+  a0244c2 Q6.1: - test_sql_injection_protection::test_create_todo_with_sql_injection_attempt
+  a0244c2 Q6.1: - test_sql_injection_protection::test_update_todo_with_sql_injection
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorOptionalRealWorld::test_validate_optional_blocks_sql_injection
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorRequiredRealWorld::test_validate_required_blocks_sql_injection
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_optional_blocks_sql_patterns['; DROP TABLE todos; --]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_optional_blocks_sql_patterns[/* comment */ SELECT *]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_optional_blocks_sql_patterns[1' OR '1'='1]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_optional_blocks_sql_patterns[1; DELETE FROM users]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_optional_blocks_sql_patterns[UNION SELECT password FROM users]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_optional_blocks_sql_patterns[admin'--]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_required_blocks_sql_patterns['; DROP TABLE todos; --]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_required_blocks_sql_patterns[/* comment */ SELECT *]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_required_blocks_sql_patterns[1' OR '1'='1]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_required_blocks_sql_patterns[1; DELETE FROM users]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_required_blocks_sql_patterns[UNION SELECT password FROM users]
+  a0244c2 Q6.1: - test_validators.integration.test_field_validator_integration.TestFieldValidatorSQLInjectionDetection::test_required_blocks_sql_patterns[admin'--]
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerAttackVectors::test_block_sql_injection_in_description
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerAttackVectors::test_block_sql_injection_in_todo_title
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerAttackVectors::test_block_stacked_queries
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerAttackVectors::test_block_time_based_injection
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerAttackVectors::test_block_union_based_injection
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerBoundaryConditions::test_sql_keyword_at_end
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerBoundaryConditions::test_sql_keyword_at_start
+  a0244c2 Q6.1: - test_validators.integration.test_input_sanitizer_integration.TestInputSanitizerBoundaryConditions::test_whitespace_around_sql_keyword
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[' UNION SELECT * FROM users---UNION injection]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern['; DROP TABLE todos; ---classic SQL injection]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[*/-multi-line comment end]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[---double dash comment]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[/* malicious */-complete comment block]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[/*-multi-line comment start]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[1' OR '1'='1-always true condition]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[1=1 OR 1=1-OR keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[;-semicolon separator]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[ALTER TABLE users-ALTER keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[CREATE TABLE test-CREATE keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[DECLARE @var-DECLARE keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[DELETE FROM users-DELETE keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[DROP TABLE users-DROP keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[DeLeTe FrOm users-mixed case DELETE]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[EXEC sp_executesql-EXEC keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[EXECUTE sp_executesql-EXECUTE keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[INSERT INTO users-INSERT keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[RENAME TABLE users-RENAME keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[Robert'); DROP TABLE students;---little bobby tables]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[SELECT * FROM users-SELECT keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[SHUTDOWN WITH NOWAIT-SHUTDOWN keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[TRUNCATE TABLE users-TRUNCATE keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[Test -- comment-double dash at end]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[Test; DROP TABLE-semicolon followed by DROP]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[UNION SELECT-UNION keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[UPDATE users SET-UPDATE keyword]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[admin'---admin with comment]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[drop table users-lowercase DROP]
+  a0244c2 Q6.1: - test_validators.unit.test_input_sanitizer.TestInputSanitizerSQLInjection::test_sql_injection_pattern[xp_cmdshell 'dir'-xp_cmdshell]
+  0d03cef Q6.2, Q6.3: - test_api.test_api_endpoints.TestCreateTodo::test_create_todo_sql_injection_in_description_returns_400
+  0d03cef Q6.2, Q6.3: - test_api.test_api_endpoints.TestCreateTodo::test_create_todo_sql_injection_in_title_returns_400
+  0d03cef Q6.2, Q6.3: - test_api.test_api_error_responses.TestErrorResponses::test_400_error_format
+  0d03cef Q6.2, Q6.3: - test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_nul_bypasses_the_length_limit
+  0d03cef Q6.2, Q6.3: - test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_put_title_null_is_a_500
+  0d03cef Q6.2, Q6.3: - test_api.test_update_to_do.TestUpdateTodo::test_update_todo_sql_injection_returns_400
+  0d03cef Q6.2, Q6.3: - test_builders.integration.test_todo_entry_builder_integration_consistency.TestToDoEntryBuilderBoundaryConditions::test_build_with_very_long_text
+  0d03cef Q6.2, Q6.3: - test_builders.unit.test_tode_entry_builder_edge_cases.TestToDoEntryBuilderEdgeCases::test_build_with_very_long_title
+  0d03cef Q6.2, Q6.3: - test_service.integration.test_create_todo_integration.TestCreateTodoErrorHandlingIntegration::test_create_integrity_error_becomes_already_exists
+  0d03cef Q6.2, Q6.3: - test_service.integration.test_update_todo_integration.TestUpdateTodoErrorHandlingIntegration::test_update_integrity_error_becomes_already_exists
+  0d03cef Q6.2, Q6.3: - test_service.integration.test_update_todo_integration.TestUpdateTodoValidationIntegration::test_update_rejects_empty_title
+  0d03cef Q6.2, Q6.3: - test_service.integration.test_update_todo_integration.TestUpdateTodoValidationIntegration::test_update_rejects_whitespace_only_title
+  0d03cef Q6.2, Q6.3: - test_service.unit.test_create_todo.TestCreateTodoRepositoryErrors::test_create_already_exists
+  0d03cef Q6.2, Q6.3: - test_service.unit.test_update_todo.TestUpdateTodoRepositoryErrors::test_update_already_exists
+  0d03cef Q6.2, Q6.3: - test_service.unit.test_update_todo.TestUpdateTodoValidation::test_update_with_empty_string_title
+  0d03cef Q6.2, Q6.3: - test_service.unit.test_update_todo.TestUpdateTodoValidation::test_update_with_whitespace_only_title
+  ddf6d70 Q6.5: - test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_done_true_discards_other_edits
+  ddf6d70 Q6.5: - test_service.integration.test_update_todo_integration.TestUpdateTodoDoneIntegration::test_update_with_done_true_calls_get_entry
+  ddf6d70 Q6.5: - test_service.unit.test_update_todo.TestUpdateTodoWithDone::test_update_with_done_true_calls_mark_as_done
+  7f203ca Q6.4, SEC-004: - test_api.test_list_to_do.TestListTodos::test_list_todos_negative_limit_returns_error
+  7f203ca Q6.4, SEC-004: - test_api.test_list_to_do.TestListTodos::test_list_todos_negative_page_returns_error
+  7f203ca Q6.4, SEC-004: - test_api.test_list_to_do.TestListTodos::test_list_todos_very_large_limit
+  7f203ca Q6.4, SEC-004: - test_api.test_list_to_do.TestListTodos::test_list_todos_zero_limit
+  7f203ca Q6.4, SEC-004: - test_api.test_list_to_do.TestListTodos::test_list_todos_zero_page_returns_error
+  7158735 Q6.6, Q6.7: - test_builders.integration.test_todo_entry_builder_integration.TestToDoEntryBuilderRealWorldScenarios::test_build_typical_todo_entry
+  7158735 Q6.6, Q6.7: - test_builders.integration.test_todo_entry_builder_integration.TestToDoEntryBuilderTimestampGeneration::test_build_generates_created_at_timestamp
+  7158735 Q6.6, Q6.7: - test_builders.integration.test_todo_entry_builder_integration_consistency.TestToDoEntryBuilderDataConsistency::test_build_same_payload_produces_consistent_structure
+  7158735 Q6.6, Q6.7: - test_builders.unit.test_todo_entry_builder.TestToDoEntryBuilderDefaults::test_build_sets_updated_at_to_none
+  7158735 Q6.6, Q6.7: - test_builders.unit.test_todo_entry_builder.TestToDoEntryBuilderSuccess::test_build_from_create_schema_success
+  7158735 Q6.6, Q6.7: - test_builders.unit.test_todo_entry_builder.TestToDoEntryBuilderSuccess::test_build_sets_created_at_timestamp
+  7158735 Q6.6, Q6.7: - test_data_access.test_migrations.TestBaselineRevision::test_stamping_the_sample_database_makes_upgrade_head_a_no_op
+  7158735 Q6.6, Q6.7: - test_data_access.test_storage_characterization.TestCreatedAtRule034::test_created_at_is_local_naive_time_with_microseconds
+  7158735 Q6.6, Q6.7: - test_data_access.test_storage_characterization.TestUpdatedAtRule035::test_edit_done_and_delete_leave_updated_at_unchanged
+  7158735 Q6.6, Q6.7: - test_data_access.test_storage_characterization.TestUpdatedAtRule035::test_insert_stores_the_database_utc_clock_in_whole_seconds
+  7158735 Q6.6, Q6.7: - test_data_access.test_storage_characterization.TestUpdatedAtRule035::test_the_created_object_carries_the_stored_updated_at
+  7158735 Q6.6, Q6.7: - test_data_access.test_storage_properties::test_aware_timestamps_lose_their_offset_and_keep_the_wall_clock
+  7158735 Q6.6, Q6.7: - test_data_access.test_storage_properties::test_naive_timestamps_are_stored_as_text_and_read_back_exactly
+  7158735 Q6.6, Q6.7: - test_service.unit.test_create_todo.TestCreateTodoRepositoryInteraction::test_create_sets_default_values
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: - test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_any_host_is_served
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: - test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_cors_allows_credentials_and_every_method
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: - test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_oversized_body_is_accepted
+  8f5bf11 SEC-002/-003/-008/-014, Q8b: - test_api.test_behaviour_pins.TestLegacyBehaviourPhase5Changes::test_legacy_text_plain_body_is_a_422

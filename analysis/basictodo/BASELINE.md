@@ -652,9 +652,108 @@ Pushed on 2026-10-06 after the owner's go. Draft PR #116 (`phase-4` → `base`, 
 
 **Exit criterion "python-app and e2e green on the draft PR" holds at `031731c`**; the other four workflows are green as well.
 
+## Hardening and behaviour changes (Phase 5)
+
+### Before state (`7e6ae13`, 2026-10-07)
+
+The Phase 4 tip, captured with the harness extended in `e791a9c` before any Phase 5 change, so every later capture compares request for request:
+
+| Check | Result |
+|---|---|
+| pytest (`run_suite.sh`, `p5/pytest-p4-7e6ae13.tsv`) | 483 passed, 1 skipped (484 tests), coverage 84.1 % |
+| Golden master (`p5/gm-p4-7e6ae13.json`) | 104 requests: the 83 of Phase 1 plus 21 for Phase 5 (bad Host, bodies of 16,384, 16,385 and 20,000 bytes with and without chunking, a DELETE with a body, the maximal valid request, missing and wrong Content-Type, `PUT {"title": null}`, done plus title, control characters, a lone surrogate, `limit=100/101`) |
+| Screens (`run_screens.sh`, `baseline/frontend/P4/`) | equal to F2 (Phase 2), except 17 pixels at the border corners of 08 that F2 captured mid-animation; the harness now waits for `document.getAnimations()` and selects rows by title |
+| Frontend | vitest 13/13, e2e 13/13 |
+
+**Entry (Gate A):** the hardening pass (`SECURITY_FINDINGS.md`, `security_remediation.patch`, two review rounds), the sample database `baseline/db/sample-legacy-p5.db` (12 rows; rows 11 and 12 carry the Q6.7 placeholder, exactly and with more text), and `72baf56`: the keeps RULE-024 and RULE-052 pinned, and seven `test_legacy_*` pins for the behaviours Phase 5 changes.
+
+### Changes and proof per commit
+
+Each commit ran `run_suite.sh` (pytest per test, mypy, provenance) and, where the API could change, the golden master against the previous capture. Frontend commits ran `run_frontend_suite.sh` (tsc, lint, vitest, build, `npm audit`, e2e). Tests that pinned a changed behaviour were replaced, not edited. Net attribution P4 → P5: `p5/pytest-attribution-p4-p5.txt` and `p5/gm-attribution-p4-p5.txt`.
+
+| Commit | pytest per test (against the previous run) | Golden master (against the previous capture) | Other proof |
+|---|---|---|---|
+| `cf4e345` TD-3, SEC-010 | 21 new | 0 of 104 | one handler, no propagation; messages formatted once, values cut at 200, controls and surrogates escaped |
+| `a0244c2` Q6.1 | 68 replaced; the multiline test runs (skip → pass) | 11: SQL-like titles and "Todo to delete" accepted, lists | |
+| `0d03cef` Q6.2, Q6.3 | 16 out, 61 in (hypothesis fuzz of the length and control-character limits) | 12: over-length 409 → 422, NUL and lone surrogate → 422, null → 422 instead of 500, blank on edit 400 → 422; OpenAPI `maxLength`, non-nullable `title`/`done` | 422 handler that cannot fail on a lone surrogate |
+| `ddf6d70` Q6.5 | 3 out, 4 in | 3: done plus title writes both | |
+| `7f203ca` Q6.4, SEC-004 | 5 out, 14 in | 11: newest first, `total`, `limit`/`page` bounds → 422 | e2e cleanup re-fetches page 1 (it asked for `limit=1000`, now a 422) |
+| `2c8cb68` Q6.7 (frontend) | — | — | vitest 15/15, e2e 13/13 |
+| `7158735` Q6.6, Q6.7 data, Alembic at startup | 14 out, 79 in | 43: only timestamps (`created_at` local → UTC, both with microseconds and `Z`) and content-length; OpenAPI unchanged | migration checks below; positive controls: without `isolation_level=None`/`BEGIN IMMEDIATE`, with a plain `BEGIN`, and with a file copy instead of `backup()`, a test fails each time |
+| `2e55652` Q6.9, Q6.3 display, Q6.2 counting (frontend) | — | — | vitest 15 → 32 (14 of the 17 new fail on the previous code), e2e 13 → 16 (all 5 new fail on the previous code) |
+| `8f5bf11` SEC-002, -003, -008, -014, Q8b | 4 out (the SEC legacy pins), 90 in | 18: 415 (4), foreign Host 400, CORS without credentials (8), 413 (4), the list without the refused requests' effects | Q8b against a real uvicorn; 10 positive controls (each guard removed once) |
+| `42c8deb` Q8a | — | — | `uv lock` removes slowapi, limits, deprecated, wrapt only; 736 passed in a fresh venv from the lock |
+| `e7fa753` TD-7 | 0 changed | — | six dead items removed; coverage 90.1 % → 92.2 % |
+| `47877f8` docs (Q7) | 0 changed | 1: `/openapi.json`, four route descriptions | PlantUML `-checkonly` passes for all three diagrams |
+| `eb178e3` super-linter findings | 0 changed | 0 of 104 | super-linter exit 0 |
+
+The style commits (`26fca96`, `8cd8fc4`, `62d4075`, `d329bb3`, `c9c2082`) change no test and no response. The test files carried them as well, ASTs compared.
+
+### Migration of existing databases (Q6.6, Q6.7)
+
+`backend/app/data_access/schema.py` prepares the database at startup (`init_db.py`, `main.py`) in one transaction (`isolation_level=None`, `BEGIN IMMEDIATE`). Revision `0002` converts `created_at` and removes the exact placeholder. Tests: `test_utc_migration.py`, `test_startup.py`.
+
+| Check | Result |
+|---|---|
+| Both sample databases (copies), `BASICTODO_LEGACY_TZ=Etc/GMT-5` | every `created_at` five hours earlier, row by row, in the stored format `YYYY-MM-DD HH:MM:SS.ffffff`; `updated_at` and everything else unchanged; in `sample-legacy-p5.db` the exact "not implemented yet" (row 11) is NULL, row 12 ("not implemented yet, see the notes") unchanged |
+| The same, read in UTC (wrong zone) | the zone check stops it (5 h off); rows and schema unchanged |
+| Europe/Berlin rows on both sides of the March and the October 2026 change, plus 1 January | each with its own offset (CET +1, CEST +2), never a fixed one; 2026-01-01 00:30 becomes 2025-12-31 23:30 |
+| The hour that did not exist (2026-03-29 02:30) | read with the offset before the change (fold=0): 01:30 UTC; logged as "skipped" |
+| The hour that occurred twice (2026-10-25 02:30) | read as its first occurrence (CEST): 00:30 UTC; logged as "repeated" |
+| Downgrade to `0001` | every local time comes back exactly, **except the skipped hour: 02:30 comes back as 03:30**. The placeholder is not restored (logged) |
+| Zone resolution | `BASICTODO_LEGACY_TZ`, then `TZ` (with or without a leading colon), then `/etc/localtime`; a name that is no IANA zone, or no zone at all, stops with a message; an empty table needs no zone |
+| Zone check | stops if a converted `created_at` is more than 30 minutes from `updated_at`; 29:59 passes, 30:01 stops; `BASICTODO_LEGACY_TZ_CHECK=off` converts anyway |
+| Startup decisions | missing or empty file → created at `0002`, no backup; made before Alembic with the baseline schema → backup, stamp `0001`, upgrade; at `0001` → backup, upgrade; at head → nothing (file bytes unchanged); a foreign schema → stops with a diff, file bytes unchanged; an unknown revision → stops, backup removed |
+| Backup `<name>.pre-0002.bak` | made with SQLite's backup API through a read-only connection; mode 0600; `integrity_check` ok; rows equal to the source table by table; never overwrites an existing backup; removed if the check fails (tested by corrupting the comparison) |
+| WAL database with committed rows only in its `-wal` file | the main file alone has 1 of 3 rows; the backup and the migrated database have all 3 |
+| One transaction | a failure inside `0002` (after every `created_at` was rewritten and the database stamped) leaves rows, schema and tables unchanged, and no backup |
+| Write lock | another connection holding the write lock makes it wait and give up before any backup |
+| App guard | the lifespan refuses to serve a database that is not at head; `init_db.py` exits 1 with the diff or the migration's message |
+| PLAYBOOK procedure by hand on `sample-legacy-p5.db` | `check_baseline.py` 0, `stamp 0001`, `upgrade head` with `BASICTODO_LEGACY_TZ=Etc/GMT-5`, `current` → `0002 (head)` |
+
+### Exit checks at the tip (`eb178e3`)
+
+Product code as at `47877f8` (the last commit changed a README, a `.gitignore` comment and a test comment).
+
+| Check | Result |
+|---|---|
+| pytest (`p5/pytest-p5-eb178e3.tsv`) | **736 passed** (0 skipped), coverage 92.2 %; against P4: 103 out, 355 in, 1 status change (the multiline test), each attributed to its commit and ID (`p5/pytest-attribution-p4-p5.txt`) |
+| P0 contract tests | 12 of 12 pass; `test_p0_contracts.py` is byte-identical to Phase 4 |
+| Keeps | RULE-024 / Q6.8 (lax `done`) and RULE-052 / Q6.10 (last write wins) pinned and passing; in the golden master every lax `done` spelling gives the same `done` as at P4 |
+| Golden master (`p5/gm-p5-eb178e3.json`) | **68 of 104** differ from P4, every one attributed (`p5/gm-attribution-p4-p5.txt`); 36 unchanged |
+| OpenAPI against P4 | only: `total` (required), `limit` 1–100 and `page` 1–1,000,000, `maxLength` 255 on title and description, `title` and `done` of the update no longer nullable, five route descriptions. `types/todo.ts` matches, including the 422 `detail` list |
+| Q8b against a real uvicorn | Content-Length 20,000 → 413; chunked 20,000 without Content-Length → 413; chunked 16,384 → 200, 16,385 → 413; maximal valid request (255 × U+1F600 in title and description) 200, as 6,198 escaped and 2,118 raw bytes |
+| mypy | 0 errors in two fresh venvs synced like CI (`uv sync --locked --all-extras --dev`), identical freezes (90 packages) |
+| mypy positive control | `config.py`, the Phase 1 target, is gone (TD-7); `MYPY_CONTROL: int = "a"` appended to `backend/app/settings.py` gives exit 1, reverted |
+| `pip-audit`, runtime export | **0** (59 pins: + alembic, mako; − slowapi, limits, deprecated, wrapt, packaging) |
+| Frontend (Node 24.21.0) | `tsc -b`, lint, **vitest 32/32**, build, `npm audit` 0, **e2e 16/16**; the backend runs through `main.py` on 127.0.0.1 and prepares its database |
+| Screens (`baseline/frontend/P5/`, review page `baseline/frontend/p5-review.html`) | 3 of 8 pixel-identical; 5 differ only by the newest-first order (Q6.4); the manual UAT is the owner's |
+| super-linter v9 (`run_superlinter.sh`) | red at `47877f8` in four linters (`ci/superlinter-47877f8.txt`: the rewritten README, two codespell hits in files Phase 5 touched); **green at `eb178e3`**: exit 0, 18 linters (`ci/superlinter-eb178e3.txt`) |
+| Hardening verify on the tip | **No open High or Medium** beyond the accepted F-01/SEC-001 (an independent `security-auditor`; `SECURITY_FINDINGS.md`, "Verify on the tip"). R1–R4 verified; five new observations, all Informational, recorded as residuals |
+
 ## Change log
 
 Phase 5 records each intentional behaviour change here, with its Q6 row ID. Two changes from Phase 4 are not Q6 rows; they are listed for traceability:
 
 - **Phase 4, `7b54c2e`, RULE-037:** an entry built without `deleted` defaults to `False` (it held a `MappedColumn`, and storing it failed). Brief §3 Phase 4 asks for this.
 - **Phase 4, `7b54c2e`, D-03b:** the repository binds `uuid.UUID` ids only; a string id raises `StatementError`. Not reachable over HTTP.
+
+**Phase 5** (`plugin/uplift-basictodo/phase-5`, the owner's decisions in the brief, §7). Each fix replaced the tests that pinned the old behaviour; the IDs are in `p5/pytest-attribution-p4-p5.txt`.
+
+- **Q6.1 fix, `a0244c2`:** the SQL keyword blocklist is gone; input is only stripped. "Buy milk or bread" and "Todo to delete" are accepted (were 400). 68 tests replaced; the multiline description test runs.
+- **Q6.2 fix, `0d03cef` (API) and `2e55652` (UI):** title 1 to 255 and description up to 255 characters, counted in code points after stripping, checked in the API schemas. Titles reject every control character (Cc); descriptions allow tab, LF and CR.
+  Lone surrogates are rejected. NUL no longer slips past the length check (SQLite's `length()` stopped at it). The UI counts code points and has no `maxLength`.
+- **Q6.3 fix, `0d03cef` (API) and `2e55652` (UI):** every validation failure is 422 (over-length was 409, `PUT {"title": null}` and `{"done": null}` were 500, a blank title on edit was 400). 409 only for a duplicate id; any other integrity error is 500.
+  A 422 with a lone surrogate in the input no longer fails with 500. The UI shows a 422 per field, without the rejected input (it showed "[object Object]").
+- **Q6.4 fix, `7f203ca`:** `limit` 1 to 100, `page` 1 to 1,000,000, else 422 (`limit=-1` returned every row, a huge `page` gave 500); newest first (`created_at DESC, id DESC`); `total` counts the active todos on all pages. The UI lists newest first.
+- **Q6.5 fix, `ddf6d70`:** `done: true` together with other fields applies all of them in one write; the other fields used to be discarded.
+- **Q6.6 fix, `7158735`:** `created_at` and `updated_at` are UTC (stored as text without offset, sent with `Z`). At creation both are the same instant; every change (an edit that sets a field, mark done, delete) refreshes `updated_at`; `PUT {}` changes nothing. Revision `0002` converts existing `created_at` values with the zone they were written in (`BASICTODO_LEGACY_TZ`, default the system zone).
+  An hour that did not exist (spring) is read with the offset before the change, so **a downgrade returns such a time one hour later** (02:30 → 03:30); an hour that occurred twice is read as its first occurrence. A wrong zone stops the migration unless `BASICTODO_LEGACY_TZ_CHECK=off`.
+- **Q6.7 fix, `2c8cb68` (UI) and `7158735` (data):** the UI no longer sends the placeholder "not implemented yet"; an edit sends only the title, so a stored description stays. Revision `0002` sets a description that is exactly "not implemented yet" to NULL; text with more after it stays. **This step is irreversible: the downgrade cannot restore the placeholder.**
+- **Q6.9 fix, `2e55652`:** "Todo deleted" appears only after the server confirms; a failed delete shows "Failed to delete todo" with Retry, also after the row has unmounted (it was silent).
+- **Q6.8 keep (RULE-024):** lax `done` spellings ("yes", "on", 1, …) are still accepted; pinned in `test_behaviour_pins.py` and the golden master. Only an explicit `null` changed (Q6.3).
+- **Q6.10 keep (RULE-052):** the last write wins; pinned.
+- **Q7 keep, `47877f8`:** client-supplied ids and soft delete without purge or restore are unchanged and now documented in the README and the API's route descriptions.
+- **Security, `8f5bf11`:** the server binds 127.0.0.1 without reload by default (SEC-002); a foreign `Host` gets 400 and a body not sent as JSON 415 (SEC-003); CORS without credentials and wildcards (SEC-008); bodies over 16 KiB get 413, chunked ones included (Q8b); the default database sits next to the package and new database files and backups are 0600 (SEC-014).
+- **Logging, `cf4e345`:** application log lines are printed once and neutralised (TD-3, SEC-010).
+- **Dependencies, `42c8deb`:** `slowapi` removed (Q8a); no rate limiting. `7158735` moved `alembic` to the runtime dependencies.

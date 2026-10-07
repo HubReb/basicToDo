@@ -382,12 +382,13 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] `/modernize-harden basictodo` has written `analysis/basictodo/SECURITY_FINDINGS.md` and `security_remediation.patch`, and both have been reviewed. _(No Critical/High finding, so no refutation agent was needed; 4 Medium checked against the code; patch review round 2: 16 of 16 RESOLVES.)_
 
 **Exit criteria:**
-- [ ] Each **fix** lands together with the characterization test(s) it intentionally flips, and the Q6 row ID is recorded in `BASELINE.md`'s change log.
-- [ ] Each **keep** stays pinned by its characterization test.
-- [ ] The `/modernize-harden` verify pass shows **no open High or Medium finding** except those explicitly accepted in Q8, Q8a and Q8b: SEC-001 (authentication, out of scope), the rate-limiting part of SEC-004 (Q8a), and the body-size part of SEC-004 if Q8b accepts it.
-- [ ] The OpenAPI diff against Phase 4 shows only intended changes, and `types/todo.ts` matches it.
-- [ ] Playwright e2e is green.
-- [ ] The P0 contract is unchanged (Q7 keeps both rules).
+- [x] Each **fix** lands together with the characterization test(s) it intentionally flips, and the Q6 row ID is recorded in `BASELINE.md`'s change log. _(Every flipped test replaced in its fix commit; per-test attribution P4 → P5 in `baseline/p5/pytest-attribution-p4-p5.txt`.)_
+- [x] Each **keep** stays pinned by its characterization test. _(RULE-024/Q6.8 and RULE-052/Q6.10 in `test_behaviour_pins.py`, green at the tip.)_
+- [x] The `/modernize-harden` verify pass shows **no open High or Medium finding** except those explicitly accepted in Q8, Q8a and Q8b: SEC-001 (authentication, out of scope), the rate-limiting part of SEC-004 (Q8a), and the body-size part of SEC-004 if Q8b accepts it.
+  _(Verify on the tip `eb178e3`: only F-01/SEC-001 open, accepted; Q8b fixed the body size; five Informational observations recorded as residuals. `SECURITY_FINDINGS.md`, "Verify on the tip".)_
+- [x] The OpenAPI diff against Phase 4 shows only intended changes, and `types/todo.ts` matches it. _(`BASELINE.md`, Phase 5 exit checks.)_
+- [x] Playwright e2e is green. _(16/16 locally at `eb178e3`; CI after the push.)_
+- [x] The P0 contract is unchanged (Q7 keeps both rules). _(12/12; `test_p0_contracts.py` byte-identical to Phase 4.)_
 - [ ] `plugin/uplift-basictodo/phase-5` is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and all six workflows green on it (Q11).
 
 **Relative scale:** **M**. Touched backend and frontend modules come to about 0.62 KSLOC, index 1.74, 32%.

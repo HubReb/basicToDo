@@ -241,3 +241,76 @@ Trimming them would mean replacing `fastapi[standard]` with `fastapi` plus an ex
 - **SQLAlchemy 2.1 (C3)** is now possible from the data layer's side, because `sqlalchemy-utils` is gone. It stays deferred (Q4).
 - **pylint's `E1102 func.now is not callable`** (report-only, a known false positive) now points at `models/todo.py`.
 - **Aware timestamps lose their offset** when stored, and the wall clock is kept (pinned by a property test). Q6.6 in Phase 5 builds on this.
+
+# Uplift notes: basicToDo, Phase 5 (hardening and approved behaviour changes)
+
+**Change:** the owner's Q6 fixes (6.1 to 6.7, 6.9) with the keeps 6.8 and 6.10; UTC timestamps with a data migration of existing rows and Alembic at startup; the security items Q8 put in scope (SEC-002, -003, -004 with Q8b, -008, -010, -014); `slowapi` removed (Q8a); TD-3, TD-7; README, PlantUML and API descriptions (Q7).
+
+**Branch:** `plugin/uplift-basictodo/phase-5`, based on `phase-4`.
+
+**Evidence:** `analysis/basictodo/BASELINE.md` ("Hardening and behaviour changes (Phase 5)" and the change log), `analysis/basictodo/SECURITY_FINDINGS.md`, `analysis/basictodo/baseline/p5/`, `analysis/basictodo/baseline/frontend/P5/` and `p5-review.html`.
+
+**Proof type:**
+- the behaviours to change pinned first (`test_legacy_*`), then replaced in the commit that changes them;
+- per-commit pytest tables and golden master, every difference attributed to a commit and a decision ID;
+- the data migration on both sample databases row by row, on Europe/Berlin fixtures across both DST changes, with downgrade, backup, WAL and atomicity tests;
+- Q8b against a real uvicorn;
+- a positive control for every new guard;
+- an independent hardening verify on the tip.
+
+## Commits and decision → fix mapping
+
+| Commit | Change | Decisions | How applied |
+|---|---|---|---|
+| `e791a9c` | Golden master (+21 requests, offset timestamps), screens by title; P4 captures | (entry) | by hand |
+| `72baf56` | Keeps pinned (RULE-024, RULE-052); seven legacy pins | Q6.8, Q6.10 | by hand |
+| `7f2e89d` | Hardening pass, P5 sample DB, the owner's decisions in the brief | (entry) | security-auditor, separate reviewer |
+| `cf4e345` | One configured logger, neutralised messages | TD-3, SEC-010 | by hand |
+| `a0244c2` | Blocklist removed | Q6.1 | by hand |
+| `0d03cef` | Length and control-character rules in the API; 422 for every validation error | Q6.2, Q6.3 | by hand |
+| `ddf6d70` | done plus edits in one write | Q6.5 | by hand |
+| `7f203ca` | Bounded pagination, newest first, `total` | Q6.4, SEC-004 | by hand |
+| `2c8cb68` | No placeholder description from the UI | Q6.7 | by hand |
+| `7158735` | UTC timestamps, revision `0002`, Alembic at startup with backup, `alembic` at runtime | Q6.6, Q6.7 | by hand; `uv lock` regroups only |
+| `2e55652` | Delete toasts on the server's answer, readable 422, code-point counting | Q6.9, Q6.3, Q6.2 | by hand |
+| `8f5bf11` | Local bind, Host check, JSON only, CORS, 16 KiB cap, owner-only DB file | SEC-002, -003, -008, -014, Q8b | the reviewed patch, R2 and R4 |
+| `42c8deb` | `slowapi` removed | Q8a | `uv lock`, no upgrade |
+| `e7fa753` | Dead code removed | TD-7 | `git rm` |
+| `47877f8` | README, PlantUML, route descriptions | Q7 | by hand |
+| `eb178e3` | super-linter findings (README, codespell) | — | Prettier 3.9.8, by hand |
+
+Plus five `style:` commits (black 26.5.1, flake8 7.3.0) before the files they prepare.
+
+## Result
+
+| Measure | Before (`7e6ae13`) | After (`eb178e3`) |
+|---|---|---|
+| pytest | 483 passed, 1 skipped | **736 passed**; 103 tests replaced, 355 new, every one attributed |
+| Golden master (104 requests) | P4 capture | **68 differ**, all attributed to a decision; keeps unchanged |
+| Timestamps | `created_at` server-local, `updated_at` the database's UTC clock, never refreshed | both UTC with `Z`; `updated_at` refreshed on every change; existing rows converted |
+| Database at startup | `create_all` | Alembic, one transaction, checked backup, baseline check, zone check |
+| Default bind | `0.0.0.0` with reload | `127.0.0.1` without reload |
+| Request checks | none | Host, JSON only (415), 16 KiB (413), CORS without credentials |
+| Runtime pins / `pip-audit` | 62 / 0 | **59** / **0** |
+| mypy | 0 | **0** in two fresh venvs |
+| Coverage | 84.1 % | 92.2 % |
+| Frontend | vitest 13, e2e 13 | **vitest 32, e2e 16** |
+| super-linter v9 (local) | green | **green** at `eb178e3` (18 linters) |
+
+## Residual and deferred
+
+- **Out of scope by decision:** authentication and multi-user (SEC-001, Q8); rate limiting (Q8a); purge and restore of deleted todos (Q7); SQLAlchemy 2.1 and Python 3.14; a UI pager; `select()` instead of `session.query`.
+- **Security residuals below Medium** (`SECURITY_FINDINGS.md`):
+  - blocking database calls in async routes (F-07);
+  - database errors log SQL and parameters, cut to 200 characters (F-09);
+  - a credential-bearing `DATABASE_URL` is echoed in an error (F-10, SEC-012);
+  - uv 0.7.16 in CI (F-18);
+  - `/docs` loads scripts from a CDN without SRI (F-21);
+  - local e2e can reuse a running backend and clean up its todos (F-22);
+  - bidi characters (Cf) stay accepted (F-13);
+  - test databases remain in the git history (F-15);
+  - `extra="forbid"` not adopted (F-06).
+  - five Informational observations from the verify on the tip (N-1 to N-5): identifier quoting in the backup check, the backup reopened by name, the log filter's fallback, unescaped operator-side text from `init_db.py`, duplicate Host headers past Starlette's Host check.
+- **Frontend:** mutations keep `retry: 1`, so a 4xx is sent twice; there is no UI to mark a todo as done or to edit its description; `frontend/src/lib/` is ignored by the Python template's `lib/` rule (new files need `git add -f`).
+- **Backend:** `hard_delete_to_do` stays unused (the brief's TD-7 list did not name it); responses keep the unused `data`, `message` and `error` fields; `DATABASE_URL` still accepts `postgresql://` and `mysql://` prefixes, although startup prepares SQLite files only.
+- **Migration:** a `created_at` in the spring gap hour comes back one hour later after a downgrade; the placeholder description cannot be restored.
