@@ -3,8 +3,7 @@ import { Input, Box, Text } from '@chakra-ui/react'
 import { v4 as uuid } from 'uuid'
 import { useCreateTodo } from '@/hooks/queries/useCreateTodo'
 import { useAppToast } from '@/hooks/useToast'
-
-const MAX_TITLE_LENGTH = 255
+import { MAX_TITLE_LENGTH, codePointLength } from '@/lib/titleLength'
 
 export const TodoForm = () => {
   const [item, setItem] = useState("")
@@ -19,7 +18,7 @@ export const TodoForm = () => {
       return "Todo title cannot be empty"
     }
 
-    if (trimmed.length > MAX_TITLE_LENGTH) {
+    if (codePointLength(trimmed) > MAX_TITLE_LENGTH) {
       return `Todo title cannot exceed ${MAX_TITLE_LENGTH} characters`
     }
 
@@ -45,10 +44,10 @@ export const TodoForm = () => {
       return
     }
 
+    // No description: the UI has no field for one yet (Q6.7).
     const todoData = {
       id: uuid(),
       title: item.trim(),
-      description: "not implemented yet",
     }
 
     createTodo.mutate(todoData, {
@@ -72,7 +71,8 @@ export const TodoForm = () => {
     })
   }
 
-  const remainingChars = MAX_TITLE_LENGTH - item.length
+  // No maxLength on the input: it counts UTF-16 code units, not code points (Q6.2).
+  const remainingChars = MAX_TITLE_LENGTH - codePointLength(item)
   const isNearLimit = remainingChars < 50
 
   return (
@@ -86,7 +86,6 @@ export const TodoForm = () => {
           onChange={handleChange}
           disabled={createTodo.isPending}
           borderColor={error ? "red.500" : undefined}
-          maxLength={MAX_TITLE_LENGTH}
         />
       </form>
       {error && (

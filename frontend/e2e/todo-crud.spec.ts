@@ -1,19 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+import { deleteAllTodos } from './cleanup';
+
 test.describe('Todo CRUD Operations', () => {
   test.beforeEach(async ({ page, request }) => {
     // Clean up test database before each test
-    const response = await request.get('http://localhost:8000/todo?limit=1000&page=1');
-    const data = await response.json();
-
-    if (data.todo_entries && data.todo_entries.length > 0) {
-      // Delete all todos
-      await Promise.all(
-        data.todo_entries.map((todo: { id: string }) =>
-          request.delete(`http://localhost:8000/todo/${todo.id}`)
-        )
-      );
-    }
+    await deleteAllTodos(request);
 
     await page.goto('/');
   });
@@ -62,26 +54,65 @@ test.describe('Todo CRUD Operations', () => {
     await expect(page.getByText('Original todo')).not.toBeVisible();
   });
 
-  test('should delete a todo', async ({ page }) => {
+  test('should confirm a delete only after the server answers', async ({ page }) => {
     // Create a todo
     const input = page.getByPlaceholder('Add a todo item');
     await input.fill('Todo to delete');
     await input.press('Enter');
-
-    // Wait for todo to appear
     await expect(page.getByText('Todo to delete')).toBeVisible();
 
-    // Set up dialog handler to confirm deletion
+    // Hold the DELETE request until released (Q6.9)
+    let release: () => void = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/todo/*', async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        await route.fallback();
+        return;
+      }
+      await released;
+      await route.continue();
+    });
     page.on('dialog', dialog => dialog.accept());
 
-    // Click delete button
     await page.getByRole('button', { name: 'Delete Todo' }).first().click();
 
-    // Verify success toast appears immediately (shown before mutation in the component)
-    await expect(page.getByText('Todo deleted')).toBeVisible({ timeout: 3000 });
-
-    // Verify todo is removed
+    // Removed at once, but not confirmed while the server has not answered
     await expect(page.getByText('Todo to delete')).not.toBeVisible();
+    await page.waitForTimeout(1000);
+    await expect(page.getByText('Todo deleted')).toHaveCount(0);
+
+    release();
+    await expect(page.getByText('Todo deleted')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Todo to delete')).not.toBeVisible();
+  });
+
+  test('should show a failed delete and keep the todo', async ({ page }) => {
+    const input = page.getByPlaceholder('Add a todo item');
+    await input.fill('Todo to keep');
+    await input.press('Enter');
+    await expect(page.getByText('Todo to keep')).toBeVisible();
+
+    await page.route('**/todo/*', async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        await route.fallback();
+        return;
+      }
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ detail: 'Internal error' }),
+      });
+    });
+    page.on('dialog', dialog => dialog.accept());
+
+    await page.getByRole('button', { name: 'Delete Todo' }).first().click();
+
+    await expect(page.getByText('Failed to delete todo')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('API Error 500: Internal error')).toBeVisible();
+    await expect(page.getByText('Todo deleted')).toHaveCount(0);
+    await expect(page.getByText('Todo to keep')).toBeVisible();
   });
 
   test('should cancel todo edit', async ({ page }) => {

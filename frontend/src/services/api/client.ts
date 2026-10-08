@@ -21,6 +21,32 @@ export class ApiClientError extends Error {
 }
 
 /**
+ * A readable message for an error response's detail (Q6.3). A 422 gets one
+ * part per problem, without Pydantic's "Value error, " prefix, named by its
+ * field unless the message already starts with it, and never with the
+ * rejected input.
+ */
+export const formatErrorDetail = (detail: ApiError['detail'] | undefined): string | undefined => {
+  if (typeof detail === 'string') {
+    return detail || undefined
+  }
+  if (!Array.isArray(detail)) {
+    return undefined
+  }
+  const parts = detail.flatMap((issue) => {
+    if (typeof issue?.msg !== 'string') {
+      return []
+    }
+    const message = issue.msg.replace(/^Value error, /, '')
+    const field = Array.isArray(issue.loc)
+      ? issue.loc.filter((part) => part !== 'body').join('.')
+      : ''
+    return [field && !message.startsWith(`${field} `) ? `${field}: ${message}` : message]
+  })
+  return parts.length > 0 ? parts.join('; ') : undefined
+}
+
+/**
  * HTTP client options
  */
 interface RequestOptions extends RequestInit {
@@ -61,7 +87,7 @@ class ApiClient {
 
       try {
         const errorBody = await response.json() as ApiError;
-        errorDetail = errorBody.detail || errorDetail;
+        errorDetail = formatErrorDetail(errorBody.detail) || errorDetail;
       } catch {
         // If response body is not JSON, use statusText
       }

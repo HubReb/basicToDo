@@ -1,8 +1,8 @@
 """Root conftest.py with shared fixtures for all tests."""
+
 import os
 import uuid
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Generator
 from unittest.mock import MagicMock
 
@@ -13,9 +13,18 @@ from sqlalchemy.orm import Session, sessionmaker
 from backend.app.business_logic.builders.todo_entry_builder import ToDoEntryBuilder
 from backend.app.business_logic.todo_service import ToDoService
 from backend.app.business_logic.validators import ValidatorFactory
-from backend.app.data_access.database import Base, ToDoORM
+from backend.app.data_access.database import Base
 from backend.app.data_access.repository import ToDoRepository
 from backend.app.logger import CustomLogger
+
+# The zone in which migration 0002 reads created_at values written before
+# Q6.6, so that no test depends on the machine's zone. The migration tests
+# set their own.
+os.environ["BASICTODO_LEGACY_TZ"] = "UTC"
+
+# TestClient sends the Host header "testserver". Set here, before any test
+# module imports backend.app.api.api, which reads the setting (SEC-003).
+os.environ["BASICTODO_TRUSTED_HOSTS"] = "localhost,127.0.0.1,testserver"
 
 
 # Session-scoped fixtures for shared components
@@ -130,9 +139,7 @@ def todo_service_integration(
 def test_db_engine():
     """Create a test database engine using in-memory SQLite."""
     engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        echo=False
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}, echo=False
     )
 
     # Create all tables
@@ -149,10 +156,7 @@ def test_db_engine():
 def test_db_session(test_db_engine):
     """Create a test database session."""
     TestSessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=test_db_engine,
-        expire_on_commit=False
+        autocommit=False, autoflush=False, bind=test_db_engine, expire_on_commit=False
     )
 
     session = TestSessionLocal()
@@ -166,10 +170,7 @@ def test_db_session(test_db_engine):
 def test_session_scope(test_db_engine):
     """Create a session scope context manager for testing."""
     TestSessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=test_db_engine,
-        expire_on_commit=False
+        autocommit=False, autoflush=False, bind=test_db_engine, expire_on_commit=False
     )
 
     @contextmanager

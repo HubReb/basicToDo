@@ -1,10 +1,13 @@
-""" Error response format tests"""
+"""Error response format tests"""
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from backend.app.business_logic.exceptions import (ToDoAlreadyExistsError, ToDoNotFoundError, ToDoValidationError)
-from backend.tests.test_api.test_setup_for_api_endpoins import (client, created_todo, mock_service)
+from backend.app.business_logic.exceptions import (
+    ToDoAlreadyExistsError,
+    ToDoNotFoundError,
+    ToDoValidationError,
+)
 
 
 class TestErrorResponses:
@@ -37,7 +40,7 @@ class TestErrorResponses:
         payload = {
             "id": created_todo["id"],
             "title": "Duplicate",
-            "description": "Test"
+            "description": "Test",
         }
         response = client.post("/todo", json=payload)
 
@@ -45,19 +48,12 @@ class TestErrorResponses:
         data = response.json()
         assert "detail" in data or "message" in data
 
-    def test_400_error_format(self, client, mock_service):
-        """Test 400 validation error has consistent format."""
-        # Mock service to raise validation error
-        mock_service.create_todo = AsyncMock(
-            side_effect=ToDoValidationError("Invalid characters or SQL keywords in input"))
+    def test_422_error_format_for_service_validation(self, client, mock_service):
+        """Q6.3: a service-side validation error has the 422 status and a fixed detail."""
+        mock_service.create_todo = AsyncMock(side_effect=ToDoValidationError("invalid"))
 
-        payload = {
-            "id": str(uuid4()),
-            "title": "'; DROP TABLE todo;--",
-            "description": "Test"
-        }
+        payload = {"id": str(uuid4()), "title": "Valid", "description": "Test"}
         response = client.post("/todo", json=payload)
 
-        assert response.status_code == 400
-        data = response.json()
-        assert "detail" in data or "message" in data
+        assert response.status_code == 422
+        assert response.json() == {"detail": "Invalid input"}

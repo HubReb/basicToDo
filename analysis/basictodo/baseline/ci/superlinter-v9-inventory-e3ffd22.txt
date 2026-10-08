@@ -1,0 +1,151 @@
+BIOME_FORMAT: 21 path(s) mentioned; analysis/notes 11, other 10
+    frontend/node_modules
+    frontend/package.json
+    frontend/src/services/api/todoApi.ts
+    frontend/src/test/setup.ts
+    frontend/src/types/todo.ts
+    frontend/tsconfig.app.json
+    frontend/tsconfig.json
+    frontend/tsconfig.node.json
+    frontend/vite.config.ts
+    frontend/vitest.config.ts
+BIOME_LINT: 7 path(s) mentioned; analysis/notes 3, other 4
+    frontend/e2e/smoke.spec.ts
+    frontend/src/components/todos/TodoForm.tsx
+    frontend/src/index.css
+    frontend/src/main.tsx
+CHECKOV: 2 path(s) mentioned; analysis/notes 0, other 2
+    .github/workflows/codeql.yml
+    .github/workflows/super-linter.yml
+HTML_PRETTIER: 1 path(s) mentioned; analysis/notes 1, other 0
+JSCPD: 98 path(s) mentioned; analysis/notes 28, other 70
+    .github/workflows/e2e.yml
+    .github/workflows/frontend.yml
+    .github/workflows/python-app.yml
+    backend/__init__.py
+    backend/app/__init__.py
+    backend/app/api/__init__.py
+    backend/app/api/api.py
+    backend/app/business_logic/__init__.py
+    backend/app/business_logic/builders/__init__.py
+    backend/app/business_logic/builders/builder_interface.py
+    backend/app/business_logic/builders/todo_entry_builder.py
+    backend/app/business_logic/decorators.py
+    backend/app/business_logic/exceptions.py
+    backend/app/business_logic/todo_service.py
+    backend/app/business_logic/validators/__init__.py
+    backend/app/business_logic/validators/field_validator.py
+    backend/app/business_logic/validators/input_sanitizer.py
+    backend/app/business_logic/validators/uuid_validator.py
+    backend/app/business_logic/validators/validator_factory.py
+    backend/app/data_access/__init__.py
+    backend/app/data_access/database.py
+    backend/app/factory.py
+    backend/app/logger.py
+    backend/app/models/__init__.py
+    backend/app/models/todo.py
+    backend/app/schemas/__init__.py
+    backend/app/schemas/api_responses/api_response.py
+    backend/app/schemas/api_responses/delete_to_do_response.py
+    backend/app/schemas/api_responses/get_list_to_do_response.py
+    backend/app/schemas/api_responses/get_to_do_response.py
+    backend/app/schemas/api_responses/to_do_response.py
+    backend/app/schemas/data_schemes/create_todo_schema.py
+    backend/app/schemas/data_schemes/todo_schema.py
+    backend/app/schemas/data_schemes/update_todo_schema.py
+    backend/tests/__init__.py
+    backend/tests/conftest.py
+    backend/tests/test_api/__init__.py
+    backend/tests/test_api/test_api_endpoints.py
+    backend/tests/test_api/test_api_error_responses.py
+    backend/tests/test_api/test_delete_to_do.py
+    backend/tests/test_api/test_get_to_do_api.py
+    backend/tests/test_api/test_list_to_do.py
+    backend/tests/test_api/test_p0_contracts.py
+    backend/tests/test_api/test_response_schemata.py
+    backend/tests/test_builders/unit/test_todo_entry_builder.py
+    backend/tests/test_service/integration/test_create_todo_integration.py
+    backend/tests/test_service/integration/test_get_all_todos_integration.py
+    backend/tests/test_service/integration/test_get_todo_integration.py
+    backend/tests/test_service/integration/test_mark_todo_done_integration.py
+    backend/tests/test_service/integration/test_update_todo_integration.py
+    backend/tests/test_service/unit/test_create_todo.py
+    backend/tests/test_service/unit/test_get_all_todos.py
+    backend/tests/test_service/unit/test_get_todo.py
+    backend/tests/test_service/unit/test_mark_todo_done.py
+    backend/tests/test_service/unit/test_repository_interaction.py
+    backend/tests/test_service/unit/test_update_todo.py
+    frontend/e2e/global-setup.ts
+    frontend/e2e/smoke.spec.ts
+    frontend/e2e/todo-crud.spec.ts
+    frontend/e2e/todo-validation.spec.ts
+    frontend/package-lock.json
+    frontend/package.json
+    frontend/src/components/todos/TodoEditForm.tsx
+    frontend/src/components/todos/TodoForm.tsx
+    frontend/src/components/todos/__tests__/TodoItem.test.tsx
+    frontend/src/components/todos/__tests__/TodoList.test.tsx
+    frontend/src/hooks/queries/useCreateTodo.ts
+    frontend/src/hooks/queries/useDeleteTodo.ts
+    frontend/src/hooks/queries/useUpdateTodo.ts
+    frontend/src/services/api/client.ts
+JSON_PRETTIER: 28 path(s) mentioned; analysis/notes 28, other 0
+MARKDOWN: 9 path(s) mentioned; analysis/notes 9, other 0
+MARKDOWN_PRETTIER: 6 path(s) mentioned; analysis/notes 6, other 0
+NATURAL_LANGUAGE: 6 path(s) mentioned; analysis/notes 6, other 0
+PYTHON_BLACK: 12 path(s) mentioned; analysis/notes 6, other 6
+    backend/app/api/api.py
+    backend/app/business_logic/decorators.py
+    backend/tests/test_api/test_p0_contracts.py
+    backend/tests/test_api/test_telemetry_export.py
+    backend/tests/test_builders/integration/test_todo_entry_builder_integration_consistency.py
+    backend/tests/test_builders/unit/test_tode_entry_builder_edge_cases.py
+PYTHON_FLAKE8: 4 path(s) mentioned; analysis/notes 0, other 4
+    backend/app/api/api.py
+    backend/app/business_logic/decorators.py
+    backend/tests/test_builders/integration/test_todo_entry_builder_integration_consistency.py
+    backend/tests/test_builders/unit/test_tode_entry_builder_edge_cases.py
+PYTHON_ISORT: 5 path(s) mentioned; analysis/notes 0, other 5
+    backend/app/api/api.py
+    backend/app/business_logic/decorators.py
+    backend/tests/test_api/test_p0_contracts.py
+    backend/tests/test_builders/integration/test_todo_entry_builder_integration_consistency.py
+    backend/tests/test_builders/unit/test_tode_entry_builder_edge_cases.py
+PYTHON_MYPY: 1 path(s) mentioned; analysis/notes 0, other 1
+    backend/app/data_access/repository.py
+PYTHON_PYLINT: 12 path(s) mentioned; analysis/notes 6, other 6
+    backend/app/api/api.py
+    backend/app/business_logic/decorators.py
+    backend/tests/test_api/test_p0_contracts.py
+    backend/tests/test_api/test_telemetry_export.py
+    backend/tests/test_builders/integration/test_todo_entry_builder_integration_consistency.py
+    backend/tests/test_builders/unit/test_tode_entry_builder_edge_cases.py
+PYTHON_RUFF: 9 path(s) mentioned; analysis/notes 3, other 6
+    backend/app/api/api.py
+    backend/app/business_logic/decorators.py
+    backend/tests/test_api/test_p0_contracts.py
+    backend/tests/test_api/test_telemetry_export.py
+    backend/tests/test_builders/integration/test_todo_entry_builder_integration_consistency.py
+    backend/tests/test_builders/unit/test_tode_entry_builder_edge_cases.py
+PYTHON_RUFF_FORMAT: 12 path(s) mentioned; analysis/notes 6, other 6
+    backend/app/api/api.py
+    backend/app/business_logic/decorators.py
+    backend/tests/test_api/test_p0_contracts.py
+    backend/tests/test_api/test_telemetry_export.py
+    backend/tests/test_builders/integration/test_todo_entry_builder_integration_consistency.py
+    backend/tests/test_builders/unit/test_tode_entry_builder_edge_cases.py
+SHELL_SHFMT: 15 path(s) mentioned; analysis/notes 8, other 7
+    backend/app
+    backend/app/
+    backend/scripts/init_db.py
+    backend/tests/
+    backend/todo.db
+    frontend/dist
+    frontend/dist/index.html
+SPELL_CODESPELL: 3 path(s) mentioned; analysis/notes 2, other 1
+    uv.lock
+TYPESCRIPT_PRETTIER: 1 path(s) mentioned; analysis/notes 0, other 1
+    frontend/src/test/setup.ts
+YAML_PRETTIER: 2 path(s) mentioned; analysis/notes 0, other 2
+    .github/workflows/e2e.yml
+    .github/workflows/frontend.yml

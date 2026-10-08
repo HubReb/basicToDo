@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Box, Button, Flex, Input, Text } from '@chakra-ui/react'
 import { useUpdateTodo } from '@/hooks/queries/useUpdateTodo'
 import { useAppToast } from '@/hooks/useToast'
-
-const MAX_TITLE_LENGTH = 255
+import { MAX_TITLE_LENGTH, codePointLength } from '@/lib/titleLength'
 
 interface TodoEditFormProps {
   id: string
@@ -24,7 +23,7 @@ export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) 
       return "Todo title cannot be empty"
     }
 
-    if (trimmed.length > MAX_TITLE_LENGTH) {
+    if (codePointLength(trimmed) > MAX_TITLE_LENGTH) {
       return `Todo title cannot exceed ${MAX_TITLE_LENGTH} characters`
     }
 
@@ -48,7 +47,8 @@ export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) 
       return
     }
 
-    const updateData = { id, data: { title: title.trim(), description: "not implemented yet" } }
+    // Only the title: a description left out keeps the stored one (Q6.7).
+    const updateData = { id, data: { title: title.trim() } }
 
     updateTodo.mutate(updateData, {
       onSuccess: () => {
@@ -70,7 +70,8 @@ export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) 
     })
   }
 
-  const remainingChars = MAX_TITLE_LENGTH - title.length
+  // No maxLength on the input: it counts UTF-16 code units, not code points (Q6.2).
+  const remainingChars = MAX_TITLE_LENGTH - codePointLength(title)
   const isNearLimit = remainingChars < 50
 
   return (
@@ -80,7 +81,6 @@ export const TodoEditForm = ({ id, initialTitle, onCancel }: TodoEditFormProps) 
         onChange={handleChange}
         placeholder="Edit todo"
         borderColor={error ? "red.500" : undefined}
-        maxLength={MAX_TITLE_LENGTH}
       />
       {error && (
         <Text color="red.500" fontSize="sm" mt={1}>

@@ -1,0 +1,77 @@
+CI on draft PR #117 (plugin/uplift-basictodo/phase-5 -> plugin/uplift-basictodo/base), head 849abfe, 2026-10-08
+Extracted with gh run list / gh api .../jobs / gh run view --log.
+The previous head 1e257d2 ran the same nine runs first; all nine were green (superseded by 849abfe, the .gitignore negation).
+
+== Workflow runs (head 849abfe)
+37849756819 Dependency review | pull_request | success | 2026-10-08T21:52:20Z → 2026-10-08T21:52:41Z
+37849756742 Frontend CI | pull_request | success | 2026-10-08T21:52:20Z → 2026-10-08T21:52:56Z
+37849756935 CodeQL Advanced | pull_request | success | 2026-10-08T21:52:20Z → 2026-10-08T21:53:22Z
+37849756794 Python Application CI | pull_request | success | 2026-10-08T21:52:20Z → 2026-10-08T21:53:35Z
+37849757001 End-to-End Tests | pull_request | success | 2026-10-08T21:52:20Z → 2026-10-08T21:53:41Z
+37849756899 Lint Code Base | pull_request | success | 2026-10-08T21:52:20Z → 2026-10-08T21:55:04Z
+37849750489 Python Application CI | push | success | 2026-10-08T21:52:16Z → 2026-10-08T21:53:06Z
+37849750500 Frontend CI | push | success | 2026-10-08T21:52:16Z → 2026-10-08T21:53:10Z
+37849750592 End-to-End Tests | push | success | 2026-10-08T21:52:17Z → 2026-10-08T21:53:38Z
+
+PR runs: wall clock 21:52:20 -> 21:55:04 = 164 s.
+
+== Jobs of the PR runs (started -> completed)
+37849756819 dependency-review                        success     18 s
+37849756742 Frontend Build & Lint                    success     31 s
+37849756935 Analyze (actions)                        success     36 s
+37849756935 Analyze (python)                         success     58 s
+37849756935 Analyze (javascript-typescript)          success     57 s
+37849756794 Lint the python code                     success     21 s
+37849756794 Backend Tests & Quality Checks           success     51 s
+37849756794 Comment coverage on PR                   success     16 s
+37849757001 Playwright E2E Tests                     success     75 s
+37849756899 run-lint                                 success    160 s
+10 jobs, runner time 523 s
+
+== Python Application CI (37849756794), job Backend Tests & Quality Checks
+Run uv run python backend/scripts/init_db.py
+2026-10-08 21:52:38,717 - basictodo.DBInit - INFO - Database ready: created at revision 0002
+Success: no issues found in 38 source files
+Required test coverage of 80% reached. Total coverage: 91.33%
+============================= 736 passed in 18.35s =============================
+
+== End-to-End Tests (37849757001)
+[WebServer] 2026-10-08 21:53:11,140 - basictodo.DBInit - INFO - Database ready: created at revision 0002
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+  16 passed (25.5s)
+
+== Super-Linter (37849756899)
+Digest: sha256:7620fb6f07a1908b0642d9ddc4f49da7d9f2b9497bcafee4d3d151d1e5567c0b
+[INFO]   plugin/uplift-basictodo/base doesn't exist, however origin/plugin/uplift-basictodo/base exists. Setting DEFAULT_BRANCH to: origin/plugin/uplift-basictodo/base
+[NOTICE]   Successfully linted CHECKOV
+[NOTICE]   Successfully linted GITHUB_ACTIONS
+[NOTICE]   Successfully linted GITHUB_ACTIONS_ZIZMOR
+[NOTICE]   Successfully linted GITLEAKS
+[NOTICE]   Successfully linted GIT_MERGE_CONFLICT_MARKERS
+[NOTICE]   Successfully linted JSON
+[NOTICE]   Successfully linted JSON_PRETTIER
+[NOTICE]   Successfully linted MARKDOWN
+[NOTICE]   Successfully linted MARKDOWN_PRETTIER
+[NOTICE]   Successfully linted NATURAL_LANGUAGE
+[NOTICE]   Successfully linted PRE_COMMIT
+[NOTICE]   Successfully linted PYTHON_BLACK
+[NOTICE]   Successfully linted PYTHON_FLAKE8
+[NOTICE]   Successfully linted PYTHON_MYPY
+[NOTICE]   Successfully linted SPELL_CODESPELL
+[NOTICE]   Successfully linted TRIVY
+[NOTICE]   Successfully linted YAML
+[NOTICE]   Successfully linted YAML_PRETTIER
+[NOTICE]   All files and directories linted successfully
+Python files under backend/migrations/ named in the log:
+  /github/workspace/backend/migrations/check_baseline.py
+  /github/workspace/backend/migrations/env.py
+  /github/workspace/backend/migrations/versions/0001_baseline.py
+  /github/workspace/backend/migrations/versions/0002_utc_timestamps.py
+Occurrences of script.py.mako in the log: 0
+
+== Dependency review (37849756819)
+Dependency review did not detect any vulnerable packages with severity level "low" or higher.
+Dependency review did not detect any denied packages
+
+== Node 20 deprecation warnings in the five downloaded run logs
+0 0 0 0 0

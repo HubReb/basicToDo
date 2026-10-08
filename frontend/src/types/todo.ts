@@ -59,7 +59,11 @@ export interface GetTodoResponse extends ApiResponse {
  * List Todos response - matches backend ListToDoResponse
  */
 export interface TodoListResponse extends ApiResponse {
+  /** Number of todos on this page */
   results: number;
+  /** Number of active todos on all pages */
+  total: number;
+  /** Newest first */
   todo_entries: Todo[];
 }
 
@@ -71,8 +75,19 @@ export interface DeleteTodoResponse extends ApiResponse {
 }
 
 /**
- * API Error response structure
+ * One problem in a 422 response - FastAPI's validation error
+ */
+export interface ValidationIssue {
+  loc: (string | number)[];
+  msg: string;
+  type: string;
+  /** The rejected value; never shown */
+  input?: unknown;
+}
+
+/**
+ * API Error response structure: a message, or the problems of a 422
  */
 export interface ApiError {
-  detail: string;
+  detail: string | ValidationIssue[];
 }

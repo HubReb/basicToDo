@@ -1,0 +1,27 @@
+BEGIN TRANSACTION;
+CREATE TABLE "toDo" (
+	id CHAR(32) NOT NULL, 
+	title VARCHAR(255) NOT NULL, 
+	description VARCHAR(255), 
+	created_at TIMESTAMP NOT NULL, 
+	updated_at TIMESTAMP, 
+	deleted BOOLEAN NOT NULL, 
+	done BOOLEAN NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT title_length_check CHECK (length(title) <= 255), 
+	CONSTRAINT description_length_check CHECK (length(description) <= 255)
+);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000001','Buy milk','two litres','2026-10-08 02:04:11.257988','2026-10-07 21:04:11',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000002','Water the plants','','2026-10-08 02:04:11.262342','2026-10-07 21:04:11',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000003','Call the plumber',NULL,'2026-10-08 02:04:11.263707','2026-10-07 21:04:11',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000004','Pay rent','by the 3rd','2026-10-08 02:04:11.268834','2026-10-07 21:04:11',0,1);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000005','Book train tickets','Berlin to Hamburg','2026-10-08 02:04:11.271771','2026-10-07 21:04:11',1,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000006','Return library books','','2026-10-08 02:04:11.275055','2026-10-07 21:04:11',1,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000007','File the tax return','for 2025','2026-10-08 02:04:11.277590','2026-10-07 21:04:11',1,1);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000008','Final title','first wording','2026-10-08 02:04:11.281725','2026-10-07 21:04:11',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000009','Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln.','','2026-10-08 02:04:11.284170','2026-10-07 21:04:11',0,0);
+INSERT INTO "toDo" VALUES('00000000000000000000000000000000','Nil id','','2026-10-08 02:04:11.285230','2026-10-07 21:04:11',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000011','Old UI todo','not implemented yet','2026-10-08 02:04:11.287085','2026-10-07 21:04:11',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000012','Old UI todo with a note','not implemented yet, see the notes','2026-10-08 02:04:11.288038','2026-10-07 21:04:11',0,0);
+CREATE INDEX "ix_toDo_title" ON "toDo" (title);
+COMMIT;

@@ -1,47 +1,60 @@
-plantuml
-@startuml
+@startuml architecture
+' The backend's layers (Phase 5); documentation/backend.puml has the classes.
 left to right direction
 skinparam componentStyle rectangle
+
 package "Backend App" {
-    [FastAPI Application] as App
-    [Webservice Layer] as Webservice
-    [Repository Layer] as Repository
-    [Database Layer] as Database
-    [Models] as Models
-    [Schemas] as Schemas
-    [Logger] as Logger
+    [Middleware\nTrustedHost, CORS, BodyLimit] as Middleware
+    [FastAPI Application\napi.py] as App
+    [Service Layer\nbusiness_logic] as Service
+    [Repository Layer\ndata_access/repository.py] as Repository
+    [Database Layer\ndata_access/database.py] as Database
+    [Schema Preparation\ndata_access/schema.py] as Schema
+    [Models\nmodels/todo.py] as Models
+    [Schemas\nschemas/] as Schemas
+    [Settings\nsettings.py] as Settings
+    [Logger\nlogger.py] as Logger
 }
 
-App --> Webservice : calls
-Webservice --> Repository : uses
-Repository --> Database : interacts
-Repository --> Models : uses
-Webservice --> Schemas : uses
-Webservice --> Logger : logs
+[Alembic migrations\nbackend/migrations] as Migrations
+database "SQLite" as SQLite
+
+Middleware --> App : passes requests
+App --> Service : calls
+App --> Schemas : validates with
+App --> Settings : reads
+App --> Schema : checks the revision at startup
+Service --> Repository : uses
+Service --> Logger : logs
+Repository --> Models : maps
+Repository --> Database : sessions
+Database --> SQLite
+Schema --> Migrations : runs
+Migrations --> SQLite
 
 note right of App
   Main entry point
   Handles API routes
 end note
 
-note right of Webservice
+note right of Service
   Business logic layer
-  Orchestrates data flow
+  Builds and validates todos
 end note
 
 note right of Repository
   Data access layer
-  Handles database operations
+  Soft delete: rows stay, flagged deleted
 end note
 
-note right of Database
-  SQLite database
-  Stores todo items
+note right of Schema
+  Before serving: create the database,
+  or back it up and migrate it
 end note
 
 note right of Models
-  Data models
-  Represent database entities
+  Data model
+  Timestamps in UTC
 end note
 
 note right of Schemas
@@ -51,6 +64,6 @@ end note
 
 note right of Logger
   Custom logging system
-  Error tracking and debugging
+  Neutralised messages
 end note
 @enduml

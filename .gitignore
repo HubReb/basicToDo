@@ -16,6 +16,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+# The frontend's source folder of that name is code, not a build directory.
+!frontend/src/lib/
 lib64/
 parts/
 sdist/
@@ -178,7 +180,7 @@ cython_debug/
 #  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
 #  and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#  you could uncomment the following to ignore the enitre vscode folder
+#  you could uncomment the following to ignore the entire vscode folder
 # .vscode/
 
 # Ruff stuff:
@@ -291,3 +293,12 @@ dist/
 *.code-workspace
 
 config.json
+
+# SQLite databases, their side files and pre-migration backups (SEC-014).
+# The sample databases under analysis/ are committed evidence.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.bak
+!analysis/basictodo/baseline/db/*.db

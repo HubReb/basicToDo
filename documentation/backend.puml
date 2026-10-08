@@ -1,136 +1,208 @@
-@@startuml backend
+@startuml backend
+' The backend's modules and classes (Phase 5). A request passes the
+' middleware, the route, the service and the repository; the database is
+' prepared by Alembic migrations before the app serves.
 
-package app {
-package models {
-class ToDo {
-    + id: UUID
-    + title: str
-    + description: str
-    + created_at: datetime 
-    + updated_at: datetime
-    + deleted: bool
-    + done: bool
-    ---------------------
-    update(values: dict): None
-}
+skinparam packageStyle rectangle
+hide empty members
+allowmixing
 
-ToDo -|> dataclass
-}
-
-package schemas {
-
-    class Status {
-        SUCCESS: str
-        FAILURE: str
+package "backend.app" {
+  package api {
+    class "api.py" as App <<FastAPI app>> {
+      GET /
+      POST /todo
+      GET /todo/{todo_id}
+      PUT /todo/{todo_id}
+      DELETE /todo/{todo_id}  (soft delete)
+      GET /todo?limit&page
+      --
+      lifespan(): serves only a database at the latest revision
+      require_json(): 415 for POST/PUT bodies that are not JSON
     }
-
-    class ToDo {
-        + id: UUID
-        + title: str 
-        + description: str
-        + reated_at: datetime
-        + updated_at: datetime
-        + deleted: bool
-        + done: bool
+    class BodyLimitMiddleware {
+      max_bytes = 16384
+      413 for larger bodies, chunked ones included
     }
+    note right of BodyLimitMiddleware
+      Middleware, outermost first:
+      TrustedHostMiddleware, CORSMiddleware,
+      BodyLimitMiddleware
+    end note
+  }
 
-    class Config {
-        + from_attributes: bool
-        + populate_by_name: bool
-        + arbitrary_types_allowed: bool
+  class "settings.py" as Settings {
+    host, port, reload
+    trusted_hosts, cors_origins
+    --
+    load_settings(): from BASICTODO_* variables
+  }
 
+  class "factory.py" as Factory {
+    create_todo_service(): ToDoService
+  }
+
+  class "main.py" as Main {
+    init_database(), then uvicorn.run(settings)
+  }
+
+  package business_logic {
+    class ToDoService {
+      create_todo(payload): ToDoSchema
+      get_todo(id): ToDoSchema
+      update_todo(id, payload): ToDoSchema
+      delete_todo(id): bool
+      get_all_todos(limit, page): list[ToDoSchema]
+      count_todos(): int
+      mark_to_do_as_done(id): ToDoSchema
     }
-
-    class ToDoResponse {
-
-    status: Status
-    todo_entry: ToDo
+    class ToDoEntryBuilder {
+      build_from_create_schema(payload): ToDoEntryData
     }
-
-   
-    class GetToDoResponse(BaseModel) {
-    status: Status
-    todo_entry: ToDo
+    class ValidatorFactory
+    class UUIDValidator
+    class FieldValidator
+    class InputSanitizer {
+      validate(value): the value, stripped
     }
-
-    class ListToDoResponse{
-    status: Status
-    results: int
-    todo_entries: List[ToDo]
+    class "decorators.py" as Decorators {
+      handle_service_exceptions
+      is_duplicate_id(IntegrityError)
     }
-
-
-    class DeleteToDoResponse {
-    status: Status
-    message: str
+    class "exceptions.py" as Exceptions {
+      ToDoAlreadyExistsError
+      ToDoNotFoundError
+      ToDoValidationError
+      ToDoRepositoryError
     }
+  }
 
-    Status -r-|> Enum
-    ToDo -u-|> pydantic.BaseModel
-    ToDoResponse -u-|> pydantic.BaseModel
-    GetToDoResponse -u-|> pydantic.BaseModel
-    ListToDoResponse -u-|> pydantic.BaseModel
-    DeleteToDoResponse -u-|> pydantic.BaseModel
-    ToDo *- Config
-    ToDoResponse *-d- Status
-    GetToDoResponse *-d- Status
-    ListToDoResponse *-d- Status
-    DeleteToDoResponse *-d- Status
-}
-
-package database {
-note right: Handles interaction with database. Currently under reconstruction.
-
-}
-package todo {
+  package data_access {
     class ToDoRepository {
-        + database_connection: Session
-        ------------------------------
-        + add_entry(new_to_do: models.ToDo)
-        + delete_entry(to_do_id: str)
-        + update_to_do(to_do_id: str, update_data: models.ToDo)
-        + get_entry(to_do_entry_id: str)
-        + get_all_entries(limit: int, page: int)
+      create_to_do(entry)
+      get_to_do_entry(id)
+      get_all_to_do_entries(limit, page)
+      count_to_do_entries()
+      update_to_do(id, data)
+      delete_to_do(id): soft delete
+      hard_delete_to_do(id)
     }
-}
-package logger {
-    class Logger {
-        -------------------------------
-        + log_missing_parameter(parameter_name: str)
-        + log_not_initialized(self, reference_name: str)
+    class "database.py" as Database {
+      DATABASE_URL
+      engine
+      safe_session_scope()
     }
-    Logger -d-|> logging.Logger
+    class "schema.py" as Schema {
+      prepare_database(url): create, back up, stamp, upgrade
+      assert_at_head(url)
+      BASELINE_SCHEMA
+    }
+    class "database_file.py" as DatabaseFile {
+      DEFAULT_DATABASE_PATH
+      protect(engine, url): files 0600
+    }
+  }
+
+  package models {
+    class ToDoEntryData <<dataclass, table toDo>> {
+      id: UUID
+      title: str
+      description: str | None
+      created_at: datetime (UTC)
+      updated_at: datetime (UTC)
+      deleted: bool
+      done: bool
+    }
+    class UTCDateTime <<column type>>
+  }
+
+  package schemas {
+    class ToDoCreateScheme {
+      id: UUID
+      title: str
+      description: str | None
+    }
+    class TodoUpdateScheme {
+      title: str
+      description: str | None
+      done: bool
+    }
+    class ToDoSchema
+    class "text_rules.py" as TextRules {
+      clean_title(), clean_description()
+    }
+    class ApiResponse {
+      success: bool
+      data, message, error
+    }
+    class ToDoResponse {
+      todo_entry: ToDoSchema
+    }
+    class GetToDoResponse {
+      todo_entry: ToDoSchema
+    }
+    class ListToDoResponse {
+      results: int
+      total: int
+      todo_entries: list[ToDoSchema]
+    }
+    class DeleteToDoResponse {
+      message: str
+    }
+  }
+
+  class "logger.py" as Logger {
+    CustomLogger(name)
+  }
 }
 
-package api {
-    class App
-    {
-        + origins: list[str]
-        + logger: CustomLogger
-        + debug: bool
-        + title: str
-        + version: str 
-        + openapi_url: str
-        -----------------
-        + get_to_dos()
-        + add_to_dos(new_to_do: ToDo)
-        + delete_to_do(item_id: UUID)
-        + update_to_do(item_id: UUID, body: dict)
-    }
-
-    App -u-|> FastAPI.App
-    App *-r- webservice.Webservice
-}
-package webservice {
-    class Webservice {
-        update_entry(to_do_id: uuid.UUID, payload: dict[str, Any])
-        get_entry(to_do_id: uuid.UUID)
-        add_entry(payload: models.ToDo)
-        delete_entry(to_do_id: uuid.UUID)
-        get_all_to_do_entries()
-    }
-    Webservice *-d- todo.ToDoRepository
-}
+package "backend.migrations" {
+  class "env.py" as Env
+  class "0001_baseline.py" as Rev1
+  class "0002_utc_timestamps.py" as Rev2
+  class "check_baseline.py" as CheckBaseline
 }
 
-@@enduml
+package "backend.scripts" {
+  class "init_db.py" as InitDb {
+    init_database()
+  }
+}
+
+database "SQLite file" as SQLite
+
+BodyLimitMiddleware --> App
+App --> ToDoService
+App ..> Schema : lifespan
+App ..> Settings
+Factory --> ToDoService : creates
+ToDoService --> ToDoEntryBuilder
+ToDoService --> ToDoRepository
+ToDoService --> InputSanitizer
+ToDoService ..> Decorators
+ToDoEntryBuilder --> UUIDValidator
+ToDoEntryBuilder --> FieldValidator
+ValidatorFactory ..> UUIDValidator : creates
+ValidatorFactory ..> FieldValidator : creates
+ValidatorFactory ..> InputSanitizer : creates
+ToDoRepository --> Database : sessions
+ToDoRepository --> ToDoEntryData
+ToDoEntryData --> UTCDateTime
+Database --> DatabaseFile
+Schema --> DatabaseFile
+Schema --> Env : runs
+Env --> Rev1
+Env --> Rev2
+CheckBaseline --> Schema
+Main --> InitDb
+Main ..> Settings
+InitDb --> Schema
+ToDoCreateScheme ..> TextRules
+TodoUpdateScheme ..> TextRules
+ToDoResponse -u-|> ApiResponse
+GetToDoResponse -u-|> ApiResponse
+ListToDoResponse -u-|> ApiResponse
+DeleteToDoResponse -u-|> ApiResponse
+Database --> SQLite
+Schema --> SQLite
+@enduml

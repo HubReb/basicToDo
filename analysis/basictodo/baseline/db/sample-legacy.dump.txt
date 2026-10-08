@@ -1,0 +1,25 @@
+BEGIN TRANSACTION;
+CREATE TABLE "toDo" (
+	id CHAR(32) NOT NULL, 
+	title VARCHAR(255) NOT NULL, 
+	description VARCHAR(255), 
+	created_at TIMESTAMP NOT NULL, 
+	updated_at TIMESTAMP, 
+	deleted BOOLEAN NOT NULL, 
+	done BOOLEAN NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT title_length_check CHECK (length(title) <= 255), 
+	CONSTRAINT description_length_check CHECK (length(description) <= 255)
+);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000001','Buy milk','two litres','2026-10-07 02:08:05.572804','2026-10-06 21:08:05',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000002','Water the plants','','2026-10-07 02:08:05.581581','2026-10-06 21:08:05',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000003','Call the plumber',NULL,'2026-10-07 02:08:05.587913','2026-10-06 21:08:05',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000004','Pay rent','by the 3rd','2026-10-07 02:08:05.601681','2026-10-06 21:08:05',0,1);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000005','Book train tickets','Berlin to Hamburg','2026-10-07 02:08:05.611449','2026-10-06 21:08:05',1,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000006','Return library books','','2026-10-07 02:08:05.622592','2026-10-06 21:08:05',1,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000007','File the tax return','for 2025','2026-10-07 02:08:05.632812','2026-10-06 21:08:05',1,1);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000008','Final title','first wording','2026-10-07 02:08:05.646775','2026-10-06 21:08:05',0,0);
+INSERT INTO "toDo" VALUES('5a3e0000000040008000000000000009','Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln. Grüße aus Köln.','','2026-10-07 02:08:05.656626','2026-10-06 21:08:05',0,0);
+INSERT INTO "toDo" VALUES('00000000000000000000000000000000','Nil id','','2026-10-07 02:08:05.660739','2026-10-06 21:08:05',0,0);
+CREATE INDEX "ix_toDo_title" ON "toDo" (title);
+COMMIT;

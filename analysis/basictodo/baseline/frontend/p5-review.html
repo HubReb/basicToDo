@@ -1,0 +1,72 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 5 visual review</title>
+<style>
+:root { --bg:#fff; --fg:#1d1d1f; --muted:#5f6368; --line:#d9d9de; --ok:#1a7f37; --diff:#b42318; --code:#f4f4f6; }
+@media (prefers-color-scheme: dark) { :root { --bg:#16161a; --fg:#ececf1; --muted:#a0a0ab; --line:#33333b; --ok:#4ac26b; --diff:#ff7b72; --code:#22222a; } }
+body { margin:0; padding:24px 16px 64px; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; }
+main { max-width:1200px; margin:0 auto; }
+h1 { font-size:1.6rem; margin:0 0 4px; } h2 { margin-top:40px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+.meta, figcaption { color:var(--muted); font-size:.9rem; }
+.pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:760px) { .pair { grid-template-columns:1fr; } }
+figure { margin:0; } img { width:100%; height:auto; border:1px solid var(--line); }
+.state.ok { color:var(--ok); font-weight:600; } .state.diff { color:var(--diff); font-weight:600; }
+pre, code { background:var(--code); } pre { padding:12px; overflow:auto; font-size:.8rem; max-height:480px; }
+table { border-collapse:collapse; width:100%; font-size:.85rem; } td, th { border:1px solid var(--line); padding:4px 6px; text-align:left; vertical-align:top; }
+.summary { border-left:4px solid var(--ok); padding:8px 12px; background:var(--code); }
+.todo { border-left:4px solid var(--diff); padding:8px 12px; background:var(--code); }
+ol li { margin:6px 0; }
+</style></head><body><main>
+<h1>Phase 5 visual review: P4 → P5</h1>
+<p class="meta">basicToDo frontend and backend · P4 = <code>7e6ae13</code> (Phase 4 tip) · P5 = <code>eb178e3</code> · captured with <code>run_screens.sh</code>, Playwright 1.63.0, chromium 153.0.8010.12 (revision 1243), 1280x800@1x, the same runner lock for both · comparison: <code>P5/compare-screens-vs-P4.md</code></p>
+<div class="summary"><strong>Result:</strong> 3 of 8 screens are pixel-identical. The other 5 differ only because the list is now newest first (Q6.4): the same rows in another order, and on 05 the open edit form sits on the last row instead of the first. No computed style changes beyond the positions and texts that follow from the order. The other Phase 5 changes to the UI (the delete toast’s timing, readable 422 messages, counting in characters, no description sent) do not show in these screens; the checklist below covers them.</div>
+<h2>Screens</h2>
+<section class="screen"><h3>Empty list <code>01-list-empty</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="P4/01-list-empty.png" alt="P4 01-list-empty" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/01-list-empty.png" alt="P5 01-list-empty" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<section class="screen"><h3>A title typed <code>02-create-typed</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="P4/02-create-typed.png" alt="P4 02-create-typed" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/02-create-typed.png" alt="P5 02-create-typed" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<section class="screen"><h3>Created, toast shown <code>03-create-done</code></h3>
+<p class="state ok">pixel-identical; computed-style differences: 0</p>
+<div class="pair"><figure><img src="P4/03-create-done.png" alt="P4 03-create-done" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/03-create-done.png" alt="P5 03-create-done" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<section class="screen"><h3>Four todos <code>04-list-several</code></h3>
+<p class="state diff">differs: Order only: newest first (Q6.4). The same four rows, reversed; no style changes. <a href="P5/diff/04-list-several.diff.png">diff image</a></p>
+<div class="pair"><figure><img src="P4/04-list-several.png" alt="P4 04-list-several" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/04-list-several.png" alt="P5 04-list-several" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<section class="screen"><h3>Edit form open on “Buy milk” <code>05-edit-open</code></h3>
+<p class="state diff">differs: Order only (Q6.4): “Buy milk” is now the last row, so the open edit form moved from the top to the bottom. The rows, the form and their styles are otherwise the same. <a href="P5/diff/05-edit-open.diff.png">diff image</a></p>
+<div class="pair"><figure><img src="P4/05-edit-open.png" alt="P4 05-edit-open" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/05-edit-open.png" alt="P5 05-edit-open" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<section class="screen"><h3>Renamed, toast shown <code>06-edit-saved</code></h3>
+<p class="state diff">differs: Order only (Q6.4): the renamed “Buy oat milk” is now the last row. <a href="P5/diff/06-edit-saved.diff.png">diff image</a></p>
+<div class="pair"><figure><img src="P4/06-edit-saved.png" alt="P4 06-edit-saved" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/06-edit-saved.png" alt="P5 06-edit-saved" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<section class="screen"><h3>Deleted, toast shown <code>07-delete-done</code></h3>
+<p class="state diff">differs: Order only (Q6.4): the first and third remaining rows swap. The “Todo deleted” toast looks the same; it now appears only after the server has answered (Q6.9), which a screenshot cannot show. <a href="P5/diff/07-delete-done.diff.png">diff image</a></p>
+<div class="pair"><figure><img src="P4/07-delete-done.png" alt="P4 07-delete-done" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/07-delete-done.png" alt="P5 07-delete-done" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<section class="screen"><h3>Empty title refused <code>08-validation-error</code></h3>
+<p class="state diff">differs: Order only (Q6.4): the first and third rows swap; the error text is unchanged. <a href="P5/diff/08-validation-error.diff.png">diff image</a></p>
+<div class="pair"><figure><img src="P4/08-validation-error.png" alt="P4 08-validation-error" loading="lazy"><figcaption>Phase 4 (7e6ae13)</figcaption></figure>
+<figure><img src="P5/08-validation-error.png" alt="P5 08-validation-error" loading="lazy"><figcaption>Phase 5 (eb178e3)</figcaption></figure></div></section>
+<h2>Manual UAT (owner)</h2>
+<div class="todo"><p>Start the backend with <code>uv run python -m backend.app.main</code> (repository root) and the frontend with <code>npm run dev</code> (folder <code>frontend</code>), then open http://localhost:5173. Each item is also covered by automated tests (vitest, Playwright, pytest); this is the human check of the brief’s validation strategy.</p>
+<ol>
+<li><strong>Newest first (Q6.4).</strong> Add three todos one after the other. The last one added is at the top.</li>
+<li><strong>Delete toast after the server (Q6.9).</strong> Delete a todo and confirm: the row disappears at once, and “Todo deleted” appears once the server has answered. Then stop the backend (Ctrl+C), delete another todo and confirm: the row disappears, and after about a second (one automatic retry) “Failed to delete todo” appears with a Retry button, and the row comes back. (Retry itself is covered by a vitest test.)</li>
+<li><strong>Readable server errors (Q6.3, Q6.2).</strong> Paste a title with a tab character in it (for example copied from a text editor) and press Enter: the toast says “API Error 422: title must not contain control characters”, not “[object Object]”.</li>
+<li><strong>Title length in characters (Q6.2).</strong> Paste 255 emoji (for example 😀) as a title: the hint says “0 characters remaining” and the todo is created. Type or paste 256 characters: nothing is cut off while typing, and Enter shows “Todo title cannot exceed 255 characters”.</li>
+<li><strong>Edit keeps the description (Q6.7).</strong> The UI has no description field. Create a todo with a description through the API docs (http://127.0.0.1:8000/docs, POST /todo), rename it in the UI, then GET it in the docs: the description is unchanged, and no “not implemented yet” appears.</li>
+<li><strong>Startup migration of an old database (Q6.6, Q6.7).</strong> From the repository root: <code>cp analysis/basictodo/baseline/db/sample-legacy-p5.db /tmp/old.db</code>, then <code>DATABASE_URL=sqlite:////tmp/old.db BASICTODO_LEGACY_TZ=Etc/GMT-5 uv run python -m backend.app.main</code>. The log says “stamped 0001 and upgraded to 0002; backup old.db.pre-0002.bak”; <code>/tmp/old.db.pre-0002.bak</code> exists (mode 600); GET /todo shows <code>created_at</code> five hours earlier than before, ending in Z, and the todo “Old UI todo” has no description. Started again, the log says “already at revision 0002”.</li>
+<li><strong>Local only (SEC-002).</strong> With the backend running, open http://&lt;this machine’s LAN address&gt;:8000/ from another device or with curl: the connection is refused. http://127.0.0.1:8000/ answers.</li>
+</ol></div>
+<h2>Notes</h2>
+<ul>
+<li>P4 equals the Phase 2 capture F2 (<code>P4/compare-screens-vs-F2.md</code>) except 17 pixels at the border corners of 08, which F2 captured while an animation was still running; the harness now waits for <code>document.getAnimations()</code>.</li>
+<li>The bundle differs between P4 and P5 (<code>dist.sha256</code>): the frontend commits of Phase 5 (Q6.4 total, Q6.7, Q6.9, Q6.3, Q6.2).</li>
+</ul>
+</main></body></html>

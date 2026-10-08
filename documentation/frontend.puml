@@ -1,0 +1,93 @@
+@startuml frontend
+' The frontend's components, hooks and services (Phase 5).
+
+skinparam componentStyle rectangle
+
+package "frontend/src" {
+  component "main.tsx" as Main
+  component "App.tsx" as App
+  component "Header" as Header
+  component "ErrorBoundary" as ErrorBoundary
+  component "Toaster" as Toaster
+
+  package "components/todos" {
+    component "TodoList" as TodoList
+    component "TodoForm" as TodoForm
+    component "TodoItem" as TodoItem
+    component "TodoEditForm" as TodoEditForm
+    component "TodoDeleteButton" as TodoDeleteButton
+  }
+
+  package "components (common, errors)" {
+    component "Spinner" as Spinner
+    component "ErrorMessage" as ErrorMessage
+  }
+
+  package "hooks" {
+    component "useTodoList" as UseTodoList
+    component "useCreateTodo" as UseCreateTodo
+    component "useUpdateTodo" as UseUpdateTodo
+    component "useDeleteTodo" as UseDeleteTodo
+    component "useAppToast" as UseAppToast
+  }
+
+  package "services/api" {
+    component "todoApi" as TodoApi
+    component "apiClient" as ApiClient
+  }
+
+  package "config, lib, types" {
+    component "queryClient" as QueryClient
+    component "env (VITE_API_BASE_URL)" as Env
+    component "toaster" as ToasterStore
+    component "titleLength" as TitleLength
+    component "types/todo.ts" as Types
+  }
+}
+
+cloud "Backend API\n(http://localhost:8000)" as Api
+
+Main --> App
+App --> ErrorBoundary
+App --> QueryClient
+App --> Header
+App --> TodoList
+App --> Toaster
+TodoList --> UseTodoList
+TodoList --> TodoForm
+TodoList --> TodoItem
+TodoList --> Spinner
+TodoList --> ErrorMessage
+TodoItem --> TodoEditForm
+TodoItem --> TodoDeleteButton
+TodoForm --> UseCreateTodo
+TodoForm --> UseAppToast
+TodoForm --> TitleLength
+TodoEditForm --> UseUpdateTodo
+TodoEditForm --> UseAppToast
+TodoEditForm --> TitleLength
+TodoDeleteButton --> UseDeleteTodo
+UseDeleteTodo --> UseAppToast
+UseTodoList --> TodoApi
+UseCreateTodo --> TodoApi
+UseUpdateTodo --> TodoApi
+UseDeleteTodo --> TodoApi
+UseAppToast --> ToasterStore
+Toaster --> ToasterStore
+TodoApi --> ApiClient
+TodoApi ..> Types
+ApiClient --> Env
+ApiClient --> Api : JSON over HTTP
+
+note right of UseDeleteTodo
+  Optimistic removal; the toast follows
+  the server's answer (also after the
+  row has unmounted)
+end note
+
+note right of ApiClient
+  Errors become ApiClientError;
+  a 422 detail is formatted per field,
+  never with the rejected input
+end note
+@enduml

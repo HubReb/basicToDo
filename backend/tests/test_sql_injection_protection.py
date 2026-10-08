@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 
-from backend.app.business_logic.exceptions import (ToDoNotFoundError, ToDoValidationError)
+from backend.app.business_logic.exceptions import ToDoNotFoundError, ToDoValidationError
 from backend.app.schemas.data_schemes.create_todo_schema import ToDoCreateScheme
 from backend.app.schemas.data_schemes.update_todo_schema import TodoUpdateScheme
 
@@ -21,9 +21,7 @@ def todo_service(todo_service_with_real_db):
 async def test_create_valid_todo(todo_service):
     """Should create todo with normal text."""
     todo = ToDoCreateScheme(
-        id=uuid4(),
-        title="Buy milk",
-        description="Remember to buy almond milk"
+        id=uuid4(), title="Buy milk", description="Remember to buy almond milk"
     )
     result = await todo_service.create_todo(todo)
     assert result.title == "Buy milk"
@@ -33,58 +31,59 @@ async def test_create_valid_todo(todo_service):
 @pytest.mark.asyncio
 async def test_update_valid_todo(todo_service):
     """Should allow updating with valid text."""
-    todo = ToDoCreateScheme(id=uuid4(), title="Clean kitchen", description="Morning task")
+    todo = ToDoCreateScheme(
+        id=uuid4(), title="Clean kitchen", description="Morning task"
+    )
     created = await todo_service.create_todo(todo)
 
     update = TodoUpdateScheme(
         id=created.id,
         title="Clean kitchen (updated)",
         description="Before lunch",
-        done=False
+        done=False,
     )
     updated = await todo_service.update_todo(created.id, update)
     assert updated.title.endswith("(updated)")
 
 
-# --- 🚫 INJECTION ATTEMPTS --- #
+# --- Injection attempts: stored as text, never executed (Q6.1) --- #
 
-@pytest.mark.asyncio
-async def test_create_todo_with_sql_injection_attempt(todo_service):
-    """Should raise validation error on SQL keywords."""
-    malicious_inputs = [
-        "DROP TABLE todo;",
-        "Robert'); DROP TABLE students;--",
-        "title'; DELETE FROM todo WHERE 'a'='a",
-        "1; EXEC xp_cmdshell('rm -rf /')",
-        "normal -- malicious comment",
-        "safe; UPDATE todo SET done=1"
-    ]
-
-    for payload in malicious_inputs:
-        with pytest.raises(ToDoValidationError):
-            todo = ToDoCreateScheme(
-                id=uuid4(),
-                title=payload,
-                description="attack test"
-            )
-            await todo_service.create_todo(todo)
+INJECTION_TEXTS = [
+    "DROP TABLE todo;",
+    "Robert'); DROP TABLE students;--",
+    "title'; DELETE FROM todo WHERE 'a'='a",
+    "1; EXEC xp_cmdshell('rm -rf /')",
+    "normal -- malicious comment",
+    "safe; UPDATE todo SET done=1",
+]
 
 
 @pytest.mark.asyncio
-async def test_update_todo_with_sql_injection(todo_service):
-    """Should reject SQL in title or description during update."""
+async def test_create_stores_sql_like_text_verbatim(todo_service):
+    """Bound parameters keep SQL-like titles inert; they are stored as text."""
+    for text in INJECTION_TEXTS:
+        created = await todo_service.create_todo(
+            ToDoCreateScheme(id=uuid4(), title=text, description="attack test")
+        )
+        assert (await todo_service.get_todo(created.id)).title == text
+
+    titles = {todo.title for todo in await todo_service.get_all_todos(limit=100)}
+    assert titles == set(INJECTION_TEXTS)
+
+
+@pytest.mark.asyncio
+async def test_update_stores_sql_like_text_verbatim(todo_service):
+    """An update with SQL-like text stores it as text; the table is intact."""
     todo = ToDoCreateScheme(id=uuid4(), title="Test", description="Legit")
     created = await todo_service.create_todo(todo)
 
-    bad_update = TodoUpdateScheme(
-        id=created.id,
-        title="; DROP TABLE toDo;",
-        description="none",
-        done=False
+    update = TodoUpdateScheme(
+        id=created.id, title="; DROP TABLE toDo;", description="none", done=False
     )
+    await todo_service.update_todo(created.id, update)
 
-    with pytest.raises(ToDoValidationError):
-        await todo_service.update_todo(created.id, bad_update)
+    stored = await todo_service.get_todo(created.id)
+    assert (stored.title, stored.description) == ("; DROP TABLE toDo;", "none")
 
 
 @pytest.mark.asyncio

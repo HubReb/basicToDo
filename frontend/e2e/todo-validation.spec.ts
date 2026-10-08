@@ -1,19 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+import { deleteAllTodos } from './cleanup';
+
 test.describe('Todo Validation', () => {
   test.beforeEach(async ({ page, request }) => {
     // Clean up test database before each test
-    const response = await request.get('http://localhost:8000/todo?limit=1000&page=1');
-    const data = await response.json();
-
-    if (data.todo_entries && data.todo_entries.length > 0) {
-      // Delete all todos
-      await Promise.all(
-        data.todo_entries.map((todo: { id: string }) =>
-          request.delete(`http://localhost:8000/todo/${todo.id}`)
-        )
-      );
-    }
+    await deleteAllTodos(request);
 
     await page.goto('/');
   });
@@ -56,18 +48,42 @@ test.describe('Todo Validation', () => {
     await expect(page.getByText(/characters remaining/)).toBeVisible();
   });
 
-  test('should prevent exceeding character limit', async ({ page }) => {
+  test('should refuse a title over 255 characters', async ({ page }) => {
     const input = page.getByPlaceholder('Add a todo item');
 
-    // The maxLength attribute should prevent typing more than 255 chars
-    const tooLongText = 'a'.repeat(300);
-    await input.fill(tooLongText);
+    // No maxLength truncation any more (Q6.2): the form checks on submit
+    await input.fill('a'.repeat(256));
+    expect((await input.inputValue()).length).toBe(256);
+    await input.press('Enter');
 
-    // Get the actual value
-    const value = await input.inputValue();
+    await expect(page.getByText('Todo title cannot exceed 255 characters')).toBeVisible();
+    await expect(page.getByText('No todos yet. Add one above!')).toBeVisible();
+  });
 
-    // Should be truncated to 255
-    expect(value.length).toBeLessThanOrEqual(255);
+  test('should accept 255 characters outside the BMP', async ({ page }) => {
+    const input = page.getByPlaceholder('Add a todo item');
+    // 255 code points, as the API counts them; 510 UTF-16 code units
+    const title = '\u{1F600}'.repeat(255);
+
+    await input.fill(title);
+    await expect(page.getByText('0 characters remaining')).toBeVisible();
+    await input.press('Enter');
+
+    await expect(page.getByText('Todo created')).toBeVisible();
+    await expect(page.getByText(title)).toBeVisible();
+  });
+
+  test('should show what the server rejected, readably', async ({ page }) => {
+    const input = page.getByPlaceholder('Add a todo item');
+
+    // A tab passes the form's checks; the API rejects it in titles (Q6.2)
+    await input.fill('Tab\there');
+    await input.press('Enter');
+
+    await expect(page.getByText('Failed to create todo')).toBeVisible();
+    await expect(
+      page.getByText('API Error 422: title must not contain control characters')
+    ).toBeVisible();
   });
 
   test('should clear error when user starts typing', async ({ page }) => {

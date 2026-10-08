@@ -1,0 +1,124 @@
+seroval advisories on draft PR #115 at dfb46a5 (2026-10-06), and the fix in 94e5c7d
+
+== Advisories (GitHub advisory database)
+GHSA-p6vx-979v-rg4c CVE-2026-104846 critical, published 2026-10-05T23:40:43Z | seroval >= 0.12.0, <= 1.6.0, patched 1.6.2
+GHSA-jp82-f5mq-hwhp CVE-2026-104845 high, published 2026-10-05T23:40:40Z | seroval <= 1.6.2, patched 1.6.3
+Last green run before them: Super-Linter on 5dadbcd finished 2026-10-05T22:55:19Z.
+
+== Dependency review, run 37515802912 (step output, group Vulnerabilities)
+frontend/package-lock.json » seroval@1.5.6 – Seroval: `fromJSON()` Promise thenable assimilation invokes plugin-produced callables (bypass of GHSA-mv8w-475r-vwqw) (critical severity)
+  ↪ https://github.com/advisories/GHSA-p6vx-979v-rg4c
+frontend/package-lock.json » seroval@1.5.6 – Seroval: Memory exhaustion via unchecked TypedArray length in JSON deserialization (high severity)
+  ↪ https://github.com/advisories/GHSA-jp82-f5mq-hwhp
+##[error]Dependency review detected vulnerable packages.
+
+== Super-Linter, run 37515802914 (summary comment on the PR): only TRIVY fails
+| Language                   | Validation result |
+| CHECKOV                    | Pass ✅           |
+| GITHUB_ACTIONS             | Pass ✅           |
+| GITHUB_ACTIONS_ZIZMOR      | Pass ✅           |
+| GITLEAKS                   | Pass ✅           |
+| GIT_MERGE_CONFLICT_MARKERS | Pass ✅           |
+| JSON                       | Pass ✅           |
+| JSON_PRETTIER              | Pass ✅           |
+| PRE_COMMIT                 | Pass ✅           |
+| PYTHON_BLACK               | Pass ✅           |
+| PYTHON_FLAKE8              | Pass ✅           |
+| PYTHON_MYPY                | Pass ✅           |
+| SPELL_CODESPELL            | Pass ✅           |
+| TRIVY                      | Fail ❌           |
+| YAML                       | Pass ✅           |
+| YAML_PRETTIER              | Pass ✅           |
+Trivy, frontend/package-lock.json:
+frontend/package-lock.json (npm)
+================================
+Total: 2 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 1, CRITICAL: 1)
+
+┌─────────┬─────────────────┬──────────┬────────┬───────────────────┬───────────────┬─────────────────────────────────────────────────────────────┐
+│ Library │  Vulnerability  │ Severity │ Status │ Installed Version │ Fixed Version │                            Title                            │
+├─────────┼─────────────────┼──────────┼────────┼───────────────────┼───────────────┼─────────────────────────────────────────────────────────────┤
+│ seroval │ CVE-2026-104846 │ CRITICAL │ fixed  │ 1.5.6             │ 1.6.2         │ Seroval: `fromJSON()` Promise thenable assimilation invokes │
+│         │                 │          │        │                   │               │ plugin-produced callables (bypass of GHSA-mv8w-475r-vwqw)   │
+│         │                 │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-104846                 │
+│         ├─────────────────┼──────────┤        │                   ├───────────────┼─────────────────────────────────────────────────────────────┤
+│         │ CVE-2026-104845 │ HIGH     │        │                   │ 1.6.3         │ seroval: seroval: Denial of Service via unbounded memory    │
+│         │                 │          │        │                   │               │ allocation during deserialization                           │
+│         │                 │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-104845                 │
+└─────────┴─────────────────┴──────────┴────────┴───────────────────┴───────────────┴─────────────────────────────────────────────────────────────┘
+
+== Dependency chain (npm ls seroval seroval-plugins --all, at dfb46a5)
+└─┬ @tanstack/react-query-devtools@5.104.1
+  └─┬ @tanstack/query-devtools@5.104.1
+    └─┬ solid-js@1.9.15
+      ├─┬ seroval-plugins@1.5.6
+      │ └── seroval@1.5.6 deduped
+      └── seroval@1.5.6
+solid-js 1.9.15 (latest release) dependencies: {"csstype":"^3.1.0","seroval":"~1.5.4","seroval-plugins":"~1.5.4"}
+
+== Reachability
+solid-js files that import seroval: web/dist/server.js (the SSR build)
+@tanstack/react-query-devtools build/modern/index.js:5:
+  const ReactQueryDevtools = process.env.NODE_ENV !== "development" ? function() {
+
+== Lock diff of 94e5c7d (frontend/package-lock.json; integrity lines omitted)
+-      "version": "1.5.6",
+-      "resolved": "https://registry.npmjs.org/seroval/-/seroval-1.5.6.tgz",
++      "version": "1.6.8",
++      "resolved": "https://registry.npmjs.org/seroval/-/seroval-1.6.8.tgz",
+-      "version": "1.5.6",
+-      "resolved": "https://registry.npmjs.org/seroval-plugins/-/seroval-plugins-1.5.6.tgz",
++      "version": "1.6.8",
++      "resolved": "https://registry.npmjs.org/seroval-plugins/-/seroval-plugins-1.6.8.tgz",
+
+== Local frontend suite (run_frontend_suite.sh, Node 24.21.0, Phase 3 backend venv), dfb46a5 vs 94e5c7d
+-npm audit {'info': 0, 'low': 0, 'moderate': 0, 'high': 0, 'critical': 5, 'total': 5}
+-  13 passed (17.3s)
++npm audit {'info': 0, 'low': 0, 'moderate': 0, 'high': 0, 'critical': 0, 'total': 0}
++  13 passed (18.0s)
+unchanged:
+  node v24.21.0
+  npm 11.19.0
+  npm ci exit 0
+  tsc -b exit 0
+        Tests  13 passed (13)
+  vitest exit 0
+  dist/index.html                   0.45 kB │ gzip:   0.29 kB
+  dist/assets/index-vagjFkSK.css    1.69 kB │ gzip:   0.77 kB
+  dist/assets/index-B2puwZQs.js   563.36 kB │ gzip: 159.55 kB
+  build exit 0
+  lint exit 0
+  e2e exit 0
+dist.sha256: identical; vitest per test: identical; e2e per test (13): identical; npm ls --depth=0: identical
+
+== npm audit at dfb46a5 (5 critical, all one advisory chain)
+@kobalte/core critical >=0.13.13 via solid-js
+@tanstack/query-devtools critical >=5.103.0 via @kobalte/core, solid-js
+@tanstack/react-query-devtools critical >=5.103.0 via @tanstack/query-devtools
+seroval critical <=1.6.2 via GHSA-p6vx-979v-rg4c, GHSA-jp82-f5mq-hwhp
+solid-js critical 1.8.4 - 1.8.7 || 1.9.7 - 2.0.0-rc.7 via seroval
+
+== Local super-linter v9 (run_superlinter.sh, image pinned by digest) on 94e5c7d
+linted commit: 94e5c7d against plugin/uplift-basictodo/base (bd2a0b9)
+Successfully linted: 15 linters; 'Errors found in': 0
+  CHECKOV, GITHUB_ACTIONS, GITHUB_ACTIONS_ZIZMOR, GITLEAKS, GIT_MERGE_CONFLICT_MARKERS, JSON, JSON_PRETTIER, PRE_COMMIT,
+  PYTHON_BLACK, PYTHON_FLAKE8, PYTHON_MYPY, SPELL_CODESPELL, TRIVY, YAML, YAML_PRETTIER
+Trivy report summary row:
+│ frontend/package-lock.json                                    │ npm  │        0        │         -         │    -    │
+super-linter exit 0
+
+== CI on a51d618 (PR #115, 2026-10-06): all six pull_request workflows success
+37520449195 CodeQL Advanced success 2026-10-06T19:38:07Z → 2026-10-06T19:39:10Z
+37520449168 Dependency review success 2026-10-06T19:38:07Z → 2026-10-06T19:38:34Z
+37520449171 End-to-End Tests success 2026-10-06T19:38:07Z → 2026-10-06T19:39:18Z
+37520449182 Frontend CI success 2026-10-06T19:38:07Z → 2026-10-06T19:38:41Z
+37520449169 Python Application CI success 2026-10-06T19:38:07Z → 2026-10-06T19:39:01Z
+37520449206 Lint Code Base success 2026-10-06T19:38:07Z → 2026-10-06T19:40:28Z
+Dependency review, run 37520449168:
+  Vulnerabilities
+  Dependency review did not detect any vulnerable packages with severity level "low" or higher.
+  added: + seroval@1.6.8
+  added: + seroval-plugins@1.6.8
+Super-Linter, run 37520449206: 15 linters 'Successfully linted', 0 'Errors found in'; Trivy report summary:
+│ analysis/basictodo/baseline/frontend/runner/package-lock.json │ npm  │        0        │         -         │    -    │
+│ frontend/package-lock.json                                    │ npm  │        0        │         -         │    -    │
+│ uv.lock                                                       │  uv  │        0        │         -         │    -    │

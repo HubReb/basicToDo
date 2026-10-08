@@ -1,0 +1,8 @@
+ok   a-0-read-legacy == a-0-read-new (10 rows, 7 listed)
+ok   a-2-read-legacy == a-2-read-new (12 rows, 8 listed)
+ok   b-3-read-legacy == b-3-read-new (14 rows, 9 listed)
+     write outcomes: create with description: ok; create without description: ok; edit a sample row: ok; mark a sample row done: ok; delete a sample row: ok; 256-character title (RULE-013): ToDoAlreadyExistsError
+ok   the new code's writes end the same on A and on B
+ok   the legacy code's writes end the same way
+     rows checked: 22 written by the legacy code, 4 by the new code
+RESULT: all checks passed

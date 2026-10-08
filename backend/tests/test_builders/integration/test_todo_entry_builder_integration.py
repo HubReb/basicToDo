@@ -1,4 +1,5 @@
 """Integration tests for ToDoEntryBuilder with real validators."""
+
 import datetime
 import uuid
 
@@ -25,13 +26,13 @@ class TestToDoEntryBuilderRealWorldScenarios:
     """Test ToDoEntryBuilder in realistic scenarios."""
 
     @pytest.mark.asyncio
-    async def test_build_typical_todo_entry(self, builder):
-        """Test building a typical ToDo entry."""
+    async def test_build_typical_todo_entry_in_utc(self, builder):
+        """Test building a typical ToDo entry; its timestamps are one UTC instant (Q6.6)."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Buy groceries for dinner",
-            description="Need to buy milk, eggs, and bread"
+            description="Need to buy milk, eggs, and bread",
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -41,7 +42,8 @@ class TestToDoEntryBuilderRealWorldScenarios:
         assert result.title == "Buy groceries for dinner"
         assert result.description == "Need to buy milk, eggs, and bread"
         assert isinstance(result.created_at, datetime.datetime)
-        assert result.updated_at is None
+        assert result.created_at.tzinfo is datetime.timezone.utc
+        assert result.updated_at == result.created_at
         assert result.deleted is False
         assert result.done is False
 
@@ -52,7 +54,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="🎉 Birthday party 🎂",
-            description="Plan birthday celebration"
+            description="Plan birthday celebration",
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -65,9 +67,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
         """Test building ToDo strips leading/trailing whitespace."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="  Meeting notes  ",
-            description="  Important points  "
+            id=test_uuid, title="  Meeting notes  ", description="  Important points  "
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -79,11 +79,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
     async def test_build_todo_with_empty_description(self, builder):
         """Test building ToDo with empty description."""
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="Quick task",
-            description=""
-        )
+        payload = ToDoCreateScheme(id=test_uuid, title="Quick task", description="")
 
         result = await builder.build_from_create_schema(payload)
 
@@ -97,13 +93,15 @@ class TestToDoEntryBuilderRealWorldScenarios:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Project tasks",
-            description="Step 1: Research\nStep 2: Design\nStep 3: Implement"
+            description="Step 1: Research\nStep 2: Design\nStep 3: Implement",
         )
 
         result = await builder.build_from_create_schema(payload)
 
         assert result.title == "Project tasks"
-        assert result.description == "Step 1: Research\nStep 2: Design\nStep 3: Implement"
+        assert (
+            result.description == "Step 1: Research\nStep 2: Design\nStep 3: Implement"
+        )
 
     @pytest.mark.asyncio
     async def test_build_todo_with_special_characters(self, builder):
@@ -112,7 +110,7 @@ class TestToDoEntryBuilderRealWorldScenarios:
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Fix bug #123 (urgent!)",
-            description="Cost: $50.00 | Due: 2024-01-15"
+            description="Cost: $50.00 | Due: 2024-01-15",
         )
 
         result = await builder.build_from_create_schema(payload)
@@ -129,6 +127,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects invalid UUID."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = "not-a-valid-uuid"
         payload.title = "Test"
@@ -144,6 +143,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects empty title."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         test_uuid = uuid.uuid4()
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = test_uuid
@@ -160,6 +160,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects whitespace-only title."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         test_uuid = uuid.uuid4()
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = test_uuid
@@ -172,34 +173,30 @@ class TestToDoEntryBuilderValidationIntegration:
         assert "title is required" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_build_rejects_sql_injection_in_title(self, builder):
-        """Test builder rejects SQL injection in title."""
+    async def test_build_keeps_sql_like_title(self, builder):
+        """SQL in a title is ordinary text (Q6.1)."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="'; DROP TABLE todos; --",
-            description="Desc"
+            id=test_uuid, title="'; DROP TABLE todos; --", description="Desc"
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await builder.build_from_create_schema(payload)
+        entry = await builder.build_from_create_schema(payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert entry.title == "'; DROP TABLE todos; --"
 
     @pytest.mark.asyncio
-    async def test_build_rejects_sql_injection_in_description(self, builder):
-        """Test builder rejects SQL injection in description."""
+    async def test_build_keeps_sql_like_description(self, builder):
+        """SQL in a description is ordinary text (Q6.1)."""
         test_uuid = uuid.uuid4()
         payload = ToDoCreateScheme(
             id=test_uuid,
             title="Valid Title",
-            description="Test /* */ SELECT * FROM users"
+            description="Test /* */ SELECT * FROM users",
         )
 
-        with pytest.raises(ToDoValidationError) as exc_info:
-            await builder.build_from_create_schema(payload)
+        entry = await builder.build_from_create_schema(payload)
 
-        assert "Invalid characters or SQL keywords" in str(exc_info.value)
+        assert entry.description == "Test /* */ SELECT * FROM users"
 
     @pytest.mark.asyncio
     async def test_build_with_none_payload(self, builder):
@@ -214,6 +211,7 @@ class TestToDoEntryBuilderValidationIntegration:
         """Test builder rejects None ID."""
         # Bypass Pydantic validation by creating mock payload
         from unittest.mock import MagicMock
+
         payload = MagicMock(spec=ToDoCreateScheme)
         payload.id = None
         payload.title = "Test"
@@ -229,19 +227,17 @@ class TestToDoEntryBuilderTimestampGeneration:
     """Test ToDoEntryBuilder timestamp generation."""
 
     @pytest.mark.asyncio
-    async def test_build_generates_created_at_timestamp(self, builder):
-        """Test builder generates created_at timestamp."""
+    async def test_build_generates_a_utc_created_at_timestamp(self, builder):
+        """Q6.6: created_at is the current time, timezone-aware in UTC."""
         test_uuid = uuid.uuid4()
-        payload = ToDoCreateScheme(
-            id=test_uuid,
-            title="Test",
-            description="Desc"
-        )
+        payload = ToDoCreateScheme(id=test_uuid, title="Test", description="Desc")
 
-        before = datetime.datetime.now()
+        before = datetime.datetime.now(datetime.timezone.utc)
         result = await builder.build_from_create_schema(payload)
-        after = datetime.datetime.now()
+        after = datetime.datetime.now(datetime.timezone.utc)
 
+        assert result.created_at is not None
+        assert result.created_at.utcoffset() == datetime.timedelta(0)
         assert before <= result.created_at <= after
 
     @pytest.mark.asyncio
@@ -257,6 +253,7 @@ class TestToDoEntryBuilderTimestampGeneration:
 
         # Small delay to ensure different timestamp
         import asyncio
+
         await asyncio.sleep(0.01)
 
         result2 = await builder.build_from_create_schema(payload2)
