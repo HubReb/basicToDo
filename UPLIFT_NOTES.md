@@ -293,9 +293,11 @@ Plus five `style:` commits (black 26.5.1, flake8 7.3.0) before the files they pr
 | Request checks | none | Host, JSON only (415), 16 KiB (413), CORS without credentials |
 | Runtime pins / `pip-audit` | 62 / 0 | **59** / **0** |
 | mypy | 0 | **0** in two fresh venvs |
-| Coverage | 84.1 % | 92.2 % |
+| Coverage (pytest total) | 83.47 % | 91.33 % |
 | Frontend | vitest 13, e2e 13 | **vitest 32, e2e 16** |
 | super-linter v9 (local) | green | **green** at `eb178e3` (18 linters) |
+| CI on the draft PR | #116: 6 of 6 green (145 s, 496 s) | **#117: 6 of 6 green** at `849abfe`, plus 3 push runs; 164 s wall clock, 523 s runner time |
+| Manual UAT | — | **passed** (the owner, 2026-10-08, all 7 items of `p5-review.html`) |
 
 ## Residual and deferred
 

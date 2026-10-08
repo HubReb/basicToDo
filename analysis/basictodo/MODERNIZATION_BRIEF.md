@@ -389,7 +389,8 @@ Phases 2, 3 and 4 are independent of each other after the pilot. Phase 5 needs a
 - [x] The OpenAPI diff against Phase 4 shows only intended changes, and `types/todo.ts` matches it. _(`BASELINE.md`, Phase 5 exit checks.)_
 - [x] Playwright e2e is green. _(16/16 locally at `eb178e3`; CI after the push.)_
 - [x] The P0 contract is unchanged (Q7 keeps both rules). _(12/12; `test_p0_contracts.py` byte-identical to Phase 4.)_
-- [ ] `plugin/uplift-basictodo/phase-5` is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and all six workflows green on it (Q11).
+- [x] `plugin/uplift-basictodo/phase-5` is pushed, with its draft PR against `plugin/uplift-basictodo/base` ("do not merge, eval") open, and all six workflows green on it (Q11). _(PR #117, all six green at `849abfe`; `BASELINE.md`, "Phase 5 CI".)_
+- [x] Manual UAT (§6): the owner confirms the visible changes. _(2026-10-08: all 7 items of `baseline/frontend/p5-review.html` passed.)_
 
 **Relative scale:** **M**. Touched backend and frontend modules come to about 0.62 KSLOC, index 1.74, 32%.
 

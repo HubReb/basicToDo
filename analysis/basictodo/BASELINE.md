@@ -660,7 +660,7 @@ The Phase 4 tip, captured with the harness extended in `e791a9c` before any Phas
 
 | Check | Result |
 |---|---|
-| pytest (`run_suite.sh`, `p5/pytest-p4-7e6ae13.tsv`) | 483 passed, 1 skipped (484 tests), coverage 84.1 % |
+| pytest (`run_suite.sh`, `p5/pytest-p4-7e6ae13.tsv`) | 483 passed, 1 skipped (484 tests), coverage 83.47 % |
 | Golden master (`p5/gm-p4-7e6ae13.json`) | 104 requests: the 83 of Phase 1 plus 21 for Phase 5 (bad Host, bodies of 16,384, 16,385 and 20,000 bytes with and without chunking, a DELETE with a body, the maximal valid request, missing and wrong Content-Type, `PUT {"title": null}`, done plus title, control characters, a lone surrogate, `limit=100/101`) |
 | Screens (`run_screens.sh`, `baseline/frontend/P4/`) | equal to F2 (Phase 2), except 17 pixels at the border corners of 08 that F2 captured mid-animation; the harness now waits for `document.getAnimations()` and selects rows by title |
 | Frontend | vitest 13/13, e2e 13/13 |
@@ -683,7 +683,7 @@ Each commit ran `run_suite.sh` (pytest per test, mypy, provenance) and, where th
 | `2e55652` Q6.9, Q6.3 display, Q6.2 counting (frontend) | — | — | vitest 15 → 32 (14 of the 17 new fail on the previous code), e2e 13 → 16 (all 5 new fail on the previous code) |
 | `8f5bf11` SEC-002, -003, -008, -014, Q8b | 4 out (the SEC legacy pins), 90 in | 18: 415 (4), foreign Host 400, CORS without credentials (8), 413 (4), the list without the refused requests' effects | Q8b against a real uvicorn; 10 positive controls (each guard removed once) |
 | `42c8deb` Q8a | — | — | `uv lock` removes slowapi, limits, deprecated, wrapt only; 736 passed in a fresh venv from the lock |
-| `e7fa753` TD-7 | 0 changed | — | six dead items removed; coverage 90.1 % → 92.2 % |
+| `e7fa753` TD-7 | 0 changed | — | six dead items removed; coverage 89.53 % → 91.33 % |
 | `47877f8` docs (Q7) | 0 changed | 1: `/openapi.json`, four route descriptions | PlantUML `-checkonly` passes for all three diagrams |
 | `eb178e3` super-linter findings | 0 changed | 0 of 104 | super-linter exit 0 |
 
@@ -717,7 +717,7 @@ Product code as at `47877f8` (the last commit changed a README, a `.gitignore` c
 
 | Check | Result |
 |---|---|
-| pytest (`p5/pytest-p5-eb178e3.tsv`) | **736 passed** (0 skipped), coverage 92.2 %; against P4: 103 out, 355 in, 1 status change (the multiline test), each attributed to its commit and ID (`p5/pytest-attribution-p4-p5.txt`) |
+| pytest (`p5/pytest-p5-eb178e3.tsv`) | **736 passed** (0 skipped), coverage 91.33 % (pytest's total of lines and branches, as in Phase 4); against P4: 103 out, 355 in, 1 status change (the multiline test), each attributed to its commit and ID (`p5/pytest-attribution-p4-p5.txt`) |
 | P0 contract tests | 12 of 12 pass; `test_p0_contracts.py` is byte-identical to Phase 4 |
 | Keeps | RULE-024 / Q6.8 (lax `done`) and RULE-052 / Q6.10 (last write wins) pinned and passing; in the golden master every lax `done` spelling gives the same `done` as at P4 |
 | Golden master (`p5/gm-p5-eb178e3.json`) | **68 of 104** differ from P4, every one attributed (`p5/gm-attribution-p4-p5.txt`); 36 unchanged |
@@ -727,9 +727,30 @@ Product code as at `47877f8` (the last commit changed a README, a `.gitignore` c
 | mypy positive control | `config.py`, the Phase 1 target, is gone (TD-7); `MYPY_CONTROL: int = "a"` appended to `backend/app/settings.py` gives exit 1, reverted |
 | `pip-audit`, runtime export | **0** (59 pins: + alembic, mako; − slowapi, limits, deprecated, wrapt, packaging) |
 | Frontend (Node 24.21.0) | `tsc -b`, lint, **vitest 32/32**, build, `npm audit` 0, **e2e 16/16**; the backend runs through `main.py` on 127.0.0.1 and prepares its database |
-| Screens (`baseline/frontend/P5/`, review page `baseline/frontend/p5-review.html`) | 3 of 8 pixel-identical; 5 differ only by the newest-first order (Q6.4); the manual UAT is the owner's |
+| Screens (`baseline/frontend/P5/`, review page `baseline/frontend/p5-review.html`) | 3 of 8 pixel-identical; 5 differ only by the newest-first order (Q6.4). **The owner's manual UAT passed on 2026-10-08** (all 7 items of the review page's checklist) |
 | super-linter v9 (`run_superlinter.sh`) | red at `47877f8` in four linters (`ci/superlinter-47877f8.txt`: the rewritten README, two codespell hits in files Phase 5 touched); **green at `eb178e3`**: exit 0, 18 linters (`ci/superlinter-eb178e3.txt`) |
 | Hardening verify on the tip | **No open High or Medium** beyond the accepted F-01/SEC-001 (an independent `security-auditor`; `SECURITY_FINDINGS.md`, "Verify on the tip"). R1–R4 verified; five new observations, all Informational, recorded as residuals |
+
+### Phase 5 CI (draft PR #117)
+
+Pushed on 2026-10-08 after the owner's go. Draft PR #117 (`phase-5` → `base`, label `do not merge: eval`). The first head, `1e257d2`, ran all nine runs green; `849abfe` (the `.gitignore` negation for `frontend/src/lib/`, the owner's call) superseded it. **At `849abfe` all six PR workflows and all three push runs are green.**
+
+| Workflow (PR run) | Result | Duration |
+|---|---|---|
+| Dependency review | ✅ no vulnerable packages, no denied licences | 21 s |
+| Frontend CI | ✅ | 36 s |
+| CodeQL | ✅ | 62 s |
+| Python Application CI: `init_db.py` ("created at revision 0002"), mypy 0 (38 files), 736 passed, coverage 91.33 % | ✅ | 75 s |
+| End-to-End Tests (16/16; the backend from `main.py` on 127.0.0.1) | ✅ | 81 s |
+| Super-Linter (18 linters, MARKDOWN, MARKDOWN_PRETTIER and NATURAL_LANGUAGE among them) | ✅ | 164 s |
+
+- **Duration:** 164 s wall clock, 523 s runner time across 10 jobs (Phase 4: 145 s and 496 s). Push runs: Python 50 s, Frontend 54 s, E2E 81 s.
+- **Super-Linter:** `DEFAULT_BRANCH` resolved to `origin/plugin/uplift-basictodo/base`; the image index is `sha256:7620fb6f…`, as in Phases 3 and 4. black, flake8 and mypy lint both revisions, `env.py` and `check_baseline.py`; `script.py.mako` does not appear in the log.
+- **No Node 20 deprecation warning** in the downloaded logs.
+- **The numbers match the local runs:** pytest, coverage and mypy as at `eb178e3`.
+- Evidence: `baseline/ci/ci-pr117.txt`.
+
+**Exit criterion "all six workflows green on the draft PR" holds at `849abfe`.**
 
 ## Change log
 
