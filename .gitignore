@@ -16,6 +16,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+# The frontend's source folder of that name is code, not a build directory.
+!frontend/src/lib/
 lib64/
 parts/
 sdist/

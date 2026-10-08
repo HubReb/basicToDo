@@ -389,7 +389,7 @@ Since Phase 5 the application does this itself at startup (`init_db.py`, `main.p
 | TestClient sends a chunked body as one ASGI message | Count streamed bytes with a hand-written `receive` and against a real uvicorn |
 | `http.client` with an explicit `Transfer-Encoding: chunked` header sends the parts unframed unless `encode_chunked=True` | Pass it |
 | SQLite creates a database file 0644 under the usual umask; a chmod at connect leaves a window | Create the file 0600 in the engine's `do_connect` hook before SQLite opens it; SQLite gives `-wal`, `-shm` and `-journal` the database file's mode |
-| The Python template's `lib/` rule in `.gitignore` also ignores `frontend/src/lib/` | Add new files there with `git add -f` (as `toaster.ts` was), or ask the owner for a negation |
+| The Python template's `lib/` rule in `.gitignore` also ignored `frontend/src/lib/`, so a new file there was silently left out | `!frontend/src/lib/` right after the rule (the owner's call); other `lib/` directories stay ignored |
 | A fresh `uv run` creates `.venv` with the lock's black (26.10), not the branch linter's 26.5.1 | Format only with `uvx black==26.5.1`; never run a formatter over the whole tree |
 | super-linter lints every changed file in full | A rewritten README meets textlint's terminology ("todo", "ID", "hostnames") and Prettier; codespell checks touched files such as `.gitignore` |
 
@@ -431,5 +431,5 @@ Since Phase 5 the application does this itself at startup (`init_db.py`, `main.p
 | The backup probe hung | Backup from the connection holding the write lock | A second, read-only connection |
 | mypy "Statement is unreachable" after `assert isinstance(dbapi, sqlite3.Connection)` | The DBAPI protocol type does not overlap `sqlite3.Connection` | `cast()` |
 | `uv run black` reformatted 30 untouched files | The fresh `.venv` had black 26.10 | Reverted; `uvx black==26.5.1` on touched files only |
-| `titleLength.ts` missing from `git status` | `.gitignore`'s `lib/` | `git add -f` |
+| `titleLength.ts` missing from `git status` | `.gitignore`'s `lib/` | `git add -f`, then the negation `!frontend/src/lib/` |
 | super-linter red after the README rewrite | markdownlint MD060, Prettier, textlint terminology, codespell | Fixed in `eb178e3` |

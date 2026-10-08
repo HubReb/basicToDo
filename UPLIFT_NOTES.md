@@ -311,6 +311,6 @@ Plus five `style:` commits (black 26.5.1, flake8 7.3.0) before the files they pr
   - test databases remain in the git history (F-15);
   - `extra="forbid"` not adopted (F-06).
   - five Informational observations from the verify on the tip (N-1 to N-5): identifier quoting in the backup check, the backup reopened by name, the log filter's fallback, unescaped operator-side text from `init_db.py`, duplicate Host headers past Starlette's Host check.
-- **Frontend:** mutations keep `retry: 1`, so a 4xx is sent twice; there is no UI to mark a todo as done or to edit its description; `frontend/src/lib/` is ignored by the Python template's `lib/` rule (new files need `git add -f`).
+- **Frontend:** mutations keep `retry: 1`, so a 4xx is sent twice; there is no UI to mark a todo as done or to edit its description. `frontend/src/lib/` was ignored by the Python template's `lib/` rule; a negation in `.gitignore` fixes that (the owner's call).
 - **Backend:** `hard_delete_to_do` stays unused (the brief's TD-7 list did not name it); responses keep the unused `data`, `message` and `error` fields; `DATABASE_URL` still accepts `postgresql://` and `mysql://` prefixes, although startup prepares SQLite files only.
 - **Migration:** a `created_at` in the spring gap hour comes back one hour later after a downgrade; the placeholder description cannot be restored.
